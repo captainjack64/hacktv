@@ -102,12 +102,12 @@ fi
 # zlib, required for logo support
 if [[ ! -f $PREFIX/lib/libz.a ]]; then
 
-    if [[ ! -f zlib-1.2.11.tar.gz ]]; then
-        wget http://zlib.net/zlib-1.2.11.tar.gz
-        tar xzvf zlib-1.2.11.tar.gz
+    if [[ ! -f zlib-1.2.12.tar.gz ]]; then
+        wget http://zlib.net/zlib-1.2.12.tar.gz
+        tar xzvf zlib-1.2.12.tar.gz
     fi
 
-    cd zlib-1.2.11
+    cd zlib-1.2.12
     CC=$HOST-gcc AR=$HOST-ar RANLIB=$HOST-ranlib \
     ./configure --prefix=$PREFIX --static
     make -j4 install
