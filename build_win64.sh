@@ -13,28 +13,26 @@ cd build_win64
 # libusb
 if [[ ! -f $PREFIX/lib/libusb-1.0.a ]]; then
 	
-	if [[ ! -f libusb-1.0.22.tar.bz2 ]]; then
-		wget https://github.com/libusb/libusb/releases/download/v1.0.22/libusb-1.0.22.tar.bz2
-		tar -xvjf libusb-1.0.22.tar.bz2
+	if [[ ! -d libusb ]]; then
+		git clone --depth 1 https://github.com/libusb/libusb.git
 	fi
-	
-	cd libusb-1.0.22
-	./configure --host=$HOST --prefix=$PREFIX --enable-static --disable-shared
+
+	cd libusb
+	./autogen.sh --host=$HOST --prefix=$PREFIX --enable-static --disable-shared
 	make -j4 install
 	cd ..
 fi
 
 # hackrf
 if [[ ! -f $PREFIX/lib/libhackrf.a ]]; then
-	
-	if [[ ! -f hackrf-2018.01.1.tar.gz ]]; then
-		wget https://github.com/mossmann/hackrf/archive/v2018.01.1/hackrf-2018.01.1.tar.gz
-		tar -xvzf hackrf-2018.01.1.tar.gz
+
+	if [[ ! -d hackrf ]]; then
+		git clone --depth 1 https://github.com/greatscottgadgets/hackrf.git
 	fi
 	
-	rm -rf hackrf-2018.01.1/host/libhackrf/build
-	mkdir -p hackrf-2018.01.1/host/libhackrf/build
-	cd hackrf-2018.01.1/host/libhackrf/build
+	rm -rf hackrf/host/libhackrf/build
+	mkdir -p hackrf/host/libhackrf/build
+	cd hackrf/host/libhackrf/build
 	cmake .. \
 		-DCMAKE_SYSTEM_NAME=Windows \
 		-DCMAKE_C_COMPILER=$HOST-gcc \
@@ -75,7 +73,7 @@ fi
 if [[ ! -f $PREFIX/lib/libfdk-aac.a ]]; then
 	
 	if [[ ! -d fdk-aac ]]; then
-		git clone https://github.com/mstorsjo/fdk-aac.git
+		git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
 	fi
 	
 	cd fdk-aac
@@ -117,12 +115,12 @@ fi
 # freetype2, required for subtitles and timestamp
 if [[ ! -f $PREFIX/lib/libfreetype.a ]]; then
 
-    if [[ ! -f freetype-2.10.4.tar.gz ]]; then
-        wget https://download.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.gz
-        tar xzvf freetype-2.10.4.tar.gz
+    if [[ ! -d freetype ]]; then
+	git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
     fi
 
-    cd freetype-2.10.4
+    cd freetype
+    ./autogen.sh
     ./configure --prefix=$PREFIX --disable-shared --with-pic --host=$HOST --without-zlib --with-png=no --with-harfbuzz=no
     make -j4 install
     cd ..
@@ -131,12 +129,11 @@ fi
 # libpng, also required for logo support
 if [[ ! -f $PREFIX/lib/libpng16.a ]]; then
 
-    if [[ ! -f libpng-1.6.37.tar.gz ]]; then
-        wget https://download.sourceforge.net/libpng/libpng-1.6.37.tar.gz
-	    tar xzvf libpng-1.6.37.tar.gz
+    if [[ ! -d libpng ]]; then
+	git clone --depth 1 https://github.com/glennrp/libpng.git
     fi
 
-    cd libpng-1.6.37
+    cd libpng
     CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib" \
     ./configure --prefix=$PREFIX --host=$HOST
     make -j4 install
@@ -146,12 +143,12 @@ fi
 # libiconv, pre-requisite for zvbi
 if [[ ! -f $PREFIX/lib/libiconv.a ]]; then
 
-    if [[ ! -f libiconv-1.16.tar.gz ]]; then
-        wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz
-	    tar xzvf libiconv-1.16.tar.gz
+    if [[ ! -f libiconv-1.17.tar.gz ]]; then
+        wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.17.tar.gz
+	    tar xzvf libiconv-1.17.tar.gz
     fi
 
-    cd libiconv-1.16
+    cd libiconv-1.17
     ./configure --prefix=$PREFIX --host=$HOST --enable-static --disable-shared
     make -j4 install
     cd ..
@@ -165,7 +162,7 @@ if [[ ! -f $PREFIX/lib/libzvbi.a ]]; then
         tar xjvf zvbi-0.2.35.tar.bz2
         # Can't be cross compiled in its default state, needs to be patched first
         # This repo contains the patch files that we need
-        git clone https://github.com/rdp/ffmpeg-windows-build-helpers.git
+        git clone --depth 1 https://github.com/rdp/ffmpeg-windows-build-helpers.git
         cd zvbi-0.2.35
         patch -p0 < ../ffmpeg-windows-build-helpers/patches/zvbi-win32.patch
         patch < ../ffmpeg-windows-build-helpers/patches/zvbi-no-contrib.diff
@@ -199,7 +196,6 @@ fi
 
 cd ..
 CROSS_HOST=$HOST- make -j4 EXTRA_LDFLAGS="-static" EXTRA_PKGS="libusb-1.0"
-mv -f hacktv hacktv.exe || true
 $HOST-strip hacktv.exe
 
 echo "Done"
