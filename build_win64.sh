@@ -85,27 +85,26 @@ fi
 
 # opus codec
 if [[ ! -f $PREFIX/lib/libopus.a ]]; then
-	
-	if [[ ! -f opus-1.3.1.tar.gz ]]; then
-		wget https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz
-		tar -xvzf opus-1.3.1.tar.gz
-	fi
-	
-	cd opus-1.3.1
-	./configure CFLAGS='-D_FORTIFY_SOURCE=0' --host=$HOST --prefix=$PREFIX --enable-static --disable-shared --disable-doc --disable-extra-programs
-	make -j4 install
-	cd ..
+
+        if [[ ! -f opus-1.3.1.tar.gz ]]; then
+                wget https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz
+                tar -xvzf opus-1.3.1.tar.gz
+        fi
+
+        cd opus-1.3.1
+        ./configure CFLAGS='-D_FORTIFY_SOURCE=0' --host=$HOST --prefix=$PREFIX --enable-static --disable-shared --disable-doc --disable-extra-programs
+        make -j4 install
+        cd ..
 fi
 
 # zlib, required for logo support
 if [[ ! -f $PREFIX/lib/libz.a ]]; then
 
-    if [[ ! -f zlib-1.2.13.tar.gz ]]; then
-        wget http://zlib.net/zlib-1.2.13.tar.gz
-        tar xzvf zlib-1.2.13.tar.gz
+    if [[ ! -d zlib ]]; then
+	git clone --depth 1 https://github.com/madler/zlib.git
     fi
 
-    cd zlib-1.2.13
+    cd zlib
     CC=$HOST-gcc AR=$HOST-ar RANLIB=$HOST-ranlib \
     ./configure --prefix=$PREFIX --static
     make -j4 install
