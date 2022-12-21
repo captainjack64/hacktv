@@ -86,13 +86,13 @@ fi
 # opus codec
 if [[ ! -f $PREFIX/lib/libopus.a ]]; then
 
-        if [[ ! -f opus-1.3.1.tar.gz ]]; then
-                wget https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz
-                tar -xvzf opus-1.3.1.tar.gz
-        fi
+	if [[ ! -d opus ]]; then
+		git clone --depth 1 https://github.com/xiph/opus.git
+	fi
 
-        cd opus-1.3.1
-        ./configure CFLAGS='-D_FORTIFY_SOURCE=0' --host=$HOST --prefix=$PREFIX --enable-static --disable-shared --disable-doc --disable-extra-programs
+        cd opus
+	./autogen.sh
+        ./configure --host=$HOST --prefix=$PREFIX --enable-static --disable-shared --disable-doc --disable-extra-programs
         make -j4 install
         cd ..
 fi
@@ -100,79 +100,79 @@ fi
 # zlib, required for logo support
 if [[ ! -f $PREFIX/lib/libz.a ]]; then
 
-    if [[ ! -d zlib ]]; then
-	git clone --depth 1 https://github.com/madler/zlib.git
-    fi
+	if [[ ! -d zlib ]]; then
+		git clone --depth 1 https://github.com/madler/zlib.git
+	fi
 
-    cd zlib
-    CC=$HOST-gcc AR=$HOST-ar RANLIB=$HOST-ranlib \
-    ./configure --prefix=$PREFIX --static
-    make -j4 install
-    cd ..
+	cd zlib
+	CC=$HOST-gcc AR=$HOST-ar RANLIB=$HOST-ranlib \
+	./configure --prefix=$PREFIX --static
+	make -j4 install
+	cd ..
 fi
 
 # freetype2, required for subtitles and timestamp
 if [[ ! -f $PREFIX/lib/libfreetype.a ]]; then
 
-    if [[ ! -d freetype ]]; then
-	git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
-    fi
+    	if [[ ! -d freetype ]]; then
+		git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
+	fi
 
-    cd freetype
-    ./autogen.sh
-    ./configure --prefix=$PREFIX --disable-shared --with-pic --host=$HOST --without-zlib --with-png=no --with-harfbuzz=no
-    make -j4 install
-    cd ..
+    	cd freetype
+    	./autogen.sh
+    	./configure --prefix=$PREFIX --disable-shared --with-pic --host=$HOST --without-zlib --with-png=no --with-harfbuzz=no
+    	make -j4 install
+    	cd ..
 fi
 
 # libpng, also required for logo support
 if [[ ! -f $PREFIX/lib/libpng16.a ]]; then
 
-    if [[ ! -d libpng ]]; then
-	git clone --depth 1 https://github.com/glennrp/libpng.git
-    fi
+	if [[ ! -d libpng ]]; then
+		git clone --depth 1 https://github.com/glennrp/libpng.git
+	fi
 
-    cd libpng
-    CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib" \
-    ./configure --prefix=$PREFIX --host=$HOST
-    make -j4 install
-    cd ..
+	cd libpng
+	CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib" \
+	./configure --prefix=$PREFIX --host=$HOST
+ 	make -j4 install
+	cd ..
 fi
 
 # libiconv, pre-requisite for zvbi
 if [[ ! -f $PREFIX/lib/libiconv.a ]]; then
 
-    if [[ ! -f libiconv-1.17.tar.gz ]]; then
-        wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.17.tar.gz
-	    tar xzvf libiconv-1.17.tar.gz
-    fi
+	if [[ ! -f libiconv-1.17.tar.gz ]]; then
+	wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.17.tar.gz
+		tar xzvf libiconv-1.17.tar.gz
+	fi
 
-    cd libiconv-1.17
-    ./configure --prefix=$PREFIX --host=$HOST --enable-static --disable-shared
-    make -j4 install
-    cd ..
+	cd libiconv-1.17
+	./configure --prefix=$PREFIX --host=$HOST --enable-static --disable-shared
+	make -j4 install
+	cd ..
 fi
 
 # zvbi, required for handling teletext subtitles in transport streams
 if [[ ! -f $PREFIX/lib/libzvbi.a ]]; then
 
-    if [[ ! -f zvbi-0.2.35.tar.bz2 ]]; then
-        wget https://download.sourceforge.net/project/zapping/zvbi/0.2.35/zvbi-0.2.35.tar.bz2
-        tar xjvf zvbi-0.2.35.tar.bz2
-        # Can't be cross compiled in its default state, needs to be patched first
-        # This repo contains the patch files that we need
-        git clone --depth 1 https://github.com/rdp/ffmpeg-windows-build-helpers.git
-        cd zvbi-0.2.35
-        patch -p0 < ../ffmpeg-windows-build-helpers/patches/zvbi-win32.patch
-        patch < ../ffmpeg-windows-build-helpers/patches/zvbi-no-contrib.diff
-    fi
+	if [[ ! -f zvbi-0.2.35.tar.bz2 ]]; then
+		wget https://download.sourceforge.net/project/zapping/zvbi/0.2.35/zvbi-0.2.35.tar.bz2
+		tar xjvf zvbi-0.2.35.tar.bz2
+		# Can't be cross compiled in its default state, needs to be patched first
+		# This repo contains the patch files that we need
+		git clone --depth 1 https://github.com/rdp/ffmpeg-windows-build-helpers.git
+		cd zvbi-0.2.35
+		patch -p0 < ../ffmpeg-windows-build-helpers/patches/zvbi-win32.patch
+		patch < ../ffmpeg-windows-build-helpers/patches/zvbi-no-contrib.diff
+	fi
 
-    CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib" \
-    ./configure \
-        --prefix=$PREFIX --host=$HOST --enable-static --disable-shared --disable-dvb \
-        --disable-bktr --disable-proxy --disable-nls --without-doxygen --without-libiconv-prefix 
-    make -j4 install
-    cd ..
+	CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib" \
+	./configure \
+	--prefix=$PREFIX --host=$HOST --enable-static --disable-shared --disable-dvb \
+	--disable-bktr --disable-proxy --disable-nls --without-doxygen --without-libiconv-prefix 
+	make -j4 install
+	cd ..
 fi
 
 # ffmpeg
@@ -188,13 +188,13 @@ if [[ ! -f $PREFIX/lib/libavformat.a ]]; then
 		--enable-static --disable-shared --disable-programs --enable-zlib \
 		--enable-libfreetype --enable-libzvbi --disable-outdevs --disable-encoders \
 		--arch=x86_64 --target-os=mingw64 --cross-prefix=$HOST- \
-		--pkg-config=pkg-config --prefix=$PREFIX
+		--pkg-config=pkg-config --prefix=$PREFIX --extra-ldflags="-fstack-protector"
 	make -j4 install
 	cd ..
 fi
 
 cd ..
-CROSS_HOST=$HOST- make -j4 EXTRA_LDFLAGS="-static" EXTRA_PKGS="libusb-1.0"
+CROSS_HOST=$HOST- make -j4 EXTRA_LDFLAGS="-static -fstack-protector" EXTRA_PKGS="libusb-1.0"
 $HOST-strip hacktv.exe
 
 echo "Done"
