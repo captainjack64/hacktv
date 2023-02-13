@@ -179,7 +179,12 @@ fi
 if [[ ! -f $PREFIX/lib/libavformat.a ]]; then
 	
 	if [[ ! -d ffmpeg ]]; then
-		git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ffmpeg
+		# git clone --depth 1 https://github.com/FFmpeg/FFmpeg.git ffmpeg
+            	if [[ ! -f n5.0.2.tar.gz ]]; then
+                    wget https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n5.0.2.tar.gz
+                    tar xzvf n5.0.2.tar.gz
+                    mv FFmpeg-n5.0.2 ffmpeg
+            	fi
 	fi
 	
 	cd ffmpeg
