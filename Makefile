@@ -3,8 +3,8 @@ CC      := $(CROSS_HOST)gcc
 PKGCONF := $(CROSS_HOST)pkg-config
 CFLAGS  := -g -Wall -Wno-unused-result -pthread -O3 $(EXTRA_CFLAGS)
 LDFLAGS := -g -lm -lz -lpng16 -pthread $(EXTRA_LDFLAGS)
-OBJS    := vitc.o hacktv.o common.o fir.o vbidata.o teletext.o wss.o video.o mac.o dance.o videocrypt.o videocrypts.o videocrypt-ca.o syster.o syster-ca.o acp.o vits.o nicam728.o test.o ffmpeg.o file.o hackrf.o font.o subtitles.o eurocrypt.o graphics.o keyboard.o
-PKGS    := libpng libavcodec libavformat libavdevice libswscale libswresample libavutil libhackrf libavfilter freetype2 $(EXTRA_PKGS)
+OBJS    := vitc.o hacktv.o common.o fir.o vbidata.o teletext.o wss.o video.o mac.o dance.o videocrypt.o videocrypts.o videocrypt-ca.o syster.o syster-ca.o acp.o vits.o nicam728.o test.o ffmpeg.o file.o hackrf.o font.o subtitles.o eurocrypt.o graphics.o
+PKGS    := libavcodec libavformat libavdevice libswscale libswresample libavutil libhackrf libavfilter freetype2 $(EXTRA_PKGS)
 
 SOAPYSDR := $(shell $(PKGCONF) --exists SoapySDR && echo SoapySDR)
 ifeq ($(SOAPYSDR),SoapySDR)
