@@ -49,14 +49,6 @@ const pngs_t png_tests[] = {
 	{ NULL,             NULL,             0,           0 }
 };
 
-const pngs_t png_media_icons[] = {
-	{ "play",          _png_media_play,  IMG_POS_CENTRE,  sizeof(_png_media_play) },
-	{ "pause",         _png_media_pause, IMG_POS_CENTRE,  sizeof(_png_media_pause) },
-	{ "ff",            _png_media_ff,    IMG_POS_CENTRE,  sizeof(_png_media_ff) },
-	{ "rw"  ,          _png_media_rw,    IMG_POS_CENTRE,  sizeof(_png_media_rw) },
-	{ NULL,             NULL,             0,           0 }
-};
-
 static void _open_png_memory(png_mem_t *r, const uint8_t *data, int size)
 {
 	r->size = size;
@@ -210,7 +202,7 @@ int load_png(image_t *image, int width, int height, char *image_name, float scal
 			return(HACKTV_ERROR);
 		}
 	}
-	else if(type == IMG_TEST)
+	else
 	{
 		for(pngs = png_tests; pngs->name != NULL; pngs++)
 		{	
@@ -223,25 +215,6 @@ int load_png(image_t *image, int width, int height, char *image_name, float scal
 			fprintf(stderr, "\nValid values are:\n");
 			
 			for(pngs = png_tests; pngs->name != NULL; pngs++)
-			{
-				 fprintf(stderr,"\t-- %s\n", pngs->name);
-			}
-			return(HACKTV_ERROR);
-		}
-	}
-	else
-	{
-		for(pngs = png_media_icons; pngs->name != NULL; pngs++)
-		{	
-			if(strcmp(image->name, pngs->name) == 0) break;
-		}
-		
-		if(pngs->name == NULL)
-		{
-			fprintf(stderr, "\n%s: Unrecognised media icon name.\n", image->name);
-			fprintf(stderr, "\nValid values are:\n");
-			
-			for(pngs = png_media_icons; pngs->name != NULL; pngs++)
 			{
 				 fprintf(stderr,"\t-- %s\n", pngs->name);
 			}
@@ -323,13 +296,6 @@ void overlay_image(uint32_t *framebuffer, image_t *l, int vid_width, int vid_hei
 	{
 		x_start = ((float) vid_width * 0.5) - ((float) l->img_width * 0.5);
 		y_start = 0;
-	}
-
-	/* Set logo position - centre */
-	if(pos == IMG_POS_MIDDLE)
-	{
-		x_start = ((float) vid_width * 0.5) - ((float) l->img_width * 0.5);
-		y_start = (float) (vid_height) * 0.5- ((float) l->img_height * 0.5);
 	}
 	
 	/* Overlay image */

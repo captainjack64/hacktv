@@ -356,9 +356,6 @@ struct vid_t {
 	
 	/* Logo configuration */
 	image_t vid_logo;
-
-	/* Media icons */
-	image_t media_icons[4];
 	
 	/* Video setup */
 	int pixel_rate;

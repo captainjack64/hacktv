@@ -27,11 +27,9 @@
 #define IMG_POS_BL 3
 #define IMG_POS_BR 4
 #define IMG_POS_FULL 5
-#define IMG_POS_MIDDLE 6
 
 #define IMG_TEST 0
 #define IMG_LOGO 1
-#define IMG_MEDIA 2
 
 #define MAX_PNG_SIZE 128
 
