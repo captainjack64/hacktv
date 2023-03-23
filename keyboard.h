@@ -19,7 +19,10 @@
 #define KEYB_H
 
 #include <termios.h>
+
+#ifndef WIN32
 #include <sys/ioctl.h>
+#endif
 
 extern struct termios trm;
 
