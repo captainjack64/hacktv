@@ -821,7 +821,6 @@ static uint32_t *_av_ffmpeg_read_video(void *private, float *ratio)
 				getchar();
 				c = getchar();
 				#else
-				getch();
 				c = getch();
 				#endif
 				switch(c)
