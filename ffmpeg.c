@@ -55,6 +55,9 @@
 #include <libavfilter/buffersrc.h>
 #include "hacktv.h"
 #include "keyboard.h"
+#ifdef WIN32
+#include <conio.h>
+#endif
 
 /* Maximum length of the packet queue */
 /* Taken from ffplay.c */
@@ -802,7 +805,11 @@ static uint32_t *_av_ffmpeg_read_video(void *private, float *ratio)
 	kb_enable();
 	if(kbhit())
 	{
+		#ifndef WIN32
 		char c = getchar();
+		#else
+		char c = getch();
+		#endif
 		switch(c)
 		{
 			case ' ':
@@ -810,8 +817,12 @@ static uint32_t *_av_ffmpeg_read_video(void *private, float *ratio)
 				fprintf(stderr,"\nVideo state: %s", av->paused ? "PAUSE" : "PLAY");	
 				break;
 			case '\033':
+				#ifndef WIN32
 				getchar();
 				c = getchar();
+				#else
+				c = getch();
+				#endif
 				switch(c)
 				{
 					case 'C':

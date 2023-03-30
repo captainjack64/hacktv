@@ -33,9 +33,11 @@ void kb_disable()
     tcsetattr(0, TCSANOW, &trm);
 }
 
+#ifndef WIN32
 int kbhit()
 {
     int byteswaiting;
     ioctl(0, FIONREAD, &byteswaiting);
     return byteswaiting > 0;
 }
+#endif
