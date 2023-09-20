@@ -13,29 +13,29 @@ cd build_win64
 # libusb
 if [[ ! -f $PREFIX/lib/libusb-1.0.a ]]; then
 	
-	if [[ ! -d libusb ]]; then
-		git clone --depth 1 https://github.com/libusb/libusb.git
+	if [[ ! -f libusb-1.0.26.tar.bz2 ]]; then
+		wget https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2
+		tar -xvjf libusb-1.0.26.tar.bz2
 	fi
-
-	cd libusb
-	./autogen.sh --host=$HOST --prefix=$PREFIX --enable-static --disable-shared
+	
+	cd libusb-1.0.26
+	./configure --host=$HOST --prefix=$PREFIX --enable-static --disable-shared
 	make -j4 install
 	cd ..
 fi
 
 # hackrf
 if [[ ! -f $PREFIX/lib/libhackrf.a ]]; then
-
-	if [[ ! -d hackrf ]]; then
-		git clone --depth 1 https://github.com/greatscottgadgets/hackrf.git
+	
+	if [[ ! -f hackrf-2023.01.1.tar.xz ]]; then
+		wget https://github.com/greatscottgadgets/hackrf/releases/download/v2023.01.1/hackrf-2023.01.1.tar.xz
+		tar -xvJf hackrf-2023.01.1.tar.xz
 	fi
 	
-	rm -rf hackrf/host/libhackrf/build
-	mkdir -p hackrf/host/libhackrf/build
-	cd hackrf/host/libhackrf/build
-	cmake .. \
-		-DCMAKE_SYSTEM_NAME=Windows \
-		-DCMAKE_C_COMPILER=$HOST-gcc \
+	rm -rf hackrf-2023.01.1/host/libhackrf/build
+	mkdir -p hackrf-2023.01.1/host/libhackrf/build
+	cd hackrf-2023.01.1/host/libhackrf/build
+	mingw64-cmake \
 		-DCMAKE_INSTALL_PREFIX=$PREFIX \
 		-DCMAKE_INSTALL_LIBPREFIX=$PREFIX/lib \
 		-DLIBUSB_INCLUDE_DIR=$PREFIX/include/libusb-1.0 \
@@ -85,28 +85,14 @@ fi
 
 # opus codec
 if [[ ! -f $PREFIX/lib/libopus.a ]]; then
-
-	if [[ ! -d opus ]]; then
-		git clone --depth 1 https://github.com/xiph/opus.git
+	
+	if [[ ! -f opus-1.4.tar.gz ]]; then
+		wget https://downloads.xiph.org/releases/opus/opus-1.4.tar.gz
+		tar -xvzf opus-1.4.tar.gz
 	fi
-
-        cd opus
-	./autogen.sh
-        ./configure --host=$HOST --prefix=$PREFIX --enable-static --disable-shared --disable-doc --disable-extra-programs
-        make -j4 install
-        cd ..
-fi
-
-# zlib, required for logo support
-if [[ ! -f $PREFIX/lib/libz.a ]]; then
-
-	if [[ ! -d zlib ]]; then
-		git clone --depth 1 https://github.com/madler/zlib.git
-	fi
-
-	cd zlib
-	CC=$HOST-gcc AR=$HOST-ar RANLIB=$HOST-ranlib \
-	./configure --prefix=$PREFIX --static
+	
+	cd opus-1.4
+	./configure --host=$HOST --prefix=$PREFIX --enable-static --disable-shared --disable-doc --disable-extra-programs
 	make -j4 install
 	cd ..
 fi

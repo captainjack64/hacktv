@@ -242,10 +242,8 @@ typedef struct {
 	double fsc_flag_left;
 	double fsc_flag_level;
 	
-	double iu_co;
-	double iv_co;
-	double qu_co;
-	double qv_co;
+	double ev_co;
+	double eu_co;
 	
 	int secam_field_id;
 	
@@ -297,6 +295,7 @@ typedef struct {
 typedef struct {
 	const char *id;
 	const vid_config_t *conf;
+	const char *desc;
 } vid_configs_t;
 
 typedef struct {
@@ -315,10 +314,8 @@ struct vid_line_t {
 	int frame;
 	int line;
 	
-	/* Colour subcarrier pointers */
-	const int16_t *lut_b;	/* Burst */
-	const int16_t *lut_i;	/* I/V phase */
-	const int16_t *lut_q;	/* Q/U phase */
+	/* Colour subcarrier (complex) */
+	const cint16_t *lut;
 	
 	/* Status */
 	int vbialloc;
@@ -391,8 +388,9 @@ struct vid_t {
 	
 	unsigned int colour_lookup_width;
 	unsigned int colour_lookup_offset;
-	int16_t *colour_lookup;
+	cint16_t *colour_lookup;
 	
+	cint16_t burst_phase;
 	int burst_left;
 	int burst_width;
 	int16_t *burst_win;

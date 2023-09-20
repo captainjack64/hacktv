@@ -23,12 +23,19 @@
 #include <unistd.h>
 #include "hacktv.h"
 
-#define BUFFERS 32
+typedef enum {
+	BUFFER_EMPTY,
+	BUFFER_PREFILL,
+	BUFFER_FILL,
+	BUFFER_READY,
+} buffer_status_t;
 
 typedef struct {
 	
 	/* Buffers are locked while reading/writing */
 	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	buffer_status_t status;
 	
 	/* Pointer to the start of the buffer */
 	int8_t *data;
@@ -47,6 +54,7 @@ typedef struct {
 	
 	int length;
 	int count;
+	int prefill;
 	int in;
 	int out;
 	
@@ -73,19 +81,17 @@ static int _buffer_init(buffers_t *buffers, size_t count, size_t length)
 	for(i = 0; i < count; i++)
 	{
 		pthread_mutex_init(&buffers->buffers[i].mutex, NULL);
+		pthread_cond_init(&buffers->buffers[i].cond, NULL);
 		buffers->buffers[i].data = malloc(length);
-		buffers->buffers[i].start = 0;
-		buffers->buffers[i].length = 0;
+		buffers->buffers[i].start = buffers->length;
+		buffers->buffers[i].length = buffers->length;
+		buffers->buffers[i].status = BUFFER_EMPTY;
 	}
 	
-	/* Lock the initial buffer for the provider */
+	buffers->prefill = 1;
 	buffers->in = 0;
-	pthread_mutex_lock(&buffers->buffers[buffers->in].mutex);
+	buffers->out = 0;
 	
-	/* Lock the last empty buffer for the consumer */
-	buffers->out = count - 1;
-	pthread_mutex_lock(&buffers->buffers[buffers->out].mutex);
-
 	return(0);
 }
 
@@ -96,6 +102,7 @@ static int _buffer_free(buffers_t *buffers)
 	for(i = 0; i < buffers->count; i++)
 	{
 		free(buffers->buffers[i].data);
+		pthread_cond_destroy(&buffers->buffers[i].cond);
 		pthread_mutex_destroy(&buffers->buffers[i].mutex);
 	}
 	
@@ -105,75 +112,99 @@ static int _buffer_free(buffers_t *buffers)
 	return(0);
 }
 
-static int _buffer_read(buffers_t *buffers, void *dst, size_t length)
+static int _buffer_read(buffers_t *buffers, int8_t *dst, size_t length)
 {
 	buffer_t *buf = &buffers->buffers[buffers->out];
 	
-	if(buf->length == 0)
+	if(buf->start == buffers->length)
 	{
-		buffer_t *next;
-		int i;
+		buffer_status_t r;
 		
-		/* This buffer is empty, try to move the read lock onto the next one */
-		i = (buffers->out + 1) % buffers->count;
-		next = &buffers->buffers[i];
+		/* Check if we can read this block */
+		pthread_mutex_lock(&buf->mutex);
+		r = buf->status;
+		pthread_mutex_unlock(&buf->mutex);
 		
-		if(pthread_mutex_trylock(&next->mutex) != 0)
+		if(r != BUFFER_READY)
 		{
-			/* No luck, the writer must have it */
-			fprintf(stderr, "U");
+			/* This buffer is not ready - display warning if not in prefill stage */
+			if(r != BUFFER_PREFILL)
+			{
+				fprintf(stderr, "U");
+			}
+			
 			return(0);
 		}
 		
-		/* Got a lock on the next buffer, clear and release the previous */
 		buf->start = 0;
-		pthread_mutex_unlock(&buf->mutex);
-		
-		buf = next;
-		buffers->out = i;
 	}
 	
-	if(length > buf->length)
+	if(length > buffers->length - buf->start)
 	{
-		length = buf->length;
+		length = buffers->length - buf->start;
 	}
 	
 	memcpy(dst, buf->data + buf->start, length);
 	buf->start += length;
-	buf->length -= length;
+	
+	if(buf->start == buffers->length)
+	{
+		/* Flag the current block as avaliable for writing */
+		pthread_mutex_lock(&buf->mutex);
+		buf->status = BUFFER_EMPTY;
+		pthread_mutex_unlock(&buf->mutex);
+		pthread_cond_broadcast(&buf->cond);
+		
+		buffers->out = (buffers->out + 1) % buffers->count;
+	}
 	
 	return(length);
 }
 
-static int _buffer_write(buffers_t *buffers, void *src, size_t length)
+static size_t _buffer_write_ptr(buffers_t *buffers, int8_t **src)
 {
 	buffer_t *buf = &buffers->buffers[buffers->in];
-	int i;
 	
 	if(buf->length == buffers->length)
 	{
-		buffer_t *next;
+		pthread_mutex_lock(&buf->mutex);
 		
-		/* This buffer is full, move the write lock onto the next one */
-		i = (buffers->in + 1) % buffers->count;
-		next = &buffers->buffers[i];
+		if(buf->status == BUFFER_PREFILL)
+		{
+			buffers->prefill = 0;
+			buf->status = BUFFER_READY;
+		}
 		
-		pthread_mutex_lock(&next->mutex);
+		while(buf->status != BUFFER_EMPTY)
+		{
+			pthread_cond_wait(&buf->cond, &buf->mutex);
+		}
+		
 		pthread_mutex_unlock(&buf->mutex);
 		
-		buf = next;
-		buffers->in = i;
+		buf->length = 0;
 	}
 	
-	i = buf->start + buf->length;
-	if(length > buffers->length - i)
-	{
-		length = buffers->length - i;
-	}
+	*src = buf->data + buf->length;
 	
-	memcpy(buf->data + i, src, length);
-	buf->length += length;
+	return(buffers->length - buf->length);
+}
 
+static int _buffer_write(buffers_t *buffers, size_t length)
+{
+	buffer_t *buf = &buffers->buffers[buffers->in];
+	
+	buf->length += length;
+	
+	if(buf->length == buffers->length)
+	{
+		pthread_mutex_lock(&buf->mutex);
+		buf->status = (buffers->prefill ? BUFFER_PREFILL : BUFFER_READY);
+		pthread_mutex_unlock(&buf->mutex);
+		
+		buffers->in = (buffers->in + 1) % buffers->count;
+	}
+	
 	return(length);
 }
 
@@ -186,7 +217,7 @@ static int _tx_callback(hackrf_transfer *transfer)
 	
 	while(l)
 	{
-		r = _buffer_read(&rf->buffers, buf, l);
+		r = _buffer_read(&rf->buffers, (int8_t *) buf, l);
 		
 		if(r == 0)
 		{
@@ -207,23 +238,24 @@ static int _tx_callback(hackrf_transfer *transfer)
 static int _rf_write(void *private, int16_t *iq_data, size_t samples)
 {
 	hackrf_t *rf = private;
-	int8_t iq8[1024 * 4];
+	int8_t *iq8 = NULL;
 	int i, r;
 	
 	samples *= 2;
 	
-	for(i = 0; i < samples; i++)
+	while(samples > 0)
 	{
-		iq8[i] = iq_data[i] >> 8;
-	}
-	
-	i = 0;
-	while(samples)
-	{
-		r = _buffer_write(&rf->buffers, &iq8[i], samples);
+		r = _buffer_write_ptr(&rf->buffers, &iq8);
 		
-		samples -= r;
-		i += r;
+		for(i = 0; i < r && i < samples; i++)
+		{
+			iq8[i] = iq_data[i] >> 8;
+		}
+		
+		_buffer_write(&rf->buffers, i);
+		
+		iq_data += i;
+		samples -= i;
 	}
 	
 	return(HACKTV_OK);
@@ -277,9 +309,6 @@ int rf_hackrf_open(hacktv_t *s, const char *serial, uint64_t frequency_hz, unsig
 	{
 		return(HACKTV_OUT_OF_MEMORY);
 	}
-	
-	/* Allocate memory for output buffers, each one large enough to hold a single frame */
-	_buffer_init(&rf->buffers, BUFFERS, s->vid.width * s->vid.conf.lines * sizeof(int8_t) * 2);
 	
 	/* Prepare the HackRF for output */
 	r = hackrf_init();
@@ -338,6 +367,12 @@ int rf_hackrf_open(hacktv_t *s, const char *serial, uint64_t frequency_hz, unsig
 		return(HACKTV_ERROR);
 	}
 	
+	/* Allocate memory for the output buffers, enough for at least 400ms - minimum 4 */
+	r = s->vid.sample_rate * 2 * 4 / 10 / hackrf_get_transfer_buffer_size(rf->d);
+	if(r < 4) r = 4;
+	_buffer_init(&rf->buffers, r, hackrf_get_transfer_buffer_size(rf->d));
+	
+	/* Begin transmitting */
 	r = hackrf_start_tx(rf->d, _tx_callback, rf);
 	if(r != HACKRF_SUCCESS)
 	{
