@@ -785,6 +785,7 @@ int main(int argc, char *argv[])
 			/* For compatiblity with CJ fork */
 			s.fit_mode = AV_FIT_FIT;
 			s.letterbox = 1;
+			
 			break;
 		
 		case _OPT_PILLARBOX: /* --pillarbox */
@@ -792,6 +793,7 @@ int main(int argc, char *argv[])
 			/* For compatiblity with CJ fork */
 			s.fit_mode = AV_FIT_FILL;
 			s.pillarbox = 1;
+			
 			break;
 		
 		case 'r': /* -r, --repeat */

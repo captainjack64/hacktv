@@ -1243,6 +1243,8 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	
 	s->av = av;
 	
+	s->av = av;
+	
 	/* Use 'pipe:' for stdin */
 	if(strcmp(input_url, "-") == 0)
 	{
