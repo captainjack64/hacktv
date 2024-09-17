@@ -1642,9 +1642,9 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		av_opt_set_int(s->swr_ctx, "in_sample_rate",       s->audio_codec_ctx->sample_rate, 0);
 		av_opt_set_sample_fmt(s->swr_ctx, "in_sample_fmt", s->audio_codec_ctx->sample_fmt, 0);
 
-		// av_opt_set_chlayout(s->swr_ctx, "in_chlayout",     conf->downmix ? AV_CH_LAYOUT_STEREO : &s->audio_codec_ctx->ch_layout, 0);
-		// av_opt_set_int(s->swr_ctx, "in_sample_rate",       s->audio_codec_ctx->sample_rate, 0);
-		// av_opt_set_sample_fmt(s->swr_ctx, "in_sample_fmt", s->audio_codec_ctx->sample_fmt, 0);
+		av_opt_set_chlayout(s->swr_ctx, "in_chlayout",     conf->downmix ? (AVChannelLayout *)AV_CH_LAYOUT_STEREO : &s->audio_codec_ctx->ch_layout, 0);
+		av_opt_set_int(s->swr_ctx, "in_sample_rate",       s->audio_codec_ctx->sample_rate, 0);
+		av_opt_set_sample_fmt(s->swr_ctx, "in_sample_fmt", s->audio_codec_ctx->sample_fmt, 0);
 		
 		av_opt_set_chlayout(s->swr_ctx, "out_chlayout",    &dst_ch_layout, 0);
 #else
