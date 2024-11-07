@@ -58,6 +58,8 @@ enum {
 	VC_CW_DYNAMIC,
 	VC_EMM,
 	VC_FREE,
+	VC_SKYNZ01,
+	VC_SKYNZ02,
 	VC_SKY02,
 	VC_SKY03,
 	VC_SKY04,
@@ -75,6 +77,7 @@ enum {
 	VC_TAC2,
 	VC_XTEA,
 	VC_MC,
+	VC_DMX,
 	VC_PPV
 };
 

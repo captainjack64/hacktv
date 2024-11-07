@@ -105,17 +105,28 @@ uint64_t _rev_cw(uint8_t in[8])
 }
 
 /* XOR "round" function to obfuscate card serial number */
-void _xor_serial(uint8_t *message, int cmd, uint32_t cardserial, int byte)
+void _xor_serial(uint8_t *message, int card_cmd, uint32_t cardserial, int prefix_byte)
 {
 	int i;
 	uint8_t a, b, xor[4];
 	
 	/* XOR round function */
-	/* Videocrypt 1 uses message bytes 1 and 2 */
-	/* Videocrypt 2 uses message bytes 5 and 6 */
-	a = byte == 0x81 ? message[5] ^ message[6] : message[1] ^ message[2];
+	switch(prefix_byte)
+	{
+		/* Videocrypt 2 uses message bytes 5 and 6 */
+		case 0x81:
+			a = message[5] ^ message[6];
+			b = message[6];
+			break;
+		
+		/* Videocrypt 1 uses message bytes 1 and 2 */
+		default:
+			a = message[1] ^ message[2];
+			b = message[2];
+			break;
+	}
+
 	a = _swap_nibbles(a);
-	b = byte == 0x81 ? message[6] : message[2];
 
 	for (i=0; i < 4;i++)
 	{
@@ -124,8 +135,8 @@ void _xor_serial(uint8_t *message, int cmd, uint32_t cardserial, int byte)
 		xor[i] = b;
 	}
 
-	message[3] =  cmd  ^ xor[0];
-	message[7] =  byte ^ xor[0];
+	message[3] =  card_cmd  ^ xor[0];
+	message[7] =  prefix_byte ^ xor[0];
 	message[8] =  ((cardserial >> 24) & 0xFF) ^ xor[1];
 	message[9] =  ((cardserial >> 16) & 0xFF) ^ xor[2];
 	message[10] = ((cardserial >> 8)  & 0xFF) ^ xor[3];
@@ -142,8 +153,8 @@ void _vc_kernel07(uint8_t *out, int *oi, const uint8_t in, _vc_mode_t *m)
 	out[*oi] ^= in;
 	b = key[(out[*oi] >> 4)];
 	c = key[(out[*oi] & 0x0F) + 16];
-	c = m->mode == VC_SKY02 ? c + b : ~(c + b);
-	c = m->mode == VC_SKY02 ? c + in : _rotate_left(c) + in;
+	c = m->mode <= VC_SKY02 ? c + b : ~(c + b);
+	c = m->mode <= VC_SKY02 ? c + in : _rotate_left(c) + in;
 	c = _rotate_left(c);
 	c = _swap_nibbles(c);
 	*oi = (*oi + 1) & 7;
@@ -200,6 +211,25 @@ void vc_seed_sky(_vc_block_t *s, _vc_mode_t *m)
 	
 	/* Process Videocrypt message */
 	s->codeword = _vc_process_p07_msg(s->messages[5], m);
+}
+
+void vc_emm_nz(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
+{
+	int i;
+	
+	int emmdata[7] = { 0xF0, 0x0e, 0x1f, 0x20, 0x00, 0x00, 0x02 };
+	
+	/* Copy EMM data into message block */
+	for(i = 0; i < 7; i++) s->messages[2][i] = emmdata[i];
+
+	/* Additional 08 prefix for Sky New Zealand cards */
+	cardserial |= 0x08 << 24;
+	
+	/* Obfuscate card serial */
+	_xor_serial(s->messages[2], cmd, cardserial, m->emm_byte);
+	
+	/* Process Videocrypt message */
+	_vc_process_p07_msg(s->messages[2], m);
 }
 
 void vc_emm_p07(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
@@ -543,8 +573,11 @@ void vc_seed(_vc_block_t *s, _vc_mode_t *m)
 {
 	switch(m->mode)
 	{
+		case(VC_DMX):
 		case(VC_TAC1):
 		case(VC_TAC2):
+		case(VC_SKYNZ01):
+		case(VC_SKYNZ02):
 		case(VC_SKY02):
 		case(VC_SKY03):
 		case(VC_SKY04):
@@ -574,9 +607,19 @@ void vc_emm(_vc_block_t *s, _vc_mode_t *m, uint32_t cardserial, int b, int i)
 	uint8_t cmd_tac[]   = { 0x08, 0x09, 0x28, 0x29 };
 	uint8_t cmd_sky06[] = { 0x20, 0x21, 0x03, 0x01 };
 	uint8_t cmd_sky07[] = { 0x2C, 0x20, 0x0C, 0x00 };
+	uint8_t cmd_skynz[] = { 0x03, 0x23 };
 
 	switch(m->mode)
 	{
+		case(VC_SKYNZ01):
+		case(VC_SKYNZ02):
+			/*
+			 * 0x03: Disable card
+			 * 0x23: Enable card
+			 */
+			vc_emm_nz(s, m, (b ? cmd_skynz[1] : cmd_skynz[0]) , cardserial);
+			break;
+
 		case(VC_TAC1):
 		case(VC_TAC2):
 			/*

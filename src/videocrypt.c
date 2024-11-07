@@ -58,6 +58,9 @@
  * Channel/display name
  * Channel ID
  * Broadcast month byte 
+ * EMM card prefix byte 
+ * Key to use for dynamic CW generation mode
+ * Key table offset
 */
 
 static _vc_mode_t _vc1_modes[] = {
@@ -68,7 +71,7 @@ static _vc_mode_t _vc1_modes[] = {
 	{ "sky03",       VC_CW_DYNAMIC, VC_SKY03,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV    SKY03 MODE", 0x01, 0x12, 0xA3,   _sky_key, 0x00 },
 	{ "sky04",       VC_CW_DYNAMIC, VC_SKY04,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV    SKY04 MODE", 0x01, 0x14, 0xA4,   _sky_key, 0x20 },
 	{ "sky05",       VC_CW_DYNAMIC, VC_SKY05,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV    SKY05 MODE", 0x0C, 0x1C, 0xA5,   _sky_key, 0x40 },
-	{ "sky06",       VC_CW_DYNAMIC, VC_SKY06,      _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    SKY06 MODE", 0x05, 0x20, 0xA6,   _sky_key, 0x50 },
+	{ "sky06",       VC_CW_DYNAMIC, VC_SKY06,      _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    SKY06 MODE", 0x05, 0x1C, 0xA6,   _sky_key, 0x40 },
 	{ "sky07",       VC_CW_DYNAMIC, VC_SKY07,      _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    SKY07 MODE", 0x0C, 0x3A, 0xA7,   _sky_key, 0x58 },
 	{ "sky09",       VC_CW_DYNAMIC, VC_SKY09,      _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    SKY09 MODE", 0x0C, 0x43, 0xA9, _sky09_key, 0x00 },
 	{ "sky09nano",   VC_CW_DYNAMIC, VC_SKY09_NANO, _vc1_blocks,       NULL, 2, VC_EMM, "   SKY 09    NANO  MODE", 0x0C, 0x43, 0xA9, _sky09_key, 0x00 },
@@ -76,9 +79,12 @@ static _vc_mode_t _vc1_modes[] = {
 	{ "sky10ppv",    VC_CW_STATIC,  VC_SKY10_PPV,  _sky10ppv_blocks,  NULL, 2, 0,      "HACKTV SKY10  PPV MODE ", 0x00, 0x20, 0x00,       0x00, 0x00 },
 	{ "sky11",       VC_CW_STATIC,  VC_SKY11,      _sky11_blocks,     NULL, 2, 0,      "   HACKTV    SKY11 MODE", 0x00, 0x00, 0x00,       0x00, 0x00 },
 	{ "sky12",       VC_CW_STATIC,  VC_SKY12,      _sky12_blocks,     NULL, 2, 0,      "   HACKTV    SKY12 MODE", 0x00, 0x00, 0x00,       0x00, 0x00 },
+	{ "skynz01",     VC_CW_DYNAMIC, VC_SKYNZ01,    _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV  SKYNZ01 MODE", 0x02, 0x0e, 0x21, _skynz_key, 0x00 },
+	{ "skynz02",     VC_CW_DYNAMIC, VC_SKYNZ02,    _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV  SKYNZ02 MODE", 0x02, 0x0e, 0x22, _skynz_key, 0x00 },
 	{ "tac1",        VC_CW_DYNAMIC, VC_TAC1,       _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    TAC1  MODE", 0x00, 0x29, 0x00,   _tac_key, 0x00 },
-	{ "tac2",        VC_CW_DYNAMIC, VC_TAC2,       _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    TAC2  MODE", 0x00, 0x49, 0x00,   _tac_key, 0x00 },
+	{ "tac2",        VC_CW_DYNAMIC, VC_TAC2,       _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    TAC2  MODE", 0x00, 0x49, 0x00,   _tac_key, 0x40 },
 	{ "xtea",        VC_CW_DYNAMIC, VC_XTEA,       _xtea_blocks,      NULL, 2, 0,      "   HACKTV    XTEA  MODE", 0x00, 0x20, 0x00,       0x00, 0x00 },
+	{ "dmx",         VC_CW_DYNAMIC, VC_DMX,         _vc1_blocks,      NULL, 2, 0,      "   HACKTV    DMX   MODE", 0x00, 0x12, 0x00,   _dmx_key, 0x00 },
 	{ NULL }
 };
 
