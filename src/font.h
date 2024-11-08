@@ -49,7 +49,7 @@ typedef struct {
 
 
 extern int font_init(av_t *av, int size, float ratio, void *conf);
-extern void print_subtitle(av_font_t *av, uint32_t *vid, char *fmt);
-extern void print_generic_text(av_font_t *font, uint32_t *vid, char *fmt, float pos_x, float pos_y, int shadow, int box, int colour, float transparency);
-extern int display_bitmap_subtitle(av_font_t *av, uint32_t *vid, int w, int h, uint32_t *bitmap_data);
+extern void print_subtitle(av_font_t *av, uint32_t *vid, int linesize, char *fmt);
+extern void print_generic_text(av_font_t *font, uint32_t *vid, int linesize, char *fmt, float pos_x, float pos_y, int shadow, int box, int colour, float transparency);
+extern int display_bitmap_subtitle(av_font_t *av, uint32_t *vid, int linesize, int w, int h, uint32_t *bitmap_data);
 #endif

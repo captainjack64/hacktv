@@ -45,7 +45,7 @@ int font_init(av_t *av, int size, float ratio, void *ctx)
 	font->video_width = av->width;
 	font->video_height = av->height;
 	font->video_ratio = conf->pillarbox || conf->letterbox ? 4.0 / 3.0 : ratio;
-	
+
 	/* Hack to deal with different sampling rates */
 	x_res = 96.0 * ((float) font->video_width / font->video_height / font->video_ratio);
 	
@@ -116,12 +116,13 @@ static int draw_box(av_font_t *font, int x_start, int y_start, int x_end, int y_
 	return(0);
 }
 
-int display_bitmap_subtitle(av_font_t *font, uint32_t *vid, int w, int h, uint32_t *bitmap)
+int display_bitmap_subtitle(av_font_t *font, uint32_t *vid, int linesize, int w, int h, uint32_t *bitmap)
 {
-	font->video = vid;
-		
 	uint32_t c, *dp;
 	int i, j, x_start, y_start, x, y;
+
+	font->video = vid;
+	font->video_width = linesize;
 	
 	x_start = (font->video_width / 2) - (w / 2);
 	y_start = (font->video_height) * 0.8;
@@ -334,7 +335,7 @@ static void _print_line(av_font_t *font, int line_width, int line_height, int po
 		_printf(font, pos_x, pos_y, 0xFFFFFF, fmt);
 }
 
-void print_subtitle(av_font_t *font, uint32_t *vid, char *fmt)
+void print_subtitle(av_font_t *font, uint32_t *vid, int linesize, char *fmt)
 {
 	if(strcmp(fmt, "") != 0) 
 	{
@@ -342,7 +343,8 @@ void print_subtitle(av_font_t *font, uint32_t *vid, char *fmt)
 		int spacing = 32;
 		
 		font->video = vid;
-		
+		font->video_width = linesize;
+
 		int lines = 1;
 		char text[128];
 		
@@ -397,7 +399,7 @@ void print_subtitle(av_font_t *font, uint32_t *vid, char *fmt)
 	}
 }
 
-void print_generic_text(av_font_t *font, uint32_t *vid, char *fmt, float pos_x, float pos_y, int shadow, int box, int colour, float transparency)
+void print_generic_text(av_font_t *font, uint32_t *vid, int linesize, char *fmt, float pos_x, float pos_y, int shadow, int box, int colour, float transparency)
 {
 	if(strcmp(fmt, "") != 0)
 	{
@@ -405,6 +407,7 @@ void print_generic_text(av_font_t *font, uint32_t *vid, char *fmt, float pos_x, 
 		int line_height;
 		
 		font->video = vid;
+		font->video_width = linesize;
 		
 		_get_line_size(font, fmt, &line_width, &line_height);
 		

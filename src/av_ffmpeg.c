@@ -768,7 +768,7 @@ static void *_video_scaler_thread(void *arg)
 		if(s->font[TEXT_TIMESTAMP])
 		{
 			asprintf(&s->font[TEXT_TIMESTAMP]->text, "%02d:%02d:%02d", hr, min, sec);
-			print_generic_text(s->font[TEXT_TIMESTAMP], (uint32_t *) oframe->data[0], s->font[TEXT_TIMESTAMP]->text, 10, 90, TEXT_SHADOW, NO_TEXT_BOX, 0, 0);
+			print_generic_text(s->font[TEXT_TIMESTAMP], (uint32_t *) oframe->data[0], oframe->linesize[0] / sizeof(uint32_t), s->font[TEXT_TIMESTAMP]->text, 10, 90, TEXT_SHADOW, NO_TEXT_BOX, 0, 0);
 
 			/* Free memory */
 			free(s->font[TEXT_TIMESTAMP]->text);
@@ -797,7 +797,7 @@ static void *_video_scaler_thread(void *arg)
 
 				if(s->vid_conf->subtitles)
 				{
-					print_subtitle(s->font[TEXT_SUBTITLE], (uint32_t *) oframe->data[0], s->font[TEXT_SUBTITLE]->text);
+					print_subtitle(s->font[TEXT_SUBTITLE], (uint32_t *) oframe->data[0], oframe->linesize[0] / sizeof(uint32_t), s->font[TEXT_SUBTITLE]->text);
 				}
 
 				/* Free memory */
@@ -807,7 +807,7 @@ static void *_video_scaler_thread(void *arg)
 			{
 				int w, h, sindex;
 				sindex = get_bitmap_subtitle(s->av_sub, frame->best_effort_timestamp, &w, &h);				
-				if(w > 0) display_bitmap_subtitle(s->font[TEXT_SUBTITLE], (uint32_t *) oframe->data[0], w, h, s->av_sub[sindex].bitmap);
+				if(w > 0) display_bitmap_subtitle(s->font[TEXT_SUBTITLE], (uint32_t *) oframe->data[0], oframe->linesize[0] / sizeof(uint32_t), w, h, s->av_sub[sindex].bitmap);
 			}
 		}
 
@@ -1671,7 +1671,6 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 			};
 			
 			s->font[TEXT_SUBTITLE] = av->av_font;
-			s->font[TEXT_SUBTITLE]->video_width += 2;
 
 			fprintf(stderr, "Using subtitle stream %d.\n", s->subtitle_stream->index);
 			
@@ -1731,7 +1730,6 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 				}
 				
 				s->font[TEXT_SUBTITLE] = av->av_font;
-				s->font[TEXT_SUBTITLE]->video_width += 2;
 			}
 		}
 	}
@@ -1773,7 +1771,6 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		};
 		
 		s->font[TEXT_TIMESTAMP] = av->av_font;
-		s->font[TEXT_TIMESTAMP]->video_width += 2;
 	}
 	
 	/* Calculate ratio */

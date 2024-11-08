@@ -51,6 +51,7 @@ static int _test_read_video(void *ctx, av_frame_t *frame)
 	{
 		print_generic_text(	s->font[TEXT_TIMESTAMP],
 							s->video,
+							s->width,
 							s->font[TEXT_TIMESTAMP]->text,
 							s->font[TEXT_TIMESTAMP]->x_loc, s->font[TEXT_TIMESTAMP]->y_loc, NO_TEXT_SHADOW, TEXT_BOX, 0, 1);
 	}
@@ -290,12 +291,12 @@ int av_test_open(av_t *av, char *test_screen, void *ctx)
 		}
 		else
 		{
-			print_generic_text(	t->font[TEXT_GENERIC], t->video, "HACKTV", t->font[TEXT_GENERIC]->x_loc, t->font[TEXT_GENERIC]->y_loc, NO_TEXT_SHADOW, TEXT_BOX, 0, 1);
+			print_generic_text(	t->font[TEXT_GENERIC], t->video, t->width, "HACKTV", t->font[TEXT_GENERIC]->x_loc, t->font[TEXT_GENERIC]->y_loc, NO_TEXT_SHADOW, TEXT_BOX, 0, 1);
 		}
 	}
 	else
 	{
-		print_generic_text(	t->font[TEXT_GENERIC], t->video, "HACKTV", t->font[TEXT_GENERIC]->x_loc, t->font[TEXT_GENERIC]->y_loc, NO_TEXT_SHADOW, TEXT_BOX, 0, 1);
+		print_generic_text(	t->font[TEXT_GENERIC], t->video, t->width, "HACKTV", t->font[TEXT_GENERIC]->x_loc, t->font[TEXT_GENERIC]->y_loc, NO_TEXT_SHADOW, TEXT_BOX, 0, 1);
 	}
 	
 	/* Print logo, if enabled */
