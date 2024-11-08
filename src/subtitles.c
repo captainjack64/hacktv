@@ -106,7 +106,7 @@ static char *_get_subtitle_string(char *fmt)
 	c = 0;
 	s = 0;
 	
-	l = strlen(fmt) - 2;
+	l = strlen(fmt) - 3;
 	static char txt[256];
 	
 	for(int a = 0; a < l; a++) txt[a] = '\0';

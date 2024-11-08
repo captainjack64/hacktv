@@ -527,6 +527,8 @@ static void *_input_thread(void *arg)
 
 					max_bitmap_width = 0;
 					max_bitmap_height = 0;
+					bitmap_ratio = 0;
+					bitmap_scale = 0;
 					
 					for(i = 0; i < sub.num_rects; i++)
 					{
@@ -1224,10 +1226,10 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	AVChannelLayout dst_ch_layout = AV_CHANNEL_LAYOUT_STEREO;
 #endif
 	int64_t start_time = 0;
-	int r, i, ws;
+	int r, i, ws = 0;
 
 	/* Default ratio */
-	float source_ratio;
+	float source_ratio = 0;
 
 	/* Filter declarations */
 	char *_filter_args;

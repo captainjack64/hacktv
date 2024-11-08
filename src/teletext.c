@@ -1179,6 +1179,7 @@ int tt_init(tt_t *s, vid_t *vid, char *path)
 	struct stat fs;
 	
 	memset(s, 0, sizeof(tt_t));
+	s->text = malloc(256 * sizeof(char));
 	
 	/* Calculate the high level for teletext data, 66% of the white level */
 	level = round((vid->white_level - vid->black_level) * 0.66);
@@ -1223,7 +1224,7 @@ int tt_init(tt_t *s, vid_t *vid, char *path)
 	
 	if(strcmp(path,"subtitles") == 0)
 	{
-		asprintf(&s->text,"%s", " ");
+		sprintf(s->text,"%s", " ");
 		update_teletext_subtitle(s->text, &s->service);
 	}
 	else

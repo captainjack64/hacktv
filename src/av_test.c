@@ -44,7 +44,8 @@ static int _test_read_video(void *ctx, av_frame_t *frame)
 	/* Get current time */
 	time_t secs = time(0);
 	struct tm *time = localtime(&secs);
-	asprintf(&s->font[TEXT_TIMESTAMP]->text, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
+	s->font[TEXT_TIMESTAMP]->text = malloc(16 * sizeof(char));
+	sprintf(s->font[TEXT_TIMESTAMP]->text, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
 
 	/* Print clock */
 	if(s->font[TEXT_TIMESTAMP])
