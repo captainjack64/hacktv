@@ -1819,7 +1819,7 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 {
 	uint8_t data[MAC_LINE_BYTES];
 	vid_line_t *l = lines[1];
-	int x, y;
+	int x, y, vy;
 	
 	l->width    = s->width;
 	l->frame    = s->bframe;
@@ -1982,6 +1982,8 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 	
 	if(y < 0 || y >= s->conf.active_lines) y = -1;
 	
+	vy = -1;
+	
 	/* Render the luminance */
 	if(y >= 0)
 	{
@@ -1990,14 +1992,14 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		int stride = 0;
 		
 		/* Centre the video vertically */
-		y -= s->vframe_y;
+		vy = y - s->vframe_y;
 		
 		/* Check for out of bounds */
-		if(y < 0 || y >= s->vframe.height) y = -1;
+		if(vy < 0 || vy >= s->vframe.height) vy = -1;
 		
-		if(y >= 0 && s->vframe.framebuffer != NULL)
+		if(vy >= 0 && s->vframe.framebuffer != NULL)
 		{
-			px = &s->vframe.framebuffer[y * s->vframe.line_stride];
+			px = &s->vframe.framebuffer[vy * s->vframe.line_stride];
 			stride = s->vframe.pixel_stride;
 		}
 		
@@ -2020,7 +2022,7 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 	/* Render the chrominance (one line ahead of the luminance) */
 	l = lines[0];
 	
-	if(y >= 0)
+	if(vy >= 0)
 	{
 		uint32_t rgb = 0x000000;
 		uint32_t *px = &rgb;
@@ -2028,7 +2030,7 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		
 		if(s->vframe.framebuffer != NULL)
 		{
-			px = &s->vframe.framebuffer[y * s->vframe.line_stride];
+			px = &s->vframe.framebuffer[vy * s->vframe.line_stride];
 			stride = s->vframe.pixel_stride * 2;
 		}
 		

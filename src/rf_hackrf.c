@@ -23,6 +23,9 @@
 #include <unistd.h>
 #include "rf.h"
 
+/* Value from host/libhackrf/src/hackrf.c */
+#define TRANSFER_BUFFER_SIZE 262144
+
 typedef enum {
 	BUFFER_EMPTY,
 	BUFFER_PREFILL,
@@ -297,12 +300,18 @@ int rf_hackrf_open(rf_t *s, const char *serial, uint32_t sample_rate, uint64_t f
 {
 	hackrf_t *rf;
 	int r;
+	uint8_t rev;
 	
 	rf = calloc(1, sizeof(hackrf_t));
 	if(!rf)
 	{
 		return(RF_OUT_OF_MEMORY);
 	}
+	
+	/* Print the library version number */
+	fprintf(stderr, "libhackrf version: %s (%s)\n",
+		hackrf_library_release(),
+		hackrf_library_version());
 	
 	/* Prepare the HackRF for output */
 	r = hackrf_init();
@@ -319,6 +328,13 @@ int rf_hackrf_open(rf_t *s, const char *serial, uint32_t sample_rate, uint64_t f
 		fprintf(stderr, "hackrf_open() failed: %s (%d)\n", hackrf_error_name(r), r);
 		free(rf);
 		return(RF_ERROR);
+	}
+	
+	/* Print the hardware revision */
+	r = hackrf_board_rev_read(rf->d, &rev);
+	if(r == HACKRF_SUCCESS)
+	{
+		fprintf(stderr, "hackrf: Hardware Revision: %s\n", hackrf_board_rev_name(rev));
 	}
 	
 	r = hackrf_set_sample_rate_manual(rf->d, sample_rate, 1);
@@ -362,9 +378,9 @@ int rf_hackrf_open(rf_t *s, const char *serial, uint32_t sample_rate, uint64_t f
 	}
 	
 	/* Allocate memory for the output buffers, enough for at least 400ms - minimum 4 */
-	r = sample_rate * 2 * 4 / 10 / hackrf_get_transfer_buffer_size(rf->d);
+	r = sample_rate * 2 * 4 / 10 / TRANSFER_BUFFER_SIZE;
 	if(r < 4) r = 4;
-	_buffer_init(&rf->buffers, r, hackrf_get_transfer_buffer_size(rf->d));
+	_buffer_init(&rf->buffers, r, TRANSFER_BUFFER_SIZE);
 	
 	/* Begin transmitting */
 	r = hackrf_start_tx(rf->d, _tx_callback, rf);
