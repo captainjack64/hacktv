@@ -66,6 +66,11 @@ static int _parse_ratio(rational_t *r, const char *s)
 	return(HACKTV_OK);
 }
 
+static void print_version(void)
+{
+	printf("hacktv %s\n", VERSION);
+}
+
 static void print_usage(void)
 {
 	printf(
@@ -138,6 +143,7 @@ static void print_usage(void)
 		"      --mac-audio-l1-protection  Use first level protection (D/D2-MAC).\n"
 		"                                 (Default)\n"
 		"      --mac-audio-l2-protection  Use second level protection (D/D2-MAC).\n"
+		"      --sis <mode>               Enable Sound-in-Syncs (dcsis only)\n"
 		"      --swap-iq                  Swap the I and Q channels to invert the spectrum.\n"
 		"                                 Applied before offset and passthru. (Complex modes only).\n"
 		"      --offset <value>           Add a frequency offset in Hz (Complex modes only).\n"
@@ -146,6 +152,7 @@ static void print_usage(void)
 		"                                 white levels.\n"
 		"      --secam-field-id           Enable SECAM field identification.\n"
 		"      --json                     Output a JSON array when used with --list-modes.\n"
+		"      --version                  Print the version number and exit.\n"
 		"\n"
 		"Input options\n"
 		"\n"
@@ -240,11 +247,15 @@ static void print_usage(void)
 		"WSS provides a method to signal to a TV the intended aspect ratio of\n"
 		"the video. The following modes are supported:\n"
 		"\n"
-		"  4:3            = Video is 4:3.\n"
-		"  16:9           = Video is 16:9 (Anamorphic).\n"
-		"  14:9-letterbox = Crop a 4:3 video to 14:9.\n"
-		"  16:9-letterbox = Crop a 4:3 video to 16:9.\n"
-		"  auto           = Automatically switch between 4:3 and 16:9.\n"
+		"  4:3             = 4:3 video\n"
+		"  14:9-letterbox  = 14:9 video centred\n"
+		"  14:9-top        = 14:9 video at top\n"
+		"  16:9-letterbox  = 16:9 video centred\n"
+		"  16:9-top        = 16:9 video at top\n"
+		"  16:9+-letterbox = >16:9 video centred\n"
+		"  14:9-window     = 4:3 video with a 14:9 protected window\n"
+		"  16:9            = 16:9 video (Anamorphic)\n"
+		"  auto            = Automatically switch between 4:3 and 16:9 modes.\n"
 		"\n"
 		"Currently only supported in 625 line modes. A 525 line variant exists and\n"
 		"may be supported in future.\n"
@@ -452,8 +463,6 @@ enum {
 	_OPT_SMARTCRYPT,
 	_OPT_EC_MAT_RATING,
 	_OPT_EC_PPV,
-	_OPT_LETTERBOX,
-	_OPT_PILLARBOX,
 	_OPT_SHOWSERIAL,
 	_OPT_FINDKEY,
 	_OPT_SYSTER_KT1,
@@ -469,6 +478,7 @@ enum {
 	_OPT_MAC_AUDIO_LINEAR,
 	_OPT_MAC_AUDIO_L1_PROTECTION,
 	_OPT_MAC_AUDIO_L2_PROTECTION,
+	_OPT_SIS,
 	_OPT_SWAP_IQ,
 	_OPT_OFFSET,
 	_OPT_PASSTHRU,
@@ -485,7 +495,10 @@ enum {
 	_OPT_SHUFFLE,
 	_OPT_FIT,
 	_OPT_MIN_ASPECT,
-	_OPT_MAX_ASPECT
+	_OPT_MAX_ASPECT,
+	_OPT_LETTERBOX,
+	_OPT_PILLARBOX,
+	_OPT_VERSION,
 };
 
 int main(int argc, char *argv[])
@@ -554,6 +567,7 @@ int main(int argc, char *argv[])
 		{ "mac-audio-linear", no_argument,     0, _OPT_MAC_AUDIO_LINEAR },
 		{ "mac-audio-l1-protection", no_argument, 0, _OPT_MAC_AUDIO_L1_PROTECTION },
 		{ "mac-audio-l2-protection", no_argument, 0, _OPT_MAC_AUDIO_L2_PROTECTION },
+		{ "sis",            required_argument, 0, _OPT_SIS },
 		{ "swap-iq",        no_argument,       0, _OPT_SWAP_IQ },
 		{ "offset",         required_argument, 0, _OPT_OFFSET },
 		{ "passthru",       required_argument, 0, _OPT_PASSTHRU },
@@ -578,6 +592,7 @@ int main(int argc, char *argv[])
 		{ "showecm",        no_argument,       0, _OPT_SHOW_ECM },
 		{ "downmix",        no_argument,       0, _OPT_DOWNMIX },
 		{ "volume",         required_argument, 0, _OPT_VOLUME },
+		{ "version",        no_argument,       0, _OPT_VERSION },
 		{ 0,                0,                 0,  0  }
 	};
 	static hacktv_t s;
@@ -1013,6 +1028,10 @@ int main(int argc, char *argv[])
 			s.mac_audio_protection = MAC_SECOND_LEVEL_PROTECTION;
 			break;
 		
+		case _OPT_SIS: /* --sis <mode> */
+			s.sis = optarg;
+			break;
+		
 		case _OPT_SWAP_IQ: /* --swap-iq */
 			s.swap_iq = 1;
 			break;
@@ -1106,6 +1125,10 @@ int main(int argc, char *argv[])
 			}
 			
 			break;
+		
+		case _OPT_VERSION: /* --version */
+			print_version();
+			return(0);
 		
 		case '?':
 			print_usage();
@@ -1247,9 +1270,9 @@ int main(int argc, char *argv[])
 	
 	if(s.wss)
 	{
-		if(vid_conf.lines != 625)
+		if(vid_conf.type != VID_RASTER_625)
 		{
-			fprintf(stderr, "WSS is only available with 625 line modes.\n");
+			fprintf(stderr, "WSS is only supported for 625 line raster modes.\n");
 			return(-1);
 		}
 		
@@ -1515,6 +1538,17 @@ int main(int argc, char *argv[])
 	if(s.filter)
 	{
 		vid_conf.vfilter = 1;
+	}
+	
+	if(s.sis)
+	{
+		if(vid_conf.lines != 625)
+		{
+			fprintf(stderr, "SiS is only available with 625 line modes.\n");
+			return(-1);
+		}
+		
+		vid_conf.sis = s.sis;
 	}
 	
 	vid_conf.swap_iq = s.swap_iq;

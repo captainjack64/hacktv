@@ -815,8 +815,7 @@ static void *_video_scaler_thread(void *arg)
 
 		/* Copy some data to the scaled image */
 #if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(58, 29, 100)
-		oframe->interlaced_frame = frame->flags & AV_FRAME_FLAG_INTERLACED ? 1 : 0;
-		oframe->top_field_first = frame->flags & AV_FRAME_FLAG_TOP_FIELD_FIRST ? 1 : 0;
+		oframe->flags = frame->flags;
 #else
 		oframe->interlaced_frame = frame->interlaced_frame;
 		oframe->top_field_first = frame->top_field_first;
@@ -936,10 +935,17 @@ static int _ffmpeg_read_video(void *ctx, av_frame_t *frame)
 	}
 	
 	/* Return interlace status */
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(58, 29, 100)
+	if(avframe->flags & AV_FRAME_FLAG_INTERLACED)
+	{
+		frame->interlaced = avframe->flags & AV_FRAME_FLAG_TOP_FIELD_FIRST ? 1 : 2;
+	}
+#else
 	if(avframe->interlaced_frame)
 	{
 		frame->interlaced = avframe->top_field_first ? 1 : 2;
 	}
+#endif
 	
 	/* Set the pointer to the framebuffer */
 	frame->width = avframe->width;
@@ -1282,35 +1288,50 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	fprintf(stderr, "Opening '%s'...\n", input_url);
 	av_dump_format(s->format_ctx, 0, input_url, 0);
 	
-	/* Find the first video and audio streams */
-	/* TODO: Allow the user to select streams by number or name */
-	s->video_stream = NULL;
-	s->audio_stream = NULL;
-	s->subtitle_stream = NULL;
+// 	/* Find the first video and audio streams */
+// 	/* TODO: Allow the user to select streams by number or name */
+// 	s->video_stream = NULL;
+// 	s->audio_stream = NULL;
+// 	s->subtitle_stream = NULL;
 	
-	for(i = 0; i < s->format_ctx->nb_streams; i++)
-	{
-		if(s->video_stream == NULL && s->format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
-		{
-			s->video_stream = s->format_ctx->streams[i];
-		}
+// 	for(i = 0; i < s->format_ctx->nb_streams; i++)
+// 	{
+// 		if(s->video_stream == NULL && s->format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+// 		{
+// 			s->video_stream = s->format_ctx->streams[i];
+// 		}
 		
-		if(av->sample_rate.num && s->audio_stream == NULL && s->format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
-		{
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(59, 24, 100)
-			if(s->format_ctx->streams[i]->codecpar->ch_layout.nb_channels <= 0) continue;
-#else
-			if(s->format_ctx->streams[i]->codecpar->channels <= 0) continue;
-#endif
-			s->audio_stream = s->format_ctx->streams[i];
-		}
+// 		if(av->sample_rate.num && s->audio_stream == NULL && s->format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+// 		{
+// #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(59, 24, 100)
+// 			if(s->format_ctx->streams[i]->codecpar->ch_layout.nb_channels <= 0) continue;
+// #else
+// 			if(s->format_ctx->streams[i]->codecpar->channels <= 0) continue;
+// #endif
+// 			s->audio_stream = s->format_ctx->streams[i];
+// 		}
 		
-		if(s->subtitle_stream == NULL && s->format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE)
-		{
-			s->subtitle_stream = s->format_ctx->streams[conf->txsubtitles >= i && conf->txsubtitles < s->format_ctx->nb_streams? conf->txsubtitles : i];
-			s->subtitle_stream = s->format_ctx->streams[conf->subtitles >= i && conf->subtitles < s->format_ctx->nb_streams? conf->subtitles : i];
-		}
-	}
+// 		if(s->subtitle_stream == NULL && s->format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE)
+// 		{
+// 			s->subtitle_stream = s->format_ctx->streams[conf->txsubtitles >= i && conf->txsubtitles < s->format_ctx->nb_streams? conf->txsubtitles : i];
+// 			s->subtitle_stream = s->format_ctx->streams[conf->subtitles >= i && conf->subtitles < s->format_ctx->nb_streams? conf->subtitles : i];
+// 		}
+// 	}
+
+	/* Select the video stream */
+	/* TODO: Allow the user to select streams by number or name, */
+	/*       selection would need to be made per-file? */
+	i = av_find_best_stream(s->format_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+	s->video_stream = (i >= 0 ? s->format_ctx->streams[i] : NULL);
+	
+	/* Select the audio stream if required */
+	i = av_find_best_stream(s->format_ctx, AVMEDIA_TYPE_AUDIO, -1, i, NULL, 0);
+	s->audio_stream = (i >= 0 && av->sample_rate.num > 0 ? s->format_ctx->streams[i] : NULL);
+
+	/* Select the subtitle stream if required */
+	i = av_find_best_stream(s->format_ctx, AVMEDIA_TYPE_SUBTITLE, -1, i, NULL, 0);
+	s->subtitle_stream = (i >= 0 && av->sample_rate.num > 0 ? s->format_ctx->streams[conf->txsubtitles >= i && conf->txsubtitles < s->format_ctx->nb_streams? conf->txsubtitles : i] : NULL);
+	s->subtitle_stream = (i >= 0 && av->sample_rate.num > 0 ? s->format_ctx->streams[conf->subtitles >= i && conf->subtitles < s->format_ctx->nb_streams ? conf->subtitles : i] : NULL);
 	
 	/* At minimum we need either a video or audio stream */
 	if(s->video_stream == NULL && s->audio_stream == NULL)

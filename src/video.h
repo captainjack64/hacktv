@@ -48,6 +48,7 @@ typedef struct vid_t vid_t;
 #include "graphics.h"
 #include "vitc.h"
 #include "vbidata.h"
+#include "sis.h"
 
 #include "av_test.h"
 #include "av_ffmpeg.h"
@@ -234,6 +235,7 @@ typedef struct {
 	int txsubtitles;
 	int vits;
 	int vitc;
+	char *sis;
 	char *eurocrypt;
 	int ec_mat_rating;
 	char *ec_ppv;
@@ -407,6 +409,9 @@ struct vid_t {
 	
 	vbidata_lut_t *fsc_syncs;
 	
+	/* PAL/NTSC chrominance baseband buffer */
+	int16_t *chrominance_buffer;
+	
 	/* Video state */
 	av_frame_t vframe;
 	int vframe_x;
@@ -468,6 +473,9 @@ struct vid_t {
 	nicam_mod_t nicam;
 	int16_t nicam_buf[NICAM_AUDIO_LEN * 2];
 	size_t nicam_buf_len;
+	
+	/* SiS state */
+	sis_t sis;
 	
 	/* DANCE audio state */
 	dance_mod_t dance;

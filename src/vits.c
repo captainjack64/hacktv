@@ -238,18 +238,17 @@ static int _init_525(vits_t *s, unsigned int sample_rate, int width, int level)
 
 int vits_init(vits_t *s, unsigned int sample_rate, int width, int lines, int pal, int level)
 {
-	memset(s, 0, sizeof(vits_t));
+	int r;
 	
-	if(lines == 625) return(_init_625(s, sample_rate, width, level));
-	else if(lines == 525) return(_init_525(s, sample_rate, width, level));
+	memset(s, 0, sizeof(vits_t));
 	
 	if(pal)
 	{
-		/* The insertion signals is locked at 60 ± 5° from the positive (B-Y) axis for PAL */
-		double p = 135.0 * (M_PI / 180.0);
+		/* The insertion signal is locked at 60 ± 5° from the positive (B-Y) axis for PAL */
+		double p = 60.0 * (M_PI / 180.0);
 		s->cs_phase = (cint16_t) {
-			round(sin(p) * INT16_MAX),
 			round(cos(p) * INT16_MAX),
+			round(sin(p) * INT16_MAX),
 		};
 	}
 	else
@@ -258,7 +257,11 @@ int vits_init(vits_t *s, unsigned int sample_rate, int width, int lines, int pal
 		s->cs_phase = (cint16_t) { 0, -INT16_MAX };
 	}
 	
-	return(-1);
+	if(lines == 625) r = _init_625(s, sample_rate, width, level);
+	else if(lines == 525) r = _init_525(s, sample_rate, width, level);
+	else r = -1;
+	
+	return(r);
 }
 
 void vits_free(vits_t *s)
@@ -299,7 +302,7 @@ int vits_render(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		if(l->lut)
 		{
 			l->output[x * 2] += (((v->cs_phase.i * l->lut[x].q +
-				v->cs_phase.q * l->lut[x].i) >> 15) * v->line[i][x * 2 + 1]) >> 15;
+				               v->cs_phase.q * l->lut[x].i) >> 15) * v->line[i][x * 2 + 1]) >> 15;
 		}
 	}
 	
