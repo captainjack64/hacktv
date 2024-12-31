@@ -52,7 +52,11 @@ fi
 if [[ ! -f $PREFIX/lib/libosmo-fl2k.a ]]; then
 	
 	if [[ ! -d osmo-fl2k ]]; then
-		git clone --depth 1 https://gitea.osmocom.org/sdr/osmo-fl2k
+		git clone --depth 1 https://gitea.osmocom.org/sdr/osmo-fl2k.git
+		# Patch for compilation error on more modern versions of GCC
+		cd osmo-fl2k/src/getopt/
+		wget -O - https://lists.osmocom.org/hyperkitty/list/osmocom-sdr@lists.osmocom.org/message/KGOKNLMLIEECP4I5QQJE6JICFP3V2GAP/attachment/2/osmo-fl2k-getopts-args.patch | patch
+		cd ../../..
 	fi
 	
 	rm -rf osmo-fl2k/build
@@ -113,6 +117,20 @@ if [[ ! -f $PREFIX/lib/libfreetype.a ]]; then
     	cd ..
 fi
 
+# zlib, required for logo support
+if [[ ! -f $PREFIX/lib/libz.a ]]; then
+
+	if [[ ! -d zlib ]]; then
+		git clone --depth 1 https://github.com/madler/zlib.git
+	fi
+
+	cd zlib
+	CC=$HOST-gcc AR=$HOST-ar RANLIB=$HOST-ranlib \
+	./configure --prefix=$PREFIX --static
+	make -j4 install
+	cd ..
+fi
+
 # libpng, also required for logo support
 if [[ ! -f $PREFIX/lib/libpng16.a ]]; then
 
@@ -144,17 +162,13 @@ fi
 # zvbi, required for handling teletext subtitles in transport streams
 if [[ ! -f $PREFIX/lib/libzvbi.a ]]; then
 
-	if [[ ! -f zvbi-0.2.35.tar.bz2 ]]; then
-		wget https://download.sourceforge.net/project/zapping/zvbi/0.2.35/zvbi-0.2.35.tar.bz2
-		tar xjvf zvbi-0.2.35.tar.bz2
-		# Can't be cross compiled in its default state, needs to be patched first
-		# This repo contains the patch files that we need
-		git clone --depth 1 https://github.com/rdp/ffmpeg-windows-build-helpers.git
-		cd zvbi-0.2.35
-		patch -p0 < ../ffmpeg-windows-build-helpers/patches/zvbi-win32.patch
-		patch < ../ffmpeg-windows-build-helpers/patches/zvbi-no-contrib.diff
+	if [[ ! -f v0.2.43.zip ]]; then
+		wget https://github.com/zapping-vbi/zvbi/archive/refs/tags/v0.2.43.zip
+		unzip v0.2.43.zip
+		cd zvbi-0.2.43
 	fi
 
+	./autogen.sh
 	CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib" \
 	./configure \
 	--prefix=$PREFIX --host=$HOST --enable-static --disable-shared --disable-dvb \
