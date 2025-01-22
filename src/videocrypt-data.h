@@ -124,6 +124,7 @@ static _vc_block_t _vc1_blocks[] = {
 	},
 };
 
+
 /* Blocks for VC1 conditional-access sample, */
 /* requires an active Sky 10 (0A) series card to decode */
 static _vc_block_t _sky10_blocks[] = {

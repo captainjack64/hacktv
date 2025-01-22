@@ -1589,7 +1589,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		sprintf(str_buf,"%s", av_get_sample_fmt_name(s->audio_codec_ctx->sample_fmt));
 		asprintf(&_filter_def,
 				"[in]%s[downmix],[downmix]volume=%f:precision=%s[out]",
-				conf->downmix ? "pan=stereo|FL < FC + 0.30*FL + 0.30*BL|FR < FC + 0.30*FR + 0.30*BR" : "anull",
+				conf->downmix ? "pan=stereo|FL < FC + 0.30*FL + 0.30*BL + 0.30*SL + 0.75*LFE|FR < FC + 0.30*FR + 0.30*BR + 0.30*SR + 0.75*LFE" : "anull",
 				conf->volume,
 				str_buf[0] == 'f' ? "float" : str_buf[0] == 'd' ? "double" : "fixed"
 		);
