@@ -153,8 +153,8 @@ void _vc_kernel07(uint8_t *out, int *oi, const uint8_t in, _vc_mode_t *m)
 	out[*oi] ^= in;
 	b = key[(out[*oi] >> 4)];
 	c = key[(out[*oi] & 0x0F) + 16];
-	c = m->mode <= VC_SKY02 ? c + b : ~(c + b);
-	c = m->mode <= VC_SKY02 ? c + in : _rotate_left(c) + in;
+	c = m->kernel_type == VC_KERNEL_1 ? c + b : ~(c + b);
+	c = m->kernel_type == VC_KERNEL_1 ? c + in : _rotate_left(c) + in;
 	c = _rotate_left(c);
 	c = _swap_nibbles(c);
 	*oi = (*oi + 1) & 7;
@@ -174,7 +174,7 @@ uint64_t _vc_process_p07_msg(uint8_t *message, _vc_mode_t *m)
 	for (i = 0; i < 27; i++) _vc_kernel07(cw, &oi, message[i], m);
 	
 	/* Calculate signature */
-	if(m->mode < VC_SKY07)
+	if(m->sig_type == VC_SIG_1)
 	{
 		for (i = 27, b = 0; i < 31; i++)
 		{
@@ -585,6 +585,7 @@ void vc_seed(_vc_block_t *s, _vc_mode_t *m)
 		case(VC_SKY06):
 		case(VC_SKY07):
 		case(VC_JSTV):
+		case(VC_SCAST):
 			vc_seed_sky(s, m);
 			break;
 			

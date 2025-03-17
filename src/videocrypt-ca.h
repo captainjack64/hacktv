@@ -51,6 +51,8 @@ typedef struct {
 	const int      emm_byte;   /* Card issue byte used in EMMs */
 	const _vc_key_t    *key;   /* Key used by the card */
 	const int    key_offset;   /* Key offset for P03-P07 era of VC cards */
+	const int   kernel_type;   /* Kernel type used for this mode */
+	const int      sig_type;   /* Signature calculation method used for this mode */
 } _vc_mode_t;
 
 enum {
@@ -60,6 +62,7 @@ enum {
 	VC_FREE,
 	VC_SKYNZ01,
 	VC_SKYNZ02,
+	VC_SCAST,
 	VC_SKY02,
 	VC_SKY03,
 	VC_SKY04,
@@ -78,7 +81,11 @@ enum {
 	VC_XTEA,
 	VC_MC,
 	VC_DMX,
-	VC_PPV
+	VC_PPV,
+	VC_KERNEL_1,
+	VC_KERNEL_2,
+	VC_SIG_1,
+	VC_SIG_2
 };
 
 /* Videocrypt 1 */
