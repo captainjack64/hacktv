@@ -18,6 +18,6 @@
 #ifndef _SYSTER_CA_H
 #define _SYSTER_CA_H
 
-extern uint64_t _get_syster_cw(unsigned char *ecm, unsigned char k64[8], int m);
+extern uint64_t encrypt_syster_cw(unsigned char *ecm, unsigned char k64[8], int m);
 
 #endif

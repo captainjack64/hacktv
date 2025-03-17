@@ -453,7 +453,7 @@ void _rand_seed(ng_t *s, unsigned char data[8], unsigned char key[8], int ecm_ty
 		}
 		
 		/* Encrypt plain control word to send to card */
-		s->blocks[j].cw = _get_syster_cw(s->blocks[j].ecm, key, NG_ENCRYPT);
+		s->blocks[j].cw = encrypt_syster_cw(s->blocks[j].ecm, key, NG_ENCRYPT);
 	}
 }
 

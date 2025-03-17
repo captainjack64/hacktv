@@ -85,7 +85,7 @@ int ip[] = { 4, 0, 5, 1, 6, 2, 7, 3 };
 int fp[] = { 7, 3, 6, 2, 5, 1, 4, 0 };
 
 /* Permutation */
-void _permute(unsigned char *in, unsigned char *buffer1, int *p)
+static void _permute(unsigned char *in, unsigned char *buffer1, int *p)
 {
 	int i, j;
 	unsigned char T[8];
@@ -113,7 +113,7 @@ void _permute(unsigned char *in, unsigned char *buffer1, int *p)
 }
 
 /* Expansion */
-void _expand_des(unsigned char const *e, unsigned char *data, unsigned char *result)
+static void _expand_des(unsigned char const *e, unsigned char *data, unsigned char *result)
 {	
 	unsigned char d, i, j;
 
@@ -130,7 +130,7 @@ void _expand_des(unsigned char const *e, unsigned char *data, unsigned char *res
 }
 
 /* Key rotation */
-void _key_rotate(int rounds, unsigned char *k)
+static void _key_rotate(int rounds, unsigned char *k)
 {	
 	int i, j;
 
@@ -219,7 +219,7 @@ void _syster_des_f(unsigned char *k, unsigned char *cw, int m)
 	}
 }
 
-uint64_t _get_syster_cw(unsigned char *ecm, unsigned char k64[8], int m)
+uint64_t encrypt_syster_cw(unsigned char *ecm, unsigned char k64[8], int m)
 {
 	int round, i;
 
@@ -229,17 +229,17 @@ uint64_t _get_syster_cw(unsigned char *ecm, unsigned char k64[8], int m)
     /* Run twice - one for each half of the 16-byte encrypted control word */
 	for(round = 0; round < 2; round++)
 	{
-		unsigned char k56[8], buffer2[8];
+		unsigned char k64ip[8], buffer2[8];
 
-		/* Convert 64-bit key to 56-bit key */
-		_permute(k64, k56, kp);
-		k56[0] = k56[4] << 4;
-		
+		/* Initial key permutation */
+		_permute(k64, k64ip, kp);
+		k64ip[0] = k64ip[4] << 4;
+
 		/* Initial CW permutation */
 		_permute(ecm + round * 8, pcw, ip);
 
 		/* Call main DES function */
-		_syster_des_f(k56, pcw, m);
+		_syster_des_f(k64ip, pcw, m);
 
 		/* Final permutation of CW */
 		_permute(pcw, buffer2, fp);
