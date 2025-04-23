@@ -124,6 +124,9 @@ typedef struct {
 	_frame_dbuffer_t in_video_buffer;
 	int video_eof;
 	
+	/* CC608 caption fifo */
+	cc608_fifo_t ccfifo;
+	
 	/* Video scaling */
 	struct SwsContext *sws_ctx;
 	_frame_dbuffer_t out_video_buffer;
@@ -654,13 +657,31 @@ static void *_video_scaler_thread(void *arg)
 	av_ffmpeg_t *s = (av_ffmpeg_t *) arg;
 	AVFrame *frame, *oframe;
 	AVRational ratio;
-	rational_t r;
+	r64_t r;
 	int64_t pts;
+	int i, j;
 	
 	/* Fetch video frames and pass them through the scaler */
 	while((frame = _frame_dbuffer_flip(&s->in_video_buffer)) != NULL)
 	{
 		pts = frame->best_effort_timestamp;
+		
+		/* Extract EIA-608 caption codes from the frame */
+		for(i = 0; i < frame->nb_side_data; i++)
+		{
+			if(frame->side_data[i]->type != AV_FRAME_DATA_A53_CC) continue;
+			
+			for(j = 0; j < frame->side_data[i]->size; j += 3)
+			{
+				/* Skip non-608 codes */
+				if((frame->side_data[i]->data[j] & 0x07) != 0x04) continue;
+				
+				if(cc608_fifo_write(&s->ccfifo, &frame->side_data[i]->data[j + 1], 2) != 2)
+				{
+					fprintf(stderr, "cc608: overflow\n");
+				}
+			}
+		}
 		
 		if(pts != AV_NOPTS_VALUE)
 		{
@@ -695,10 +716,10 @@ static void *_video_scaler_thread(void *arg)
 		
 		r = av_calculate_frame_size(
 			s->av,
-			(rational_t) { frame->width, frame->height },
-			rational_mul(
-				(rational_t) { ratio.num, ratio.den },
-				(rational_t) { frame->width, frame->height }
+			(r64_t) { frame->width, frame->height },
+			r64_mul(
+				(r64_t) { ratio.num, ratio.den },
+				(r64_t) { frame->width, frame->height }
 			)
 		);
 		
@@ -847,7 +868,7 @@ static int _ffmpeg_read_video(void *ctx, av_frame_t *frame)
 
 	if(s->video_stream == NULL)
 	{
-		return(AV_OK);
+		return(AV_EOF);
 	}
 
 	kb_enable();
@@ -921,14 +942,14 @@ static int _ffmpeg_read_video(void *ctx, av_frame_t *frame)
 	{
 		/* EOF or abort */
 		s->video_eof = 1;
-		return(AV_OK);
+		return(AV_EOF);
 	}
 	
 	/* Return image ratio */
 	if(avframe->sample_aspect_ratio.num > 0 &&
 	   avframe->sample_aspect_ratio.den > 0)
 	{
-		frame->pixel_aspect_ratio = (rational_t) {
+		frame->pixel_aspect_ratio = (r64_t) {
 			avframe->sample_aspect_ratio.num,
 			avframe->sample_aspect_ratio.den
 		};
@@ -946,6 +967,9 @@ static int _ffmpeg_read_video(void *ctx, av_frame_t *frame)
 		frame->interlaced = avframe->top_field_first ? 1 : 2;
 	}
 #endif
+	
+	/* Return CC608 code */
+	cc608_fifo_read(&s->ccfifo, frame->cc608, 2);
 	
 	/* Set the pointer to the framebuffer */
 	frame->width = avframe->width;
@@ -1124,14 +1148,14 @@ static void *_audio_scaler_thread(void *arg)
 	return(NULL);
 }
 
-static int16_t *_ffmpeg_read_audio(void *ctx, size_t *samples)
+static int _ffmpeg_read_audio(void *ctx, int16_t **samples, size_t *nsamples)
 {
 	av_ffmpeg_t *s = ctx;
 	AVFrame *frame;
 	
 	if(s->audio_stream == NULL || s->paused)
 	{
-		return(NULL);
+		return(AV_EOF);
 	}
 	
 	frame = _frame_dbuffer_flip(&s->out_audio_buffer);
@@ -1139,25 +1163,13 @@ static int16_t *_ffmpeg_read_audio(void *ctx, size_t *samples)
 	{
 		/* EOF or abort */
 		s->audio_eof = 1;
-		return(NULL);
+		return(AV_EOF);
 	}
 	
-	*samples = frame->nb_samples;
+	*samples = (int16_t *) frame->data[0];
+	*nsamples = frame->nb_samples;
 	
-	return((int16_t *) frame->data[0]);
-}
-
-static int _ffmpeg_eof(void *ctx)
-{
-	av_ffmpeg_t *s = ctx;
-	
-	if((s->video_stream && !s->video_eof) ||
-	   (s->audio_stream && !s->audio_eof))
-	{
-		return(0);
-	}
-	
-	return(1);
+	return(AV_OK);
 }
 
 static int _ffmpeg_close(void *ctx)
@@ -1213,9 +1225,11 @@ static int _ffmpeg_close(void *ctx)
 	pthread_cond_destroy(&s->cond);
 	pthread_mutex_destroy(&s->mutex);
 	
+	cc608_fifo_free(&s->ccfifo);
+	
 	free(s);
 	
-	return(HACKTV_OK);
+	return(AV_OK);
 }
 
 int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *options)
@@ -1244,7 +1258,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	s = calloc(1, sizeof(av_ffmpeg_t));
 	if(!s)
 	{
-		return(HACKTV_OUT_OF_MEMORY);
+		return(AV_OUT_OF_MEMORY);
 	}
 
 	s->paused = 0;
@@ -1274,14 +1288,14 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	{
 		fprintf(stderr, "Error opening file '%s'\n", input_url);
 		_print_ffmpeg_error(r);
-		return(HACKTV_ERROR);
+		return(AV_ERROR);
 	}
 	
 	/* Read stream info from the file */
 	if(avformat_find_stream_info(s->format_ctx, NULL) < 0)
 	{
 		fprintf(stderr, "Error reading stream information from file\n");
-		return(HACKTV_ERROR);
+		return(AV_ERROR);
 	}
 	
 	/* Dump some useful information to stderr */
@@ -1324,9 +1338,9 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	i = av_find_best_stream(s->format_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
 	s->video_stream = (i >= 0 ? s->format_ctx->streams[i] : NULL);
 	
-	/* Select the audio stream if required */
+	/* Select the audio stream */
 	i = av_find_best_stream(s->format_ctx, AVMEDIA_TYPE_AUDIO, -1, i, NULL, 0);
-	s->audio_stream = (i >= 0 && av->sample_rate.num > 0 ? s->format_ctx->streams[i] : NULL);
+	s->audio_stream = (i >= 0 ? s->format_ctx->streams[i] : NULL);
 
 	/* Select the subtitle stream if required */
 	i = av_find_best_stream(s->format_ctx, AVMEDIA_TYPE_SUBTITLE, -1, i, NULL, 0);
@@ -1337,7 +1351,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	if(s->video_stream == NULL && s->audio_stream == NULL)
 	{
 		fprintf(stderr, "No video or audio streams found\n");
-		return(HACKTV_ERROR);
+		return(AV_ERROR);
 	}
 	
 	if(s->video_stream != NULL)
@@ -1357,12 +1371,12 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		s->video_codec_ctx = avcodec_alloc_context3(NULL);
 		if(!s->video_codec_ctx)
 		{
-			return(HACKTV_OUT_OF_MEMORY);
+			return(AV_OUT_OF_MEMORY);
 		}
 		
 		if(avcodec_parameters_to_context(s->video_codec_ctx, s->video_stream->codecpar) < 0)
 		{
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		s->video_codec_ctx->thread_count = 0; /* Let ffmpeg decide number of threads */
@@ -1372,14 +1386,14 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		if(codec == NULL)
 		{
 			fprintf(stderr, "Unsupported video codec\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		/* Open video codec */
 		if(avcodec_open2(s->video_codec_ctx, codec, NULL) < 0)
 		{
 			fprintf(stderr, "Error opening video codec\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		/* Video filter starts here */
@@ -1493,7 +1507,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		
 		if(!s->sws_ctx)
 		{
-			return(HACKTV_OUT_OF_MEMORY);
+			return(AV_OUT_OF_MEMORY);
 		}
 		
 		s->video_eof = 0;
@@ -1511,12 +1525,12 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		s->audio_codec_ctx = avcodec_alloc_context3(NULL);
 		if(!s->audio_codec_ctx)
 		{
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		if(avcodec_parameters_to_context(s->audio_codec_ctx, s->audio_stream->codecpar) < 0)
 		{
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		s->audio_codec_ctx->thread_count = 0; /* Let ffmpeg decide number of threads */
@@ -1526,14 +1540,14 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		if(codec == NULL)
 		{
 			fprintf(stderr, "Unsupported audio codec\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		/* Open audio codec */
 		if(avcodec_open2(s->audio_codec_ctx, codec, NULL) < 0)
 		{
 			fprintf(stderr, "Error opening audio codec\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		/* Audio filter graph here */
@@ -1588,10 +1602,8 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		char str_buf[5];
 		sprintf(str_buf,"%s", av_get_sample_fmt_name(s->audio_codec_ctx->sample_fmt));
 		asprintf(&_filter_def,
-				"[in]%s[downmix],[downmix]volume=%f:precision=%s[out]",
-				conf->downmix ? "pan=stereo|FL < FC + 0.30*FL + 0.30*BL + 0.30*SL + 0.75*LFE|FR < FC + 0.30*FR + 0.30*BR + 0.30*SR + 0.75*LFE" : "anull",
-				conf->volume,
-				str_buf[0] == 'f' ? "float" : str_buf[0] == 'd' ? "double" : "fixed"
+				"[in]%s[out]",
+				conf->downmix ? "pan=stereo|FL < FC + 0.30*FL + 0.30*BL + 0.30*SL + 0.75*LFE|FR < FC + 0.30*FR + 0.30*BR + 0.30*SR + 0.75*LFE" : "anull"
 		);
 		
 		if (avfilter_graph_parse_ptr(afilter_graph, _filter_def, &ainputs, &aoutputs, NULL) < 0)
@@ -1626,7 +1638,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		s->swr_ctx = swr_alloc();
 		if(!s->swr_ctx)
 		{
-			return(HACKTV_OUT_OF_MEMORY);
+			return(AV_OUT_OF_MEMORY);
 		}
 		
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(59, 24, 100)
@@ -1667,7 +1679,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		if(swr_init(s->swr_ctx) < 0)
 		{
 			fprintf(stderr, "Failed to initialise the resampling context\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		s->audio_eof = 0;
@@ -1820,6 +1832,12 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		return(HACKTV_ERROR);
 	}
 		
+	/* Allocate cc608 fifo */
+	if(cc608_fifo_init(&s->ccfifo) != 0)
+	{
+		return(AV_OUT_OF_MEMORY);
+	}
+	
 	/* Register the callback functions */
 	s->vid_conf = &vid->conf;
 	s->vid_tt = &vid->tt;
@@ -1827,9 +1845,8 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	s->height = av->height;
 
 	av->av_source_ctx = s;
-	av->read_video = _ffmpeg_read_video;
-	av->read_audio = _ffmpeg_read_audio;
-	av->eof = _ffmpeg_eof;
+	av->read_video = s->video_stream != NULL ? _ffmpeg_read_video : NULL;
+	av->read_audio = s->audio_stream != NULL ? _ffmpeg_read_audio : NULL;
 	av->close = _ffmpeg_close;
 	
 	/* Start the threads */
@@ -1862,14 +1879,14 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		if(r != 0)
 		{
 			fprintf(stderr, "Error starting video decoder thread.\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		r = pthread_create(&s->video_scaler_thread, NULL, &_video_scaler_thread, (void *) s);
 		if(r != 0)
 		{
 			fprintf(stderr, "Error starting video scaler thread.\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 	}
 	
@@ -1909,7 +1926,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 			if(r < 0)
 			{
 				fprintf(stderr, "Error allocating output audio buffer %d\n", i);
-				return(HACKTV_OUT_OF_MEMORY);
+				return(AV_OUT_OF_MEMORY);
 			}
 		}
 		
@@ -1917,14 +1934,14 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 		if(r != 0)
 		{
 			fprintf(stderr, "Error starting audio decoder thread.\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 		
 		r = pthread_create(&s->audio_scaler_thread, NULL, &_audio_scaler_thread, (void *) s);
 		if(r != 0)
 		{
 			fprintf(stderr, "Error starting audio resampler thread.\n");
-			return(HACKTV_ERROR);
+			return(AV_ERROR);
 		}
 	}
 	
@@ -1932,10 +1949,10 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	if(r != 0)
 	{
 		fprintf(stderr, "Error starting input thread.\n");
-		return(HACKTV_ERROR);
+		return(AV_ERROR);
 	}
 	
-	return(HACKTV_OK);
+	return(AV_OK);
 }
 
 void av_ffmpeg_init(void)

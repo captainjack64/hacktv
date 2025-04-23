@@ -39,7 +39,7 @@ static int _test_read_video(void *ctx, av_frame_t *frame)
 {
 	av_test_t *s = ctx;
 	av_frame_init(frame, s->width, s->height, s->video, 1, s->width);
-	av_set_display_aspect_ratio(frame, (rational_t) { 4, 3 });
+	av_set_display_aspect_ratio(frame, (r64_t) { 4, 3 });
 
 	/* Get current time */
 	time_t secs = time(0);
@@ -63,11 +63,12 @@ static int _test_read_video(void *ctx, av_frame_t *frame)
 	return(AV_OK);
 }
 
-static int16_t *_test_read_audio(void *ctx, size_t *samples)
+static int _test_read_audio(void *ctx, int16_t **samples, size_t *nsamples)
 {
 	av_test_t *s = ctx;
-	*samples = s->audio_samples;
-	return(s->audio);
+	*samples = s->audio;
+	*nsamples = s->audio_samples;
+	return(AV_OK);
 }
 
 static int _test_close(void *ctx)
@@ -76,7 +77,7 @@ static int _test_close(void *ctx)
 	if(s->video) free(s->video);
 	if(s->audio) free(s->audio);
 	free(s);
-	return(HACKTV_OK);
+	return(AV_OK);
 }
 
 static uint8_t _hamming_bars(int x, int sr, int frequency)
@@ -118,7 +119,7 @@ int av_test_open(av_t *av, char *test_screen, void *ctx)
 	t = calloc(1, sizeof(av_test_t));
 	if(!t)
 	{
-		return(HACKTV_OUT_OF_MEMORY);
+		return(AV_OUT_OF_MEMORY);
 	}
 	
 	/* Generate a basic test pattern */
@@ -129,7 +130,7 @@ int av_test_open(av_t *av, char *test_screen, void *ctx)
 	if(!t->video)
 	{
 		free(t);
-		return(HACKTV_OUT_OF_MEMORY);
+		return(AV_OUT_OF_MEMORY);
 	}
 	
 	for(y = 0; y < t->height; y++)
@@ -322,7 +323,7 @@ int av_test_open(av_t *av, char *test_screen, void *ctx)
 	{
 		free(t->video);
 		free(t);
-		return(HACKTV_OUT_OF_MEMORY);
+		return(AV_OUT_OF_MEMORY);
 	}
 	
 	for(x = 0; x < t->audio_samples; x++)
@@ -361,5 +362,6 @@ int av_test_open(av_t *av, char *test_screen, void *ctx)
 	av->read_audio = _test_read_audio;
 	av->close = _test_close;
 	
-	return(HACKTV_OK);
+	return(AV_OK);
 }
+

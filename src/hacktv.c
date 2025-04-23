@@ -48,24 +48,6 @@ static void _sigint_callback_handler(int signum)
 	_signal = signum;
 }
 
-static int _parse_ratio(rational_t *r, const char *s)
-{
-	int i;
-	int64_t e;
-	
-	i = sscanf(s, "%d%*[:/]%d", &r->num, &r->den);
-	if(i != 2 || r->den == 0)
-	{
-		return(HACKTV_ERROR);
-	}
-	
-	e = gcd(r->num, r->den);
-	r->num /= e;
-	r->den /= e;
-	
-	return(HACKTV_OK);
-}
-
 static void print_version(void)
 {
 	printf("hacktv %s\n", VERSION);
@@ -112,9 +94,13 @@ static void print_usage(void)
 		"      --systeraudio              Invert the audio spectrum when using Syster, Syster CnR or D11 scrambling.\n"
 		"      --acp                      Enable Analogue Copy Protection signal.\n"
 		"      --vits                     Enable VITS test signals.\n"
+		"      --cc608                    Enable CEA/EIA-608 closed-caption pass through.\n"
 		"      --vitc                     Enable VITC time code.\n"
 		"      --filter                   Enable experimental VSB modulation filter.\n"
 		"      --nocolour                 Disable the colour subcarrier (PAL, SECAM, NTSC only).\n"
+		"      --s-video                  Output colour subcarrier on second channel.\n"
+		"                                 (PAL, NTSC, SECAM baseband modes only).\n"
+		"      --volume <value>           Adjust volume. Takes floats as argument.\n"
 		"      --noaudio                  Suppress all audio subcarriers.\n"
 		"      --nonicam                  Disable the NICAM subcarrier if present.\n"
 		"      --a2stereo                 Enable Zweikanalton / A2 Stereo, disables NICAM.\n"
@@ -151,6 +137,8 @@ static void print_usage(void)
 		"      --invert-video             Invert the composite video signal sync and\n"
 		"                                 white levels.\n"
 		"      --secam-field-id           Enable SECAM field identification.\n"
+		"      --secam-field-id-lines <x> Set the number of lines per field used for SECAM field\n"
+		"                                 identification. (1-9, default: 9)\n"
 		"      --json                     Output a JSON array when used with --list-modes.\n"
 		"      --version                  Print the version number and exit.\n"
 		"\n"
@@ -177,7 +165,8 @@ static void print_usage(void)
 		"  -a, --amp                      Enable the TX RF amplifier.\n"
 		"  -g, --gain <value>             Set the TX VGA (IF) gain, 0-47dB. Default: 0dB\n"
 		"\n"
-		"  Only modes with a complex output are supported by the HackRF.\n"
+		"  Only complex modes (RF) are supported by the HackRF.\n"
+		"  Baseband modes are support with the addition of a HackDAC module.\n"
 		"\n"
 		"SoapySDR output options\n"
 		"\n"
@@ -189,12 +178,23 @@ static void print_usage(void)
 		"fl2k output options\n"
 		"\n"
 		"  -o, --output fl2k[:<dev>]      Open an fl2k device for output.\n"
+		"      --fl2k-audio <mode>        Audio mode (none, stereo, spdif), default: none\n"
 		"\n"
-		"  Real signals are output on the Red channel. Complex signals are output\n"
-		"  on the Red (I) and Green (Q) channels.\n"
+		"  Each of the FL2K's three output channels can be used for:\n"
+		"\n"
+		"  Red: Baseband video / Complex I signal\n"
+		"  Green: Complex Q signal / Analogue audio (Left) / Nothing\n"
+		"  Blue: Analogue audio (Right) / Digital audio (S/PDIF) / Nothing\n"
 		"\n"
 		"  The 0.7v p-p voltage level of the FL2K is too low to create a correct\n"
 		"  composite video signal, it will appear too dark without amplification.\n"
+		"\n"
+		"  Digital S/PDIF audio is currently fixed at 16-bit, 32 kHz. Not all\n"
+		"  decoders work at this sample rate.\n"
+		"\n"
+		"  Analogue audio is limited to 8-bits. The LSB is delta-sigma modulated at\n"
+		"  the FL2K sample rate with the lower 8-bits of the 16-bit audio and may be\n"
+		"  recovered by using a low pass filter of ~16 kHz on the output.\n"
 		"\n"
 		"File output options\n"
 		"\n"
@@ -442,8 +442,11 @@ enum {
 	_OPT_ACP,
 	_OPT_VITS,
 	_OPT_VITC,
+	_OPT_CC608,
 	_OPT_FILTER,
 	_OPT_NOCOLOUR,
+	_OPT_S_VIDEO,
+	_OPT_VOLUME,
 	_OPT_NOAUDIO,
 	_OPT_NONICAM,
 	_OPT_A2STEREO,
@@ -468,7 +471,6 @@ enum {
 	_OPT_SYSTER_KT1,
 	_OPT_SYSTER_KT2,
 	_OPT_DOWNMIX,
-	_OPT_VOLUME,
 	_OPT_FMAUDIOTEST,
 	_OPT_MAC_AUDIO_STEREO,
 	_OPT_MAC_AUDIO_MONO,
@@ -487,6 +489,7 @@ enum {
 	_OPT_RAW_BB_BLANKING,
 	_OPT_RAW_BB_WHITE,
 	_OPT_SECAM_FIELD_ID,
+	_OPT_SECAM_FIELD_ID_LINES,
 	_OPT_FFMT,
 	_OPT_FOPTS,
 	_OPT_PIXELRATE,
@@ -498,6 +501,7 @@ enum {
 	_OPT_MAX_ASPECT,
 	_OPT_LETTERBOX,
 	_OPT_PILLARBOX,
+	_OPT_FL2K_AUDIO,
 	_OPT_VERSION,
 };
 
@@ -543,12 +547,15 @@ int main(int argc, char *argv[])
 		{ "acp",            no_argument,       0, _OPT_ACP },
 		{ "vits",           no_argument,       0, _OPT_VITS },
 		{ "vitc",           no_argument,       0, _OPT_VITC },
+		{ "cc608",          no_argument,       0, _OPT_CC608 },
 		{ "filter",         no_argument,       0, _OPT_FILTER },
 		{ "subtitles",      optional_argument, 0, _OPT_SUBTITLES },
 		{ "tx-subtitles",   optional_argument, 0, _OPT_TX_SUBTITLES },
 		{ "nodate",         no_argument,       0, _OPT_NODATE },
 		{ "nocolour",       no_argument,       0, _OPT_NOCOLOUR },
 		{ "nocolor",        no_argument,       0, _OPT_NOCOLOUR },
+		{ "s-video",        no_argument,       0, _OPT_S_VIDEO },
+		{ "volume",         required_argument, 0, _OPT_VOLUME },
 		{ "noaudio",        no_argument,       0, _OPT_NOAUDIO },
 		{ "nonicam",        no_argument,       0, _OPT_NONICAM },
 		{ "a2stereo",       no_argument,       0, _OPT_A2STEREO },
@@ -576,6 +583,7 @@ int main(int argc, char *argv[])
 		{ "raw-bb-blanking", required_argument, 0, _OPT_RAW_BB_BLANKING },
 		{ "raw-bb-white",   required_argument, 0, _OPT_RAW_BB_WHITE },
 		{ "secam-field-id", no_argument,       0, _OPT_SECAM_FIELD_ID },
+		{ "secam-field-id-lines", required_argument, 0, _OPT_SECAM_FIELD_ID_LINES },
 		{ "json",           no_argument,       0, _OPT_JSON },
 		{ "ffmt",           required_argument, 0, _OPT_FFMT },
 		{ "fopts",          required_argument, 0, _OPT_FOPTS },
@@ -592,6 +600,8 @@ int main(int argc, char *argv[])
 		{ "showecm",        no_argument,       0, _OPT_SHOW_ECM },
 		{ "downmix",        no_argument,       0, _OPT_DOWNMIX },
 		{ "volume",         required_argument, 0, _OPT_VOLUME },
+		{ "fl2k-audio",     required_argument, 0, _OPT_FL2K_AUDIO },
+		{ "showecm",        no_argument,       0, _OPT_SHOW_ECM },
 		{ "version",        no_argument,       0, _OPT_VERSION },
 		{ 0,                0,                 0,  0  }
 	};
@@ -643,8 +653,10 @@ int main(int argc, char *argv[])
 	s.acp = 0;
 	s.vits = 0;
 	s.vitc = 0;
+	s.cc608 = 0;
 	s.filter = 0;
 	s.nocolour = 0;
+	s.volume = 1.0;
 	s.noaudio = 0;
 	s.nonicam = 0;
 	s.a2stereo = 0;
@@ -673,6 +685,7 @@ int main(int argc, char *argv[])
 	s.file_type = RF_INT16;
 	s.raw_bb_blanking_level = 0;
 	s.raw_bb_white_level = INT16_MAX;
+	s.fl2k_audio = FL2K_AUDIO_NONE;
 	
 	opterr = 0;
 	while((c = getopt_long(argc, argv, "o:m:s:D:G:irvf:al:g:A:t:p:", long_options, &option_index)) != -1)
@@ -763,22 +776,23 @@ int main(int argc, char *argv[])
 		
 		case _OPT_FIT: /* --fit <mode> */
 			
-/*			if(strcmp(optarg, "stretch") == 0) s.fit_mode = AV_FIT_STRETCH;
-			else if(strcmp(optarg, "fill") == 0) s.fit_mode = AV_FIT_FILL;
-			else if(strcmp(optarg, "fit") == 0) s.fit_mode = AV_FIT_FIT;
-			else if(strcmp(optarg, "none") == 0) s.fit_mode = AV_FIT_NONE;
-			else
-			{
-				fprintf(stderr, "Unrecognised fit mode '%s'.\n", optarg);
-				return(-1);
-			}
-*/			
+// /*			if(strcmp(optarg, "stretch") == 0) s.fit_mode = AV_FIT_STRETCH;
+// 			else if(strcmp(optarg, "fill") == 0) s.fit_mode = AV_FIT_FILL;
+// 			else if(strcmp(optarg, "fit") == 0) s.fit_mode = AV_FIT_FIT;
+// 			else if(strcmp(optarg, "none") == 0) s.fit_mode = AV_FIT_NONE;
+// 			else
+// 			{
+// 				fprintf(stderr, "Unrecognised fit mode '%s'.\n", optarg);
+// 				return(-1);
+// 			}
+// */			
 			fprintf(stderr, "--fit parameter is disabled in this release");
 			break;
 		
 		case _OPT_MIN_ASPECT: /* --min-aspect <value> */
-			                     
-			if(_parse_ratio(&s.min_aspect, optarg) != HACKTV_OK)
+			
+			s.min_aspect = r64_parse(optarg, NULL);
+			if(s.min_aspect.den == 0)
 			{
 				fprintf(stderr, "Invalid minimum aspect\n");
 				return(-1);
@@ -788,7 +802,8 @@ int main(int argc, char *argv[])
 		
 		case _OPT_MAX_ASPECT: /* --max-aspect <value> */
 			
-			if(_parse_ratio(&s.max_aspect, optarg) != HACKTV_OK)
+			s.max_aspect = r64_parse(optarg, NULL);
+			if(s.max_aspect.den == 0)
 			{
 				fprintf(stderr, "Invalid maximum aspect\n");
 				return(-1);
@@ -890,11 +905,7 @@ int main(int argc, char *argv[])
 		case _OPT_SYSTERAUDIO: /* --systeraudio */
 			s.systeraudio = 1;
 			break;
-			
-		case _OPT_VOLUME: /* --volume */
-			s.volume = atof(optarg);
-			break;
-			
+						
 		case _OPT_DOWNMIX: /* --downmix */
 			s.downmix = 1;
 			break;
@@ -909,6 +920,10 @@ int main(int argc, char *argv[])
 		
 		case _OPT_VITC: /* --vitc */
 			s.vitc = 1;
+			break;
+		
+		case _OPT_CC608: /* --cc608 */
+			s.cc608 = 1;
 			break;
 		
 		case _OPT_FILTER: /* --filter */
@@ -950,6 +965,14 @@ int main(int argc, char *argv[])
 			
 		case _OPT_NOCOLOUR: /* --nocolour / --nocolor */
 			s.nocolour = 1;
+			break;
+		
+		case _OPT_S_VIDEO: /* --s-video */
+			s.s_video = 1;
+			break;
+		
+		case _OPT_VOLUME: /* --volume <value> */
+			s.volume = atof(optarg);
 			break;
 		
 		case _OPT_NOAUDIO: /* --noaudio */
@@ -1064,6 +1087,10 @@ int main(int argc, char *argv[])
 			s.secam_field_id = 1;
 			break;
 		
+		case _OPT_SECAM_FIELD_ID_LINES: /* --secam-field-id-lines <value> */
+			s.secam_field_id_lines = strtol(optarg, NULL, 0);
+			break;
+		
 		case _OPT_JSON: /* --json */
 			s.json = 1;
 			break;
@@ -1121,6 +1148,28 @@ int main(int argc, char *argv[])
 			else
 			{
 				fprintf(stderr, "Unrecognised file data type.\n");
+				return(-1);
+			}
+			
+			break;
+		
+		case _OPT_FL2K_AUDIO: /* --fl2k-audio <mode> */
+			
+			if(strcmp(optarg, "none") == 0)
+			{
+				s.fl2k_audio = FL2K_AUDIO_NONE;
+			}
+			else if(strcmp(optarg, "stereo") == 0)
+			{
+				s.fl2k_audio = FL2K_AUDIO_STEREO;
+			}
+			else if(strcmp(optarg, "spdif") == 0)
+			{
+				s.fl2k_audio = FL2K_AUDIO_SPDIF;
+			}
+			else
+			{
+				fprintf(stderr, "Unrecognised FL2K audio mode.\n");
 				return(-1);
 			}
 			
@@ -1205,6 +1254,20 @@ int main(int argc, char *argv[])
 		{
 			vid_conf.colour_mode = VID_NONE;
 		}
+	}
+	
+	if(s.s_video)
+	{
+		if((vid_conf.colour_mode != VID_PAL &&
+		   vid_conf.colour_mode != VID_SECAM &&
+		   vid_conf.colour_mode != VID_NTSC) ||
+		   vid_conf.output_type != RF_INT16_REAL)
+		{
+			fprintf(stderr, "S-Video is only available with PAL, SECAM, or NTSC baseband modes.\n");
+			return(-1);
+		}
+		
+		vid_conf.s_video = 1;
 	}
 	
 	if(s.noaudio > 0)
@@ -1522,6 +1585,18 @@ int main(int argc, char *argv[])
 		vid_conf.vitc = 1;
 	}
 	
+	if(s.cc608)
+	{
+		if(vid_conf.type != VID_RASTER_625 &&
+		   vid_conf.type != VID_RASTER_525)
+		{
+			fprintf(stderr, "CEA/EIA-608 is only currently supported for 625 and 525 line raster modes.\n");
+			return(-1);
+		}
+		
+		vid_conf.cc608 = 1;
+	}
+	
 	if(vid_conf.type == VID_MAC)
 	{
 		if(s.chid >= 0)
@@ -1554,12 +1629,13 @@ int main(int argc, char *argv[])
 	vid_conf.swap_iq = s.swap_iq;
 	vid_conf.offset = s.offset;
 	vid_conf.passthru = s.passthru;
-	vid_conf.volume = s.volume;
+	vid_conf.volume = s.volume * 256 + 0.5;
 	vid_conf.invert_video = s.invert_video;
 	vid_conf.raw_bb_file = s.raw_bb_file;
 	vid_conf.raw_bb_blanking_level = s.raw_bb_blanking_level;
 	vid_conf.raw_bb_white_level = s.raw_bb_white_level;
 	vid_conf.secam_field_id = s.secam_field_id;
+	vid_conf.secam_field_id_lines = s.secam_field_id_lines;
 	
 	/* Setup video encoder */
 	r = vid_init(&s.vid, s.samplerate, s.pixelrate, &vid_conf);
@@ -1574,7 +1650,7 @@ int main(int argc, char *argv[])
 	if(strcmp(s.output_type, "hackrf") == 0)
 	{
 #ifdef HAVE_HACKRF
-		if(rf_hackrf_open(&s.rf, s.output, s.vid.sample_rate, s.frequency, s.gain, s.amp) != RF_OK)
+		if(rf_hackrf_open(&s.rf, s.output, s.vid.sample_rate, s.frequency, s.gain, s.amp, s.vid.conf.output_type == RF_INT16_REAL) != RF_OK)
 		{
 			vid_free(&s.vid);
 			return(-1);
@@ -1602,7 +1678,7 @@ int main(int argc, char *argv[])
 	else if(strcmp(s.output_type, "fl2k") == 0)
 	{
 #ifdef HAVE_FL2K
-		if(rf_fl2k_open(&s.rf, s.output, s.vid.sample_rate) != RF_OK)
+		if(rf_fl2k_open(&s.rf, s.output, s.vid.sample_rate, s.vid.conf.output_type == RF_INT16_REAL && s.vid.conf.s_video == 0, s.fl2k_audio) != RF_OK)
 		{
 			vid_free(&s.vid);
 			return(-1);
@@ -1615,7 +1691,7 @@ int main(int argc, char *argv[])
 	}
 	else if(strcmp(s.output_type, "file") == 0)
 	{
-		if(rf_file_open(&s.rf, s.output, s.file_type, s.vid.conf.output_type == RF_INT16_COMPLEX) != RF_OK)
+		if(rf_file_open(&s.rf, s.output, s.file_type, s.vid.conf.output_type == RF_INT16_COMPLEX || s.vid.conf.s_video) != RF_OK)
 		{
 			vid_free(&s.vid);
 			return(-1);
@@ -1626,7 +1702,7 @@ int main(int argc, char *argv[])
 	
 	/* Configure AV source settings */
 	s.vid.av = (av_t) {
-		.frame_rate = (rational_t) {
+		.frame_rate = (r64_t) {
 			.num = s.vid.conf.frame_rate.num * (s.vid.conf.interlace ? 2 : 1),
 			.den = s.vid.conf.frame_rate.den,
 		},
@@ -1639,10 +1715,7 @@ int main(int argc, char *argv[])
 		.max_display_aspect_ratio = s.max_aspect,
 		.width = s.vid.active_width,
 		.height = s.vid.conf.active_lines,
-		.sample_rate = (rational_t) {
-			.num = (s.vid.audio ? HACKTV_AUDIO_SAMPLE_RATE : 0),
-			1,
-		},
+		.sample_rate = (r64_t) { HACKTV_AUDIO_SAMPLE_RATE, 1 },
 	};
 	
 	if((s.vid.conf.frame_orientation & 3) == VID_ROTATE_90 ||
@@ -1698,7 +1771,7 @@ int main(int argc, char *argv[])
 				r = av_ffmpeg_open(&s.vid, &s.vid.conf, pre, s.ffmt, s.fopts);
 			}
 			
-			if(r != HACKTV_OK)
+			if(r != AV_OK)
 			{
 				/* Error opening this source. Move to the next */
 				continue;
@@ -1706,12 +1779,12 @@ int main(int argc, char *argv[])
 			
 			while(!_abort)
 			{
-				size_t samples;
-				int16_t *data = vid_next_line(&s.vid, &samples);
+				vid_line_t *line = vid_next_line(&s.vid);
 				
-				if(data == NULL) break;
+				if(line == NULL) break;
 				
-				if(rf_write(&s.rf, data, samples) != RF_OK) break;
+				if(rf_write(&s.rf, line->output, line->width) != RF_OK) break;
+				if(line->audio_len && rf_write_audio(&s.rf, line->audio, line->audio_len) != RF_OK) break;
 			}
 			
 			if(_signal)

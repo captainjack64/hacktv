@@ -150,11 +150,6 @@ static const _scale_factor_t _scale_factors[8] = {
 	{ 7, 6, 1, 1 }, /* 0b111 */
 };
 
-static double _rrc(double x)
-{
-	return(x == 0 ? 1 : sin(M_PI * x) / (M_PI * x));
-}
-
 static int16_t *_duobinary_lut(int mode, int width, double level)
 {
 	double samples_per_symbol;
@@ -188,7 +183,7 @@ static int16_t *_duobinary_lut(int mode, int width, double level)
 		
 		for(x = 0; x < ntaps; x++)
 		{
-			*(p++) = lround(_rrc((double) (x - htaps - err) / samples_per_symbol) * level);
+			*(p++) = lround(rrc((double) (x - htaps - err) / samples_per_symbol, 0, 1) * level);
 		}
 	}
 	
@@ -1046,8 +1041,6 @@ int mac_init(vid_t *s)
 	mac_t *mac = &s->mac;
 	int i, x;
 	
-	s->audio = 1; /* MAC always has audio */
-	
 	memset(mac, 0, sizeof(mac_t));
 	
 	mac->vsam = MAC_VSAM_FREE_ACCESS;
@@ -1055,9 +1048,9 @@ int mac_init(vid_t *s)
 	mac->ec_mat_rating = s->conf.ec_mat_rating ? s->conf.ec_mat_rating : 0;
 
 	/* Calculate the threshold pixel aspect ratio for auto aspect ratio */
-	mac->ratio_threshold = rational_div(
-		(rational_t) { 14, 9 },
-		(rational_t) { s->active_width, s->conf.active_lines }
+	mac->ratio_threshold = r64_div(
+		(r64_t) { 14, 9 },
+		(r64_t) { s->active_width, s->conf.active_lines }
 	);
 	
 	/* Initialise Eurocrypt, if required */
@@ -1453,11 +1446,16 @@ const uint8_t *mac_audioenc_read(mac_audioenc_t *enc)
 	for(b = 0; b < 2; b++)
 	{
 		/* Apply J.17 pre-emphasis filter */
+		fir_int16_feed(
+			&enc->channel[enc->stereo ? b : 0].fir,
+			enc->j17 + enc->channel[b].src_offset,
+			enc->channel[b].src_len,
+			step
+		);
 		fir_int16_process(
 			&enc->channel[enc->stereo ? b : 0].fir,
 			enc->j17 + enc->channel[b].offset,
-			enc->j17 + enc->channel[b].src_offset,
-			enc->channel[b].src_len,
+			0,
 			step
 		);
 		
@@ -1685,7 +1683,7 @@ static int _line_625(vid_t *s, int frame, int line, uint8_t *data, int x)
 	b  = s->mac.vsam << 5;
 	b |= 1 << 4;      /* Reserved, always 1 */
 	//b |= 1 << 3;    /* Aspect ratio: 0: 16:9, 1: 4:3 */
-	b |= (rational_cmp(s->vframe.pixel_aspect_ratio, s->mac.ratio_threshold) <= 0 ? 1 : 0) << 3;
+	b |= (r64_cmp(s->vframe.pixel_aspect_ratio, s->mac.ratio_threshold) <= 0 ? 1 : 0) << 3;
 	b |= 1 << 2;      /* For satellite broadcast, this bit has no significance */
 	b |= 1 << 1;      /* Sound/data multiplex format: 0: no or incompatible sound, 1: compatible sound */
 	b |= 1 << 0;      /* Video configuration: 0: no or incompatible video, 1: compatible video */
@@ -1827,9 +1825,10 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 	l->vbialloc = 0;
 	
 	/* Blank the +1 line */
-	for(x = 0; x < s->width; x++)
+	for(x = 0; x < s->max_width; x++)
 	{
-		lines[2]->output[x * 2] = s->blanking_level;
+		lines[2]->output[x * 2 + 0] = s->blanking_level;
+		lines[2]->output[x * 2 + 1] = 0;
 	}
 	
 	if(l->line == 1 && s->mac.eurocrypt)
@@ -1849,7 +1848,7 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		_prbs1_reset(&s->mac, l->frame - 1);
 		
 		/* Update the aspect ratio flag */
-		s->mac.ratio = (rational_cmp(s->vframe.pixel_aspect_ratio, s->mac.ratio_threshold) <= 0 ? 0 : 1);
+		s->mac.ratio = (r64_cmp(s->vframe.pixel_aspect_ratio, s->mac.ratio_threshold) <= 0 ? 0 : 1);
 		
 		/* Push a service information packet at the start of each new
 		 * frame. Alternates between DG0 and DG3 each frame. DG0 is
@@ -2005,17 +2004,17 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		
 		for(x = s->active_left; x < s->active_left + s->vframe_x; x++)
 		{
-			l->output[x * 2] = s->yiq_level_lookup[0x000000].y;
+			l->output[x * 2] = s->yuv_level_lookup[0x000000].y;
 		}
 		
 		for(; x < s->active_left + s->vframe_x + s->vframe.width; x++, px += stride)
 		{
-			l->output[x * 2] = s->yiq_level_lookup[*px & 0xFFFFFF].y;
+			l->output[x * 2] = s->yuv_level_lookup[*px & 0xFFFFFF].y;
 		}
 		
 		for(; x < s->active_left + s->active_width; x++)
 		{
-			l->output[x * 2] = s->yiq_level_lookup[0x000000].y;
+			l->output[x * 2] = s->yuv_level_lookup[0x000000].y;
 		}
 	}
 	
@@ -2036,7 +2035,7 @@ int mac_next_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		
 		for(x = s->mac.chrominance_left + s->vframe_x / 2; x < s->mac.chrominance_left + (s->vframe_x + s->vframe.width) / 2; x++, px += stride)
 		{
-			l->output[x * 2] += (l->line & 1 ? s->yiq_level_lookup[*px & 0xFFFFFF].i : s->yiq_level_lookup[*px & 0xFFFFFF].q);
+			l->output[x * 2] += (l->line & 1 ? s->yuv_level_lookup[*px & 0xFFFFFF].u : s->yuv_level_lookup[*px & 0xFFFFFF].v);
 		}
 	}
 	

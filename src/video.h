@@ -25,6 +25,7 @@
 #include "nicam728.h"
 #include "dance.h"
 #include "fir.h"
+#include "fifo.h"
 
 #ifdef WIN32
 #define OS_SEP '\\'
@@ -47,6 +48,7 @@ typedef struct vid_t vid_t;
 #include "vits.h"
 #include "graphics.h"
 #include "vitc.h"
+#include "cc608.h"
 #include "vbidata.h"
 #include "sis.h"
 
@@ -181,14 +183,16 @@ typedef struct {
 	/* Video */
 	int type;
 	
-	rational_t frame_rate;
-	rational_t frame_aspects[2];
+	r64_t frame_rate;
+	r64_t frame_aspects[2];
 	int frame_orientation;
 	
 	int lines;
 	int hline;
+	int interlaced; /* 0 = Non-interlaced, 1 = TFF, 2 = BFF */
 	int active_lines;
-	int interlace;
+	
+	int interlace; /* 0 = Update image per frame, 1 = per field */
 	
 	double hsync_width;
 	double vsync_short_width;
@@ -215,7 +219,6 @@ typedef struct {
 	char *wss;
 	int letterbox;
 	int pillarbox;
-	float volume;
 	int downmix;
 	
 	char *videocrypt;
@@ -235,6 +238,7 @@ typedef struct {
 	int txsubtitles;
 	int vits;
 	int vitc;
+	int cc608;
 	char *sis;
 	char *eurocrypt;
 	int ec_mat_rating;
@@ -247,7 +251,9 @@ typedef struct {
 	double bw_co;
 	
 	int colour_mode;
-	rational_t colour_carrier;
+	r64_t colour_carrier;
+	double colour_bw;
+	int s_video;
 	
 	double burst_width;
 	double burst_left;
@@ -262,6 +268,10 @@ typedef struct {
 	double eu_co;
 	
 	int secam_field_id;
+	int secam_field_id_lines;
+	
+	/* Audio */
+	int volume;
 	
 	/* FM audio (Mono) */
 	double fm_mono_carrier;
@@ -316,9 +326,9 @@ typedef struct {
 
 typedef struct {
 	int16_t y;
-	int16_t i;
-	int16_t q;
-} _yiq16_t;
+	int16_t u;
+	int16_t v;
+} _yuv16_t;
 
 struct vid_line_t {
 	
@@ -335,6 +345,10 @@ struct vid_line_t {
 	
 	/* Status */
 	int vbialloc;
+	
+	/* Audio output */
+	const int16_t *audio;
+	size_t audio_len;
 	
 	/* Pointer the previous and next line */
 	vid_line_t *previous;
@@ -387,7 +401,7 @@ struct vid_t {
 	int16_t blanking_level;
 	int16_t sync_level;
 	
-	_yiq16_t *yiq_level_lookup;
+	_yuv16_t *yuv_level_lookup;
 	
 	unsigned int colour_lookup_width;
 	unsigned int colour_lookup_offset;
@@ -406,11 +420,13 @@ struct vid_t {
 	fir_int16_t secam_l_fir;
 	cint16_t *fm_secam_bell;
 	int16_t secam_fsync_level;
+	int secam_field_id_lines;
 	
 	vbidata_lut_t *fsc_syncs;
 	
 	/* PAL/NTSC chrominance baseband buffer */
 	int16_t *chrominance_buffer;
+	fir_int16_t chrominance_fir;
 	
 	/* Video state */
 	av_frame_t vframe;
@@ -453,8 +469,12 @@ struct vid_t {
 	/* Font state */
 	av_font_t *av_font;
 	
+	/* CEA/EIA-608 state */
+	cc608_t cc608;
+	
 	/* Audio state */
-	int audio;
+	fifo_t audiofifo;
+	fifo_reader_t audio_reader;
 	int16_t *audiobuffer;
 	size_t audiobuffer_samples;
 	int interp;
@@ -513,10 +533,9 @@ extern const vid_configs_t vid_configs[];
 
 extern int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const vid_config_t * const conf);
 extern void vid_free(vid_t *s);
-extern int vid_av_close(vid_t *s);
 extern void vid_info(vid_t *s);
 extern size_t vid_get_framebuffer_length(vid_t *s);
-extern int16_t *vid_next_line(vid_t *s, size_t *samples);
+extern vid_line_t *vid_next_line(vid_t *s);
 
 #endif
 

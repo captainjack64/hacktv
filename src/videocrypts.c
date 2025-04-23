@@ -181,9 +181,6 @@ static void _encode_vbi(uint8_t vbi[40], const uint8_t data[16], uint8_t a, uint
 
 int vcs_init(vcs_t *s, vid_t *vid, const char *mode)
 {
-	double f;
-	int x;
-	
 	memset(s, 0, sizeof(vcs_t));
 	
 	/* Generate the VBI data symbols */
@@ -192,7 +189,7 @@ int vcs_init(vcs_t *s, vid_t *vid, const char *mode)
 		vid->width,
 		round((vid->white_level - vid->black_level) * 1.00),
 		(double) vid->pixel_rate / VCS_SAMPLE_RATE * VCS_VBI_SAMPLES_PER_BIT,
-		vid->pixel_rate * 125e-9 * RT1090,
+		vid->pixel_rate * 125e-9 * IRT1090,
 		vid->pixel_rate * 11.90e-6
 	);
 	
@@ -220,15 +217,6 @@ int vcs_init(vcs_t *s, vid_t *vid, const char *mode)
 	}
 	
 	s->block_num = 0;
-	
-	/* Sample rate ratio */
-	f = (double) vid->width / VCS_WIDTH;
-	
-	/* Quick and dirty sample rate conversion array */
-	for(x = 0; x < VCS_WIDTH; x++)
-	{
-		s->video_scale[x] = round(x * f);
-	}
 	
 	return(VID_OK);
 }

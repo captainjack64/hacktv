@@ -24,10 +24,14 @@
 #define RT1090 1.6939549523182869 /* Factor to convert 10-90% rise time to 0-100% */
 #define RT2080 2.4410157268268087 /* Factor to convert 20-80% rise time to 0-100% */
 
+/* As above but for integrated raised cosine edges */
+#define IRT1090 2.0738786 /* 10-90% to 0-100% */
+#define IRT2080 3.0546756 /* 10-90% to 0-100% */
+
 typedef struct {
-	int num;
-	int den;
-} rational_t;
+	int64_t num;
+	int64_t den;
+} r64_t;
 
 typedef struct {
 	int16_t i;
@@ -40,12 +44,15 @@ typedef struct {
 } cint32_t;
 
 extern int64_t gcd(int64_t a, int64_t b);
-extern rational_t rational_mul(rational_t a, rational_t b);
-extern rational_t rational_div(rational_t a, rational_t b);
-extern int rational_cmp(rational_t a, rational_t b);
-extern rational_t rational_nearest(rational_t ref, rational_t a, rational_t b);
+extern r64_t r64_mul(r64_t a, r64_t b);
+extern r64_t r64_div(r64_t a, r64_t b);
+extern int r64_cmp(r64_t a, r64_t b);
+extern r64_t r64_nearest(r64_t ref, r64_t a, r64_t b);
+extern r64_t r64_parse_decimal(const char *str, const char **endptr);
+extern r64_t r64_parse(const char *str, const char **endptr);
 extern cint16_t *sin_cint16(unsigned int length, unsigned int cycles, double level);
 extern double rc_window(double t, double left, double width, double rise);
+extern double rrc(double x, double b, double t);
 
 static inline void cint16_mul(cint16_t *r, const cint16_t *a, const cint16_t *b)
 {

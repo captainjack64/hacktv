@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <inttypes.h>
 #include "video.h"
 #include "vbidata.h"
 
@@ -87,9 +88,8 @@ int vitc_init(vitc_t *s, vid_t *vid)
 	}
 	else
 	{
-		fprintf(stderr, "vitc: Unsupported frame rate %d/%d\n",
-			vid->conf.frame_rate.num,
-			vid->conf.frame_rate.den
+		fprintf(stderr, "vitc: Unsupported frame rate %" PRId64 "/%" PRId64 "\n",
+			vid->conf.frame_rate.num, vid->conf.frame_rate.den
 		);
 		
 		return(VID_ERROR);
@@ -143,7 +143,7 @@ int vitc_render(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 	timecode  = (fn % v->fps % 10) << 0; /* Frame number, units */
 	timecode |= (fn % v->fps / 10) << 4; /* Frame number, tens */
 	timecode |= (v->frame_drop ? 1 : 0) << 6; /* 1 == drop frame mode */
-	timecode |= 0 << 7; /* 1 == colour framing */
+	timecode |= 1 << 7; /* 1 == colour framing */
 	
 	fn /= v->fps;
 	timecode |= (fn % 10) << 8; /* Seconds, units */

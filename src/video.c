@@ -66,7 +66,7 @@ const vid_config_t vid_config_pal_i = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -88,10 +88,8 @@ const vid_config_t vid_config_pal_i = {
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 3 / 7 of white - blanking level */
 	.colour_carrier = { 17734475, 4 }, /* 4433618.75 Hz */
+	.colour_bw      = 1.4e6,      /* 3dB gaussian filter */
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 	
@@ -122,7 +120,7 @@ const vid_config_t vid_config_pal_bg = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -144,10 +142,8 @@ const vid_config_t vid_config_pal_bg = {
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 3 / 7 of white - blanking level */
 	.colour_carrier = { 17734475, 4 }, /* 4433618.75 Hz */
+	.colour_bw      = 1.4e6,      /* 3dB gaussian filter */
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 	
@@ -178,7 +174,7 @@ const vid_config_t vid_config_pal_dk = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -200,10 +196,8 @@ const vid_config_t vid_config_pal_dk = {
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 3 / 7 of white - blanking level */
 	.colour_carrier = { 17734475, 4 }, /* 4433618.75 Hz */
+	.colour_bw      = 1.4e6,      /* 3dB gaussian filter */
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 	
@@ -237,7 +231,7 @@ const vid_config_t vid_config_pal_fm = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -259,10 +253,8 @@ const vid_config_t vid_config_pal_fm = {
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 3 / 7 of white - blanking level */
 	.colour_carrier = { 17734475, 4 }, /* 4433618.75 Hz */
+	.colour_bw      = 1.4e6,      /* 3dB gaussian filter */
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 	
@@ -293,7 +285,7 @@ const vid_config_t vid_config_pal = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -315,10 +307,8 @@ const vid_config_t vid_config_pal = {
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 3 / 7 of white - blanking level */
 	.colour_carrier = { 17734475, 4 }, /* 4433618.75 Hz */
+	.colour_bw      = 1.4e6,      /* 3dB gaussian filter */
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 };
@@ -341,7 +331,7 @@ const vid_config_t vid_config_pal_m = {
 	.frame_rate     = { 30000, 1001, },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005280, /* 52.80µs */
@@ -363,10 +353,8 @@ const vid_config_t vid_config_pal_m = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1μs */
 	.burst_level    = 33.0 / 73.0, /* Approximation */
 	.colour_carrier = { 511312500, 143 }, /* 3575611.888... Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 	
@@ -393,7 +381,7 @@ const vid_config_t vid_config_pal_n = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -414,10 +402,8 @@ const vid_config_t vid_config_pal_n = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1μs */
 	.burst_level    = 33.0 / 73.0, /* Approximation */
 	.colour_carrier = { 14328225, 4 }, /* 3582056.25 Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 	
@@ -440,7 +426,7 @@ const vid_config_t vid_config_525pal = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005280, /* 52.80µs */
@@ -462,10 +448,8 @@ const vid_config_t vid_config_525pal = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1μs */
 	.burst_level    = 33.0 / 73.0, /* Approximation */
 	.colour_carrier = { 511312500, 143 }, /* 3575611.888... Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 };
@@ -489,7 +473,7 @@ const vid_config_t vid_config_secam_l = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -510,9 +494,6 @@ const vid_config_t vid_config_secam_l = {
 	.burst_rise     = 0.00000100, /* 1.00µs */
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          = -1.902 * 280e3, /* D'R */
 	.eu_co          =  1.505 * 230e3, /* D'B */
 	
@@ -541,7 +522,7 @@ const vid_config_t vid_config_secam_dk = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -562,9 +543,6 @@ const vid_config_t vid_config_secam_dk = {
 	.burst_rise     = 0.00000100, /* 1.00µs */
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          = -1.902 * 280e3, /* D'R */
 	.eu_co          =  1.505 * 230e3, /* D'B */
 	
@@ -595,7 +573,7 @@ const vid_config_t vid_config_secam_i = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -616,9 +594,6 @@ const vid_config_t vid_config_secam_i = {
 	.burst_rise     = 0.00000100, /* 1.00µs */
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          = -1.902 * 280e3, /* D'R */
 	.eu_co          =  1.505 * 230e3, /* D'B */
 	
@@ -643,12 +618,13 @@ const vid_config_t vid_config_secam_bg = {
 	
 	.video_level    = 0.80 * (100.0 / 124.0), /* Power level of video */
 	.fm_mono_level  = 0.15, /* FM audio carrier power level */
+	.nicam_level    = 0.07 / 2, /* NICAM audio carrier power level */
 	
 	.type           = VID_RASTER_625,
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -669,15 +645,15 @@ const vid_config_t vid_config_secam_bg = {
 	.burst_rise     = 0.00000100, /* 1.00µs */
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          = -1.902 * 280e3, /* D'R */
 	.eu_co          =  1.505 * 230e3, /* D'B */
 	
 	.fm_mono_carrier   = 5500000, /* Hz */
 	.fm_mono_deviation = 50000, /* +/- Hz */
 	.fm_mono_preemph   = VID_50US, /* Seconds */
+	
+	.nicam_carrier  = 5850000, /* Hz */
+	.nicam_beta     = 0.4,
 };
 
 const vid_config_t vid_config_secam_fm = {
@@ -700,7 +676,7 @@ const vid_config_t vid_config_secam_fm = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -721,9 +697,6 @@ const vid_config_t vid_config_secam_fm = {
 	.burst_rise     = 0.00000100, /* 1.00µs */
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          = -1.902 * 280e3, /* D'R */
 	.eu_co          =  1.505 * 230e3, /* D'B */
 	
@@ -754,7 +727,7 @@ const vid_config_t vid_config_secam = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_width   = 0.00005195, /* 51.95µs */
@@ -775,9 +748,6 @@ const vid_config_t vid_config_secam = {
 	.burst_rise     = 0.00000100, /* 1.00µs */
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          = -1.902 * 280e3, /* D'R */
 	.eu_co          =  1.505 * 230e3, /* D'B */
 };
@@ -800,7 +770,7 @@ const vid_config_t vid_config_ntsc_m = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -822,10 +792,8 @@ const vid_config_t vid_config_ntsc_m = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1µs */
 	.burst_level    = 4.0 / 10.0, /* 4/10 of white - blanking level */
 	.colour_carrier = { 39375000, 11 }, /* 3579545.4545... Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          =  0.877,
 	.eu_co          =  0.493,
 	
@@ -853,7 +821,7 @@ const vid_config_t vid_config_ntsc_i = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -875,10 +843,8 @@ const vid_config_t vid_config_ntsc_i = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1µs */
 	.burst_level    = 4.0 / 10.0, /* 4/10 of white - blanking level */
 	.colour_carrier = { 39375000, 11 }, /* 3579545.4545... Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          =  0.877,
 	.eu_co          =  0.493,
 	
@@ -910,7 +876,7 @@ const vid_config_t vid_config_ntsc_fm = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -932,10 +898,8 @@ const vid_config_t vid_config_ntsc_fm = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1µs */
 	.burst_level    = 4.0 / 10.0, /* 4/10 of white - blanking level */
 	.colour_carrier = { 39375000, 11 }, /* 3579545.4545... Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          =  0.877,
 	.eu_co          =  0.493,
 	
@@ -970,7 +934,7 @@ const vid_config_t vid_config_ntsc_bs_fm = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -992,10 +956,8 @@ const vid_config_t vid_config_ntsc_bs_fm = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1µs */
 	.burst_level    = 4.0 / 10.0, /* 4/10 of white - blanking level */
 	.colour_carrier = { 39375000, 11 }, /* 3579545.4545... Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          =  0.877,
 	.eu_co          =  0.493,
 	
@@ -1017,7 +979,7 @@ const vid_config_t vid_config_ntsc = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -1039,10 +1001,8 @@ const vid_config_t vid_config_ntsc = {
 	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1µs */
 	.burst_level    = 4.0 / 10.0, /* 4/10 of white - blanking level */
 	.colour_carrier = { 39375000, 11 }, /* 3579545.4545... Hz */
+	.colour_bw      = 1.4e6,
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          =  0.877,
 	.eu_co          =  0.493,
 };
@@ -1066,7 +1026,7 @@ const vid_config_t vid_config_pal60_i = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -1088,10 +1048,8 @@ const vid_config_t vid_config_pal60_i = {
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 3 / 7 of white - blanking level */
 	.colour_carrier = { 17734475, 4 }, /* 4433618.75 Hz */
+	.colour_bw      = 1.4e6,      /* 3dB gaussian filter */
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 	
@@ -1117,7 +1075,7 @@ const vid_config_t vid_config_pal60 = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -1138,10 +1096,8 @@ const vid_config_t vid_config_pal60 = {
 	.burst_left     = 0.00000560, /* |-->| 5.6 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 3 / 7 of white - blanking level */
 	.colour_carrier = { 17734475, 4 }, /* 4433618.75 Hz */
+	.colour_bw      = 1.4e6,      /* 3dB gaussian filter */
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.877,
 	.eu_co          = 0.493,
 };
@@ -1160,7 +1116,7 @@ const vid_config_t vid_config_d2mac_am = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 }, { 16, 9 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_left    = 585.0 / MAC_CLOCK_RATE,
@@ -1176,9 +1132,6 @@ const vid_config_t vid_config_d2mac_am = {
 	
 	.mac_mode       = MAC_MODE_D2,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.927,
 	.eu_co          = 0.733,
 };
@@ -1197,7 +1150,7 @@ const vid_config_t vid_config_d2mac_fm = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 }, { 16, 9 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_left    = 585.0 / MAC_CLOCK_RATE,
@@ -1213,9 +1166,6 @@ const vid_config_t vid_config_d2mac_fm = {
 	
 	.mac_mode       = MAC_MODE_D2,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.927,
 	.eu_co          = 0.733,
 };
@@ -1232,7 +1182,7 @@ const vid_config_t vid_config_d2mac = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 }, { 16, 9 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_left    = 585.0 / MAC_CLOCK_RATE,
@@ -1248,9 +1198,6 @@ const vid_config_t vid_config_d2mac = {
 	
 	.mac_mode       = MAC_MODE_D2,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.927,
 	.eu_co          = 0.733,
 };
@@ -1267,7 +1214,7 @@ const vid_config_t vid_config_dmac_am = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 }, { 16, 9 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_left    = 585.0 / MAC_CLOCK_RATE,
@@ -1283,9 +1230,6 @@ const vid_config_t vid_config_dmac_am = {
 	
 	.mac_mode       = MAC_MODE_D,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.927,
 	.eu_co          = 0.733,
 };
@@ -1304,7 +1248,7 @@ const vid_config_t vid_config_dmac_fm = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 }, { 16, 9 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_left    = 585.0 / MAC_CLOCK_RATE,
@@ -1320,9 +1264,6 @@ const vid_config_t vid_config_dmac_fm = {
 	
 	.mac_mode       = MAC_MODE_D,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.927,
 	.eu_co          = 0.733,
 };
@@ -1339,7 +1280,7 @@ const vid_config_t vid_config_dmac = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 }, { 16, 9 } },
 	.lines          = 625,
-	.hline          = 313,
+	.interlaced     = 1,
 	
 	.active_lines   = 576,
 	.active_left    = 585.0 / MAC_CLOCK_RATE,
@@ -1355,9 +1296,6 @@ const vid_config_t vid_config_dmac = {
 	
 	.mac_mode       = MAC_MODE_D,
 	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	.ev_co          = 0.927,
 	.eu_co          = 0.733,
 };
@@ -1379,7 +1317,7 @@ const vid_config_t vid_config_819_e = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 819,
-	.hline          = 409,
+	.interlaced     = 1,
 	
 	.active_lines   = 720, /* Normally 738 */
 	.active_width   = 0.00003944, /* 39.44µs */
@@ -1392,10 +1330,6 @@ const vid_config_t vid_config_819_e = {
 	.black_level    = 0.35,
 	.blanking_level = 0.30,
 	.sync_level     = 0.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	
 	/* AM modulated */
 	.am_mono_carrier   = 11.15e6, /* Hz */
@@ -1416,7 +1350,7 @@ const vid_config_t vid_config_819 = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 819,
-	.hline          = 409,
+	.interlaced     = 1,
 	
 	.active_lines   = 720, /* Normally 738 */
 	.active_width   = 0.00003944, /* 39.44µs */
@@ -1429,10 +1363,6 @@ const vid_config_t vid_config_819 = {
 	.black_level    =  0.05,
 	.blanking_level =  0.00,
 	.sync_level     = -0.30,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_405_a = {
@@ -1452,9 +1382,9 @@ const vid_config_t vid_config_405_a = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 405,
-	.hline          = 203,
+	.interlaced     = 2,
 	
-	.active_lines   = 376,
+	.active_lines   = 378,
 	.active_width   = 0.00008030, /* 80.3µs */
 	.active_left    = 0.00001680, /* |-->| 16.8µs */
 	
@@ -1466,10 +1396,6 @@ const vid_config_t vid_config_405_a = {
 	.black_level    = 0.30,
 	.blanking_level = 0.30,
 	.sync_level     = 0.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	
 	/* AM modulated */
 	.am_mono_carrier = -3500000, /* Hz */
@@ -1494,9 +1420,9 @@ const vid_config_t vid_config_405_a_ntsc = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 405,
-	.hline          = 203,
+	.interlaced     = 2,
 	
-	.active_lines   = 376,
+	.active_lines   = 378,
 	.active_width   = 0.00008030, /* 80.3µs */
 	.active_left    = 0.00001680, /* |-->| 16.8µs */
 	
@@ -1516,9 +1442,6 @@ const vid_config_t vid_config_405_a_ntsc = {
 	.burst_level    = 3.0 / 7.0, /* 30% full carrier */
 	.colour_carrier = { 5315625, 2 }, /* 2657812.5 Hz */
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          =  0.877,
 	.eu_co          =  0.493,
 	
@@ -1545,9 +1468,9 @@ const vid_config_t vid_config_405_i = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 405,
-	.hline          = 203,
+	.interlaced     = 2,
 	
-	.active_lines   = 376,
+	.active_lines   = 378,
 	.active_width   = 0.00008030, /* 80.3µs */
 	.active_left    = 0.00001680, /* |-->| 16.8µs */
 	
@@ -1559,10 +1482,6 @@ const vid_config_t vid_config_405_i = {
 	.black_level    = 0.76,
 	.blanking_level = 0.76,
 	.sync_level     = 1.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 	
 	.fm_mono_carrier   = 6000000 - 400, /* Hz */
 	.fm_mono_deviation = 50000, /* +/- Hz */
@@ -1583,9 +1502,9 @@ const vid_config_t vid_config_405 = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 405,
-	.hline          = 203,
+	.interlaced     = 2,
 	
-	.active_lines   = 376,
+	.active_lines   = 378,
 	.active_width   = 0.00008030, /* 80.3µs */
 	.active_left    = 0.00001680, /* |-->| 16.8µs */
 	
@@ -1597,10 +1516,6 @@ const vid_config_t vid_config_405 = {
 	.black_level    =  0.00,
 	.blanking_level =  0.00,
 	.sync_level     = -0.30,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_405_ntsc = {
@@ -1618,9 +1533,9 @@ const vid_config_t vid_config_405_ntsc = {
 	.frame_rate     = { 25, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 405,
-	.hline          = 203,
+	.interlaced     = 2,
 	
-	.active_lines   = 376,
+	.active_lines   = 378,
 	.active_width   = 0.00008030, /* 80.3µs */
 	.active_left    = 0.00001680, /* |-->| 16.8µs */
 	
@@ -1639,10 +1554,8 @@ const vid_config_t vid_config_405_ntsc = {
 	.burst_left     = 0.00001050, /* |-->| 10.5 ±0.1µs */
 	.burst_level    = 3.0 / 7.0, /* 30% full carrier */
 	.colour_carrier = { 5315625, 2 }, /* 2657812.5 Hz */
+	.colour_bw      = 1.1e6,
 	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	.ev_co          =  0.877,
 	.eu_co          =  0.493,
 };
@@ -1673,10 +1586,6 @@ const vid_config_t vid_config_baird_240_am = {
 	.black_level    = 0.40,
 	.blanking_level = 0.40,
 	.sync_level     = 0.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_baird_240 = {
@@ -1703,10 +1612,6 @@ const vid_config_t vid_config_baird_240 = {
 	.black_level    = 0.40,
 	.blanking_level = 0.40,
 	.sync_level     = 0.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_baird_30_am = {
@@ -1733,10 +1638,6 @@ const vid_config_t vid_config_baird_30_am = {
 	.black_level    = 0.00,
 	.blanking_level = 0.00,
 	.sync_level     = 0.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_baird_30 = {
@@ -1761,10 +1662,6 @@ const vid_config_t vid_config_baird_30 = {
 	.black_level    = -1.00,
 	.blanking_level = -1.00,
 	.sync_level     = -1.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_nbtv_32_am = {
@@ -1793,10 +1690,6 @@ const vid_config_t vid_config_nbtv_32_am = {
 	.black_level    = 0.73,
 	.blanking_level = 0.73,
 	.sync_level     = 1.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_nbtv_32 = {
@@ -1823,10 +1716,6 @@ const vid_config_t vid_config_nbtv_32 = {
 	.black_level    = 0.30,
 	.blanking_level = 0.30,
 	.sync_level     = 0.00,
-	
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_apollo_colour_fm = {
@@ -1846,7 +1735,7 @@ const vid_config_t vid_config_apollo_colour_fm = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -1866,10 +1755,6 @@ const vid_config_t vid_config_apollo_colour_fm = {
 	.fsc_flag_width = 0.00002000, /* 20.00µs */
 	.fsc_flag_left  = 0.00001470, /* |-->| 14.70µs */
 	.fsc_flag_level = 0.5000,
-	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 	
 	/* The audio carrier overlaps the video signal and
 	 * requires the video to either be low pass filtered
@@ -1893,7 +1778,7 @@ const vid_config_t vid_config_apollo_colour = {
 	.frame_rate     = { 30000, 1001 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 525,
-	.hline          = 263,
+	.interlaced     = 1,
 	
 	.active_lines   = 480,
 	.active_width   = 0.00005290, /* 52.90µs */
@@ -1913,10 +1798,6 @@ const vid_config_t vid_config_apollo_colour = {
 	.fsc_flag_width = 0.00002000, /* 20.00µs */
 	.fsc_flag_left  = 0.00001470, /* |-->| 14.70µs */
 	.fsc_flag_level = 0.70,
-	
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 };
 
 const vid_config_t vid_config_apollo_mono_fm = {
@@ -1958,11 +1839,6 @@ const vid_config_t vid_config_apollo_mono_fm = {
 	.blanking_level = -0.20,
 	.sync_level     = -0.50,
 	
-	/* These are copied from the NTSC values */
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
-	
 	.fm_mono_carrier   = 1250000, /* Hz */
 	.fm_mono_deviation = 25000, /* +/- Hz */
 	.fm_mono_preemph   = VID_NONE,
@@ -2001,11 +1877,6 @@ const vid_config_t vid_config_apollo_mono = {
 	.black_level    =  0.00,
 	.blanking_level =  0.00,
 	.sync_level     = -0.30,
-	
-	/* These are copied from the NTSC values */
-	.rw_co          = 0.299, /* R weight */
-	.gw_co          = 0.587, /* G weight */
-	.bw_co          = 0.114, /* B weight */
 };
 
 const vid_config_t vid_config_cbs405_m = {
@@ -2026,7 +1897,7 @@ const vid_config_t vid_config_cbs405_m = {
 	.frame_rate     = { 72, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 405,
-	.hline          = 203,
+	.interlaced     = 1,
 	
 	.active_lines   = 376, /* Estimate */
 	.active_width   = 0.00002812, /* 28.12µs */
@@ -2046,11 +1917,6 @@ const vid_config_t vid_config_cbs405_m = {
 	.fsc_flag_left  = 0.000008573, /* |-->| 8.573µs */
 	.fsc_flag_level = 1.000,
 	
-	.gamma          =  1.0,
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
-	
 	.fm_mono_carrier   = 4500000, /* Hz */
 	.fm_mono_deviation = 25000, /* +/- Hz */
 	.fm_mono_preemph   = VID_75US,
@@ -2068,7 +1934,7 @@ const vid_config_t vid_config_cbs405 = {
 	.frame_rate     = { 72, 1 },
 	.frame_aspects  = { { 4, 3 } },
 	.lines          = 405,
-	.hline          = 203,
+	.interlaced     = 1,
 	
 	.active_lines   = 376, /* Estimate */
 	.active_width   = 0.00002812, /* 28.12µs */
@@ -2087,11 +1953,6 @@ const vid_config_t vid_config_cbs405 = {
 	.fsc_flag_width = 0.000001372, /* 1.372µs */
 	.fsc_flag_left  = 0.000008573, /* |-->| 8.573µs */
 	.fsc_flag_level = -0.30,
-	
-	.gamma          =  1.0,
-	.rw_co          =  0.299, /* R weight */
-	.gw_co          =  0.587, /* G weight */
-	.bw_co          =  0.114, /* B weight */
 };
 
 const vid_configs_t vid_configs[] = {
@@ -2150,7 +2011,8 @@ const vid_configs_t vid_configs[] = {
 
 /* Video filter process */
 typedef struct {
-	fir_int16_t fir;
+	int channels;
+	fir_int16_t fir[2];
 } _vid_filter_process_t;
 
 /* Test taps for a CCIR-405 625 line video pre-emphasis filter at 28 MHz (5.0 MHz video) */
@@ -2382,12 +2244,12 @@ static int _init_fm_modulator(_mod_fm_t *fm, int sample_rate, double frequency, 
 	return(VID_OK);
 }
 
-static int _init_fm_energy_dispersal(_mod_fm_t *fm, int sample_rate, rational_t frequency, int level)
+static int _init_fm_energy_dispersal(_mod_fm_t *fm, int sample_rate, r64_t frequency, int level)
 {
-	rational_t r;
+	r64_t r;
 	
-	r = rational_div((rational_t) { level * 4, 1 }, (rational_t) { sample_rate, 1 });
-	r = rational_mul(r, frequency);
+	r = r64_div((r64_t) { level * 4, 1 }, (r64_t) { sample_rate, 1 });
+	r = r64_mul(r, frequency);
 	
 	fm->ed_delta = div(r.num, r.den);
 	fm->ed_overflow = (div_t) { level * 4, r.den };
@@ -2548,23 +2410,24 @@ static int _vid_next_line_rawbb(vid_t *s, void *arg, int nlines, vid_line_t **li
 	vid_line_t *l = lines[0];
 	int x, i;
 	
-	l->width    = s->width;
-	l->frame    = s->bframe;
-	l->line     = s->bline;
-	l->vbialloc = 0;
-	l->lut      = NULL;
+	l->width     = s->width;
+	l->frame     = s->bframe;
+	l->line      = s->bline;
+	l->vbialloc  = 0;
+	l->lut       = NULL;
+	l->audio     = NULL;
+	l->audio_len = 0;
 	
 	/* Read the next line */
-	x = l->width;
-	while(x > 0)
+	for(x = 0; x < l->width;)
 	{
-		i = fread(l->output, sizeof(int16_t), x, s->raw_bb_file);
-		if(i < x && feof(s->raw_bb_file))
+		i = fread(l->output + x, sizeof(int16_t), l->width - x, s->raw_bb_file);
+		if(i <= 0 && feof(s->raw_bb_file))
 		{
 			rewind(s->raw_bb_file);
 		}
 		
-		x -= i;
+		x += i;
 	}
 	
 	/* Move samples into I channel and scale for output */
@@ -2594,11 +2457,13 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 	int al, ar;
 	vid_line_t *l = lines[1];
 	
-	l->width    = s->width;
-	l->frame    = s->bframe;
-	l->line     = s->bline;
-	l->vbialloc = 0;
-	l->lut      = NULL;
+	l->width     = s->width;
+	l->frame     = s->bframe;
+	l->line      = s->bline;
+	l->vbialloc  = 0;
+	l->lut       = NULL;
+	l->audio     = NULL;
+	l->audio_len = 0;
 	
 	/* Sequence codes: abcd
 	 * 
@@ -2892,7 +2757,7 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 		}
 		
 		/* Calculate the active line number */
-		vy = (l->line < 210 ? (l->line - 16) * 2 : (l->line - 219) * 2 + 1);
+		vy = (l->line < 210 ? (l->line - 16) * 2 : (l->line - 218) * 2 + 1);
 	}
 	else if(s->conf.type == VID_CBS_405)
 	{
@@ -2993,7 +2858,8 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 	
 	/* Shift the lines by one if the source
 	 * video has the bottom field first */
-	if(vy >= 0 && s->vframe.interlaced == 2) vy += 1;
+	if(vy >= 0 && s->conf.interlaced != 0 &&
+	   s->vframe.interlaced != s->conf.interlaced) vy += 1;
 	
 	/* Centre the video vertically */
 	vy -= s->vframe_y;
@@ -3039,7 +2905,7 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 	}
 	
 	/* Blank the next line */
-	for(x = 0; x < s->width; x++)
+	for(x = 0; x < s->max_width; x++)
 	{
 		lines[2]->output[x * 2 + 0] = s->blanking_level;
 		lines[2]->output[x * 2 + 1] = 0;
@@ -3078,7 +2944,7 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 		
 		for(x = al, o = &l->output[al * 2]; x < s->active_left + s->vframe_x; x++, o += 2)
 		{
-			*o = s->yiq_level_lookup[0x000000].y;
+			*o = s->yuv_level_lookup[0x000000].y;
 		}
 		
 		if(s->vframe.framebuffer && vy >= 0)
@@ -3100,24 +2966,32 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 				rgb |= (rgb << 8) | (rgb << 16);
 			}
 			
-			*o = s->yiq_level_lookup[rgb].y;
+			*o = s->yuv_level_lookup[rgb].y;
 			
 			if(pal)
 			{
-				oc[0] = s->yiq_level_lookup[rgb].i;
-				oc[1] = s->yiq_level_lookup[rgb].q;
+				oc[0] = s->yuv_level_lookup[rgb].u;
+				oc[1] = s->yuv_level_lookup[rgb].v;
 			}
 		}
 		
 		for(; x < ar; x++, o += 2)
 		{
-			*o = s->yiq_level_lookup[0x000000].y;
+			*o = s->yuv_level_lookup[0x000000].y;
 		}
 	}
 	
 	if(pal)
 	{
 		int16_t *o, *oc;
+		
+		/* Apply chrominance baseband filter */
+		if(s->chrominance_fir.type > 0)
+		{
+			oc = s->chrominance_buffer;
+			fir_int16_process_block(&s->chrominance_fir, &oc[0], &oc[0], s->width, 2);
+			fir_int16_process_block(&s->chrominance_fir, &oc[1], &oc[1], s->width, 2);
+		}
 		
 		/* Render the colour burst */
 		oc = &s->chrominance_buffer[s->burst_left * 2];
@@ -3128,12 +3002,14 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 		}
 		
 		/* Render the colour subcarrier */
-		o = l->output;
+		o = l->output + (s->conf.s_video ? 1 : 0);
 		oc = s->chrominance_buffer;
 		for(x = 0; x < s->width; x++, o += 2, oc += 2)
 		{
-			*o += (oc[0] * l->lut[x].q +
-			       oc[1] * l->lut[x].i * pal) >> 15;
+			/* The quadrature / imaginary result is used
+			 * to render the sub-carrier */
+			*o += (l->lut[x].i * oc[1] * pal +
+			       l->lut[x].q * oc[0]) >> 15;
 		}
 	}
 	
@@ -3165,24 +3041,34 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 		const cint16_t *g;
 		int16_t dmin, dmax;
 		int sl = 0, sr = 0;
+		int dr;
+		
+		/* Is this line D'r or D'b? */
+		dr = ((l->frame * s->conf.lines) + l->line) & 1;
+		
+		if(l->line == 1 || l->line == s->conf.hline)
+		{
+			/* Clear the chrominance buffer at the top of each field */
+			memset(s->chrominance_buffer, 0, sizeof(int16_t) * 2 * s->width);
+		}
 		
 		if(s->conf.secam_field_id &&
-		   ((l->line >= 7 && l->line <= 15) ||
-		    (l->line >= 320 && l->line <= 328)))
+		   ((l->line >= 7 && l->line < 7 + s->secam_field_id_lines) ||
+		    (l->line >= 320 && l->line < 320 + s->secam_field_id_lines)))
 		{
 			int16_t level;
 			int16_t dev;
 			double rw;
 			
-			if(((l->frame * s->conf.lines) + l->line) & 1)
+			if(dr)
 			{
-				level = s->yiq_level_lookup[0x000000].q; // D'r
+				level = s->yuv_level_lookup[0x000000].v; // D'r
 				dev = s->secam_fsync_level;
 				rw = 15e-6;
 			}
 			else
 			{
-				level = s->yiq_level_lookup[0x000000].i; // D'b
+				level = s->yuv_level_lookup[0x000000].u; // D'b
 				dev = -s->secam_fsync_level;
 				rw = 18e-6;
 			}
@@ -3214,23 +3100,28 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 				stride = s->vframe.pixel_stride;
 			}
 			
-			if(((l->frame * s->conf.lines) + l->line) & 1)
+			if(dr)
 			{
 				/* D'r */
 				
 				for(x = 0; x < s->active_left + s->vframe_x; x++)
 				{
-					s->chrominance_buffer[x] = s->yiq_level_lookup[0x000000].q;
+					s->chrominance_buffer[x] = s->yuv_level_lookup[0x000000].v;
 				}
 				
 				for(; x < s->active_left + s->vframe_x + s->vframe.width; x++, prgb += stride)
 				{
-					s->chrominance_buffer[x] = s->yiq_level_lookup[*prgb & 0xFFFFFF].q;
+					s->chrominance_buffer[x] =
+						(s->yuv_level_lookup[*prgb & 0xFFFFFF].v +
+						 s->chrominance_buffer[s->width + x]) / 2;
+					
+					/* Store this lines D'b values to average with next line */
+					s->chrominance_buffer[s->width + x] = s->yuv_level_lookup[*prgb & 0xFFFFFF].u;
 				}
 				
 				for(; x < s->width; x++)
 				{
-					s->chrominance_buffer[x] = s->yiq_level_lookup[0x000000].q;
+					s->chrominance_buffer[x] = s->yuv_level_lookup[0x000000].v;
 				}
 			}
 			else
@@ -3239,17 +3130,22 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 				
 				for(x = 0; x < s->active_left + s->vframe_x; x++)
 				{
-					s->chrominance_buffer[x] = s->yiq_level_lookup[0x000000].i;
+					s->chrominance_buffer[x] = s->yuv_level_lookup[0x000000].u;
 				}
 				
 				for(; x < s->active_left + s->vframe_x + s->vframe.width; x++, prgb += stride)
 				{
-					s->chrominance_buffer[x] = s->yiq_level_lookup[*prgb & 0xFFFFFF].i;
+					s->chrominance_buffer[x] =
+						(s->yuv_level_lookup[*prgb & 0xFFFFFF].u +
+						 s->chrominance_buffer[s->width + x]) / 2;
+					
+					/* Store this lines D'r values to average with next line */
+					s->chrominance_buffer[s->width + x] = s->yuv_level_lookup[*prgb & 0xFFFFFF].v;
 				}
 				
 				for(; x < s->width; x++)
 				{
-					s->chrominance_buffer[x] = s->yiq_level_lookup[0x000000].i;
+					s->chrominance_buffer[x] = s->yuv_level_lookup[0x000000].u;
 				}
 			}
 			
@@ -3259,7 +3155,9 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 		
 		if(sr > sl)
 		{
-			fir_int16_process_block(&s->secam_l_fir, l->output + s->active_left * 2, l->output + s->active_left * 2, s->active_width, 2);
+			int16_t *o;
+			
+			if(!s->conf.s_video) fir_int16_process_block(&s->secam_l_fir, l->output + s->active_left * 2, l->output + s->active_left * 2, s->active_width, 2);
 			fir_int16_process_block(&s->fm_secam_fir, s->chrominance_buffer, s->chrominance_buffer, s->width, 1);
 			iir_int16_process(&s->fm_secam_iir, s->chrominance_buffer, s->chrominance_buffer, s->width, 1);
 			
@@ -3269,9 +3167,10 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 			s->fm_secam.phase.q = 0;
 			
 			/* Limit the FM deviation */
-			dmin = s->fm_secam_dmin[((l->frame * s->conf.lines) + l->line) & 1];
-			dmax = s->fm_secam_dmax[((l->frame * s->conf.lines) + l->line) & 1];
+			dmin = s->fm_secam_dmin[dr];
+			dmax = s->fm_secam_dmax[dr];
 			
+			o = l->output + (s->conf.s_video ? 1 : 0);
 			for(x = sl; x < sr; x++)
 			{
 				if(s->chrominance_buffer[x] < dmin) s->chrominance_buffer[x] = dmin;
@@ -3280,7 +3179,7 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 				g = &s->fm_secam_bell[(uint16_t) s->chrominance_buffer[x]];
 				_fm_modulator_cgain(&s->fm_secam, &s->chrominance_buffer[x], s->chrominance_buffer[x], g);
 				
-				l->output[x * 2] += (s->chrominance_buffer[x] * s->burst_win[x - s->burst_left]) >> 15;
+				o[x * 2] += (s->chrominance_buffer[x] * s->burst_win[x - s->burst_left]) >> 15;
 			}
 		}
 	}
@@ -3294,7 +3193,11 @@ static int _vid_filter_process(vid_t *s, void *arg, int nlines, vid_line_t **lin
 	vid_line_t *dst = lines[0];
 	vid_line_t *src = lines[nlines - 1];
 	
-	dst->width = fir_int16_process(&p->fir, dst->output, src->output, src->width, 2);
+	for(int i = 0; i < p->channels; i++)
+	{
+		fir_int16_feed(&p->fir[i], src->output + i, src->width, 2);
+		dst->width = fir_int16_process(&p->fir[i], dst->output + i, 0, 2);
+	}
 	
 	return(1);
 }
@@ -3303,7 +3206,10 @@ static void _vid_filter_free(vid_t *s, void *arg)
 {
 	_vid_filter_process_t *p = arg;
 	
-	fir_int16_free(&p->fir);
+	for(int i = 0; i < p->channels; i++)
+	{
+		fir_int16_free(&p->fir[i]);
+	}
 	free(p);
 }
 
@@ -3311,6 +3217,7 @@ static int _vid_audio_process(vid_t *s, void *arg, int nlines, vid_line_t **line
 {
 	vid_line_t *l = lines[0];
 	int16_t audio[2] = { 0, 0 };
+	int16_t *buf;
 	int x;
 	
 	for(x = 0; x < l->width; x++)
@@ -3325,7 +3232,7 @@ static int _vid_audio_process(vid_t *s, void *arg, int nlines, vid_line_t **line
 			
 			if(s->audiobuffer_samples == 0)
 			{
-				s->audiobuffer = av_read_audio(&s->av, &s->audiobuffer_samples);
+				av_read_audio(&s->av, &s->audiobuffer, &s->audiobuffer_samples);
 				
 				if(s->conf.systeraudio == 1)
 				{
@@ -3336,8 +3243,11 @@ static int _vid_audio_process(vid_t *s, void *arg, int nlines, vid_line_t **line
 			if(s->audiobuffer)
 			{
 				/* Fetch next sample */
-				audio[0] = s->audiobuffer[0];
-				audio[1] = s->audiobuffer[1];
+				for(int i = 0; i < 2; i++)
+				{
+					int32_t v = ((int32_t) s->audiobuffer[i] * s->conf.volume + 128) >> 8;
+					audio[i] = (v < INT16_MIN ? INT16_MIN : (v > INT16_MAX ? INT16_MAX : v));
+				}
 				s->audiobuffer += 2;
 				s->audiobuffer_samples--;
 			}
@@ -3347,6 +3257,12 @@ static int _vid_audio_process(vid_t *s, void *arg, int nlines, vid_line_t **line
 				audio[0] = 0;
 				audio[1] = 0;
 			}
+			
+			/* Feed the samples into the audio FIFO */
+			fifo_write_ptr(&s->audiofifo, (void **) &buf, 1);
+			buf[0] = audio[0];
+			buf[1] = audio[1];
+			fifo_write(&s->audiofifo, sizeof(int16_t) * 2);
 			
 			if(s->conf.am_audio_level > 0 && s->conf.am_mono_carrier != 0)
 			{
@@ -3481,6 +3397,10 @@ static int _vid_audio_process(vid_t *s, void *arg, int nlines, vid_line_t **line
 		dance_mod_output(&s->dance, l->output, l->width);
 	}
 	
+	l->audio_len = fifo_read(&s->audio_reader, (void **) &l->audio, NICAM_AUDIO_LEN * 2 * 10 * sizeof(int16_t), 0);
+	l->audio_len /= sizeof(int16_t);
+	if(l->audio_len == 0) l->audio = NULL;
+	
 	return(1);
 }
 
@@ -3552,14 +3472,20 @@ static int _vid_offset_process(vid_t *s, void *arg, int nlines, vid_line_t **lin
 static int _vid_passthru_process(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 {
 	vid_line_t *l = lines[0];
-	int x;
+	int x, i;
 	
 	if(feof(s->passthru))
 	{
 		return(1);
 	}
 	
-	fread(s->passline, sizeof(int16_t) * 2, l->width, s->passthru);
+	for(x = 0; x < l->width;)
+	{
+		i = fread(s->passline + x * 2, sizeof(int16_t) * 2, l->width - x, s->passthru);
+		if(i == 0) return(0);
+		
+		x += i;
+	}
 	
 	for(x = 0; x < l->width * 2; x++)
 	{
@@ -3603,19 +3529,12 @@ static int _add_lineprocess(vid_t *s, const char *name, int nlines, void *arg, v
 
 static int _calc_filter_delay(int width, int ntaps)
 {
-	int delay;
-	
 	/* Calculate the number of samples delay needed
 	 * to make filter delay exactly N lines */
-	ntaps /= 2;
-	
-	delay = (ntaps + width - 1) / width;
-	delay = width * delay - ntaps;
-	
-	return(delay);
+	return(width - ((ntaps / 2) % width));
 }
 
-static int _init_vresampler(vid_t *s)
+static int _init_vresampler(vid_t *s, r64_t in_rate, r64_t out_rate, int channels)
 {
 	_vid_filter_process_t *p;
 	int width;
@@ -3625,11 +3544,15 @@ static int _init_vresampler(vid_t *s)
 	{
 		return(VID_OUT_OF_MEMORY);
 	}
+	p->channels = channels;
 	
-	fir_int16_resampler_init(&p->fir, s->sample_rate, s->pixel_rate);
+	for(int i = 0; i < channels; i++)
+	{
+		fir_int16_resampler_init(&p->fir[i], out_rate, in_rate);
+	}
 	
 	/* Update maximum line width */
-	width = (s->width * p->fir.interpolation + p->fir.decimation - 1) / p->fir.decimation;
+	width = fir_int16_output_size(&p->fir[0], s->width);
 	if(width > s->max_width) s->max_width = width;
 	
 	_add_lineprocess(s, "vresampler", 2, p, _vid_filter_process, _vid_filter_free);
@@ -3651,6 +3574,7 @@ static int _init_vfilter(vid_t *s)
 	{
 		return(VID_OUT_OF_MEMORY);
 	}
+	p->channels = 1;
 	
 	if(s->conf.modulation == VID_VSB)
 	{
@@ -3659,7 +3583,7 @@ static int _init_vfilter(vid_t *s)
 		ntaps = 51;
 		
 		fir_complex_band_pass(taps, ntaps, s->sample_rate, -s->conf.vsb_lower_bw, s->conf.vsb_upper_bw, 750000, 1);
-		fir_int16_scomplex_init(&p->fir, taps, ntaps, 1, 1, _calc_filter_delay(width, ntaps));
+		fir_int16_scomplex_init(&p->fir[0], taps, ntaps, 1, 1, _calc_filter_delay(width, ntaps));
 	}
 	else if(s->conf.modulation == VID_FM)
 	{
@@ -3722,7 +3646,7 @@ static int _init_vfilter(vid_t *s)
 			}
 		}
 		
-		fir_int16_init(&p->fir, taps, ntaps, 1, 1, _calc_filter_delay(width, ntaps));
+		fir_int16_init(&p->fir[0], taps, ntaps, 1, 1, _calc_filter_delay(width, ntaps));
 	}
 	else if(s->conf.modulation == VID_AM ||
 	        s->conf.modulation == VID_NONE)
@@ -3732,10 +3656,10 @@ static int _init_vfilter(vid_t *s)
 		ntaps = 51;
 		
 		fir_low_pass(taps, ntaps, s->sample_rate, s->conf.video_bw, 0.75e6, 1);
-		fir_int16_init(&p->fir, taps, ntaps, 1, 1, _calc_filter_delay(width, ntaps));
+		fir_int16_init(&p->fir[0], taps, ntaps, 1, 1, _calc_filter_delay(width, ntaps));
 	}
 	
-	if(p->fir.type == 0)
+	if(p->fir[0].type == 0)
 	{
 		/* No filter has been created */
 		free(p);
@@ -3764,7 +3688,7 @@ vbidata_lut_t *_render_sync_pulses(vid_t *s, const double syncs[][4], int num)
 			NULL,
 			syncs[i][0] * s->pixel_rate,		/* Offset */
 			syncs[i][1] * s->pixel_rate,		/* Width */
-			syncs[i][2] * RT1090 * s->pixel_rate,	/* Rise-time */
+			syncs[i][2] * IRT1090 * s->pixel_rate,	/* Rise-time */
 			syncs[i][3]				/* Level */
 		);
 	}
@@ -3784,7 +3708,7 @@ vbidata_lut_t *_render_sync_pulses(vid_t *s, const double syncs[][4], int num)
 			lptr,
 			syncs[i][0] * s->pixel_rate,		/* Offset */
 			syncs[i][1] * s->pixel_rate,		/* Width */
-			syncs[i][2] * RT1090 * s->pixel_rate,	/* Rise-time */
+			syncs[i][2] * IRT1090 * s->pixel_rate,	/* Rise-time */
 			syncs[i][3]				/* Level */
 		);
 	}
@@ -3809,7 +3733,14 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 	srand(time(NULL));
 	
 	memset(s, 0, sizeof(vid_t));
-	memcpy(&s->conf, conf, sizeof(vid_config_t));
+	s->conf = *conf;
+	
+	/* Defaults */
+	if(s->conf.hline <= 0 && s->conf.interlaced != 0) s->conf.hline = (s->conf.lines + 1) / 2;
+	if(s->conf.gamma <= 0) s->conf.gamma = 1.0;
+	if(s->conf.rw_co <= 0) s->conf.rw_co = 0.299; /* R weight */
+	if(s->conf.gw_co <= 0) s->conf.gw_co = 0.587; /* G weight */
+	if(s->conf.bw_co <= 0) s->conf.bw_co = 0.114; /* B weight */
 	
 	s->sample_rate = sample_rate;
 	s->pixel_rate = pixel_rate ? pixel_rate : sample_rate;
@@ -3871,19 +3802,14 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 	}
 	
 	/* Allocate memory for YUV lookup tables */
-	s->yiq_level_lookup = malloc(0x1000000 * sizeof(_yiq16_t));
-	if(s->yiq_level_lookup == NULL)
+	s->yuv_level_lookup = malloc(0x1000000 * sizeof(_yuv16_t));
+	if(s->yuv_level_lookup == NULL)
 	{
 		vid_free(s);
 		return(VID_OUT_OF_MEMORY);
 	}
 	
 	/* Generate the gamma lookup table. LUTception */
-	if(s->conf.gamma <= 0)
-	{
-		s->conf.gamma = 1.0;
-	}
-	
 	for(c = 0; c < 0x100; c++)
 	{
 		glut[c] = pow((double) c / 255, 1 / s->conf.gamma);
@@ -3894,7 +3820,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 	{
 		double r, g, b;
 		double y, u, v;
-		double i, q;
 		
 		/* Calculate RGB 0..1 values */
 		r = glut[(c & 0xFF0000) >> 16];
@@ -3905,41 +3830,50 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		y = r * s->conf.rw_co
 		  + g * s->conf.gw_co
 		  + b * s->conf.bw_co;
-		u = (b - y);
-		v = (r - y);
+		u = (b - y) * s->conf.eu_co;
+		v = (r - y) * s->conf.ev_co;
 		
-		i = s->conf.eu_co * u;
-		q = s->conf.ev_co * v;
+		/* Limit magnitude of D/D2-MAC chrominance to -0.5 >= 0.5 */
+		if(s->conf.type == VID_MAC)
+		{
+			d = fabs(u) > fabs(v) ? fabs(u) : fabs(v);
+			if(d > 0.5)
+			{
+				d = 0.5 / d;
+				u *= d;
+				v *= d;
+			}
+		}
 		
 		/* Adjust values to correct signal level */
 		y = (s->conf.black_level + (y * (s->conf.white_level - s->conf.black_level))) * level;
 		
 		if(s->conf.colour_mode != VID_SECAM)
 		{
-			i *= (s->conf.white_level - s->conf.black_level) * level;
-			q *= (s->conf.white_level - s->conf.black_level) * level;
+			u *= (s->conf.white_level - s->conf.black_level) * level;
+			v *= (s->conf.white_level - s->conf.black_level) * level;
 		}
 		else
 		{
-			i = (i + SECAM_CB_FREQ - SECAM_FM_FREQ) / SECAM_FM_DEV;
-			q = (q + SECAM_CR_FREQ - SECAM_FM_FREQ) / SECAM_FM_DEV;
+			u = (u + SECAM_CB_FREQ - SECAM_FM_FREQ) / SECAM_FM_DEV;
+			v = (v + SECAM_CR_FREQ - SECAM_FM_FREQ) / SECAM_FM_DEV;
 		}
 		
 		/* Convert to INT16 range and store in tables */
-		s->yiq_level_lookup[c].y = round(_dlimit(y, -1, 1) * INT16_MAX);
-		s->yiq_level_lookup[c].i = round(_dlimit(i, -1, 1) * INT16_MAX);
-		s->yiq_level_lookup[c].q = round(_dlimit(q, -1, 1) * INT16_MAX);
+		s->yuv_level_lookup[c].y = round(_dlimit(y, -1, 1) * INT16_MAX);
+		s->yuv_level_lookup[c].u = round(_dlimit(u, -1, 1) * INT16_MAX);
+		s->yuv_level_lookup[c].v = round(_dlimit(v, -1, 1) * INT16_MAX);
 	}
 	
 	if(s->conf.colour_mode == VID_PAL ||
 	   s->conf.colour_mode == VID_NTSC)
 	{
-		rational_t a = rational_div((rational_t) { s->pixel_rate, 1 }, s->conf.colour_carrier);
+		r64_t a = r64_div((r64_t) { s->pixel_rate, 1 }, s->conf.colour_carrier);
 		
 		/* Generate the colour subcarrier lookup table */
 		/* This carrier is in phase with the U (B-Y) component */
 		s->colour_lookup_width = a.num;
-		d = 2.0 * M_PI * ((double) s->conf.colour_carrier.num / s->conf.colour_carrier.den) / s->pixel_rate;
+		d = 2.0 * M_PI * ((double) a.den / a.num);
 		
 		/*  To make overflow easier to handle the length of the table is extended by one line */
 		s->colour_lookup = malloc((s->colour_lookup_width + s->width) * sizeof(cint16_t));
@@ -3966,6 +3900,25 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 			vid_free(s);
 			return(VID_OUT_OF_MEMORY);
 		}
+		
+		/* Set up chrominance FIR filter */
+		if(s->conf.colour_bw > 0)
+		{
+			double *taps;
+			int ntaps;
+			
+			ntaps = fir_gaussian_low_pass_ntaps(s->pixel_rate, s->conf.colour_bw);
+			taps = malloc(sizeof(double) * ntaps);
+			if(!taps)
+			{
+				vid_free(s);
+				return(VID_OUT_OF_MEMORY);
+			}
+			
+			fir_gaussian_low_pass(taps, ntaps, s->pixel_rate, s->conf.colour_bw, 1);
+			fir_int16_init(&s->chrominance_fir, taps, ntaps, 1, 1, 0);
+			free(taps);
+		}
 	}
 	
 	if(s->conf.burst_level > 0)
@@ -3975,7 +3928,7 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		s->burst_win   = _burstwin(
 			s->pixel_rate,
 			s->conf.burst_width,
-			s->conf.burst_rise,
+			s->conf.burst_rise * IRT1090,
 			s->conf.burst_level * (s->conf.white_level - s->conf.blanking_level) / 2 * level,
 			&s->burst_width
 		);
@@ -4048,8 +4001,8 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 			return(r);
 		}
 		
-		fir_low_pass(taps, 51, s->pixel_rate, 1.50e6, 0.50e6, 1.0);
-		fir_int16_init(&s->fm_secam_fir, taps, 51, 1, 1, 0);
+		fir_low_pass(taps, 15, s->pixel_rate, 1.70e6, 0.50e6, 1.0);
+		fir_int16_init(&s->fm_secam_fir, taps, 15, 1, 1, 0);
 		
 		fir_band_reject(taps, 51, s->pixel_rate, SECAM_FM_FREQ - 1e6, SECAM_FM_FREQ + 1e6, 1e6, 1.0);
 		
@@ -4083,13 +4036,19 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		
 		/* Field sync levels (optional) */
 		s->secam_fsync_level = round(350e3 / SECAM_FM_DEV * INT16_MAX);
+		s->secam_field_id_lines = s->conf.secam_field_id_lines;
+		if(s->secam_field_id_lines < 1 || s->secam_field_id_lines > 9)
+		{
+			/* Default to 9 field ID lines per field */
+			s->secam_field_id_lines = 9;
+		}
 		
 		/* Generate the colour subcarrier envelope */
 		s->burst_left  = round(s->pixel_rate * (s->conf.burst_left - s->conf.burst_rise / 2));
 		s->burst_win   = _burstwin(
 			s->pixel_rate,
 			s->conf.burst_width,
-			s->conf.burst_rise,
+			s->conf.burst_rise * IRT1090,
 			1.0,
 			&s->burst_width
 		);
@@ -4099,8 +4058,9 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 			return(VID_OUT_OF_MEMORY);
 		}
 		
-		/* Allocate memory for the chrominance baseband buffer */
-		s->chrominance_buffer = malloc(sizeof(int16_t) * s->width);
+		/* Allocate memory for the chrominance baseband buffer,
+		 * the top half is used for the vertical averaging filter */
+		s->chrominance_buffer = malloc(sizeof(int16_t) * 2 * s->width);
 		if(!s->chrominance_buffer)
 		{
 			vid_free(s);
@@ -4123,7 +4083,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		.interlaced = 0,
 	};
 	s->olines = 1;
-	s->audio = 0;
 	
 	if(s->conf.raw_bb_file != NULL)
 	{
@@ -4132,7 +4091,7 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		{
 			perror("fopen");
 			vid_free(s);
-			return(r);
+			return(VID_ERROR);
 		}
 		
 		_add_lineprocess(s, "rawbb", 1, NULL, _vid_next_line_rawbb, NULL);
@@ -4256,6 +4215,18 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "vitc", 1, &s->vitc, vitc_render, NULL);
 	}
 	
+	/* Initialise EIA/CEA-608 CC test */
+	if(s->conf.cc608)
+	{
+		if((r = cc608_init(&s->cc608, s)) != VID_OK)
+		{
+			vid_free(s);
+			return(r);
+		}
+		
+		_add_lineprocess(s, "cc608", 1, &s->cc608, cc608_render, NULL);
+	}
+	
 	/* Initialise SiS encoder */
 	if(s->conf.sis)
 	{
@@ -4266,9 +4237,11 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		}
 		
 		_add_lineprocess(s, "sis", 1, &s->sis, sis_render, NULL);
-		
-		s->audio = 1;
 	}
+	
+	/* Prepare audio FIFO (1 second at 32khz) */
+	fifo_init(&s->audiofifo, 100, 320 * sizeof(int16_t) * 2);
+	fifo_reader_init(&s->audio_reader, &s->audiofifo, 0);
 	
 	/* Initialise the teletext system */
 	if(s->conf.teletext || s->conf.txsubtitles)
@@ -4288,7 +4261,11 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 	
 	if(s->pixel_rate != s->sample_rate)
 	{
-		_init_vresampler(s);
+		_init_vresampler(s,
+			(r64_t) { s->pixel_rate, 1 },
+			(r64_t) { s->sample_rate, 1 },
+			s->conf.s_video ? 2 : 1
+		);
 	}
 	
 	if(s->conf.vfilter)
@@ -4301,7 +4278,7 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		/* Enable Zweikanalton / A2 Stereo */
 		s->a2stereo_system_m = s->conf.fm_mono_carrier == 4500000;
 		s->conf.fm_right_level = s->conf.fm_mono_level * 0.446684; /* -7 dB */
-		s->conf.fm_right_carrier = s->conf.fm_mono_carrier + (s->a2stereo_system_m ? 224213 : 242000);
+		s->conf.fm_right_carrier = s->conf.fm_mono_carrier + (s->a2stereo_system_m ? 224213 : 242187.5);
 		s->conf.fm_right_deviation = s->conf.fm_mono_deviation;
 		s->conf.fm_right_preemph = s->conf.fm_mono_preemph;
 		
@@ -4362,8 +4339,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 				return(VID_OUT_OF_MEMORY);
 			}
 		}
-		
-		s->audio = 1;
 	}
 	
 	if(s->conf.fm_left_level > 0 && s->conf.fm_left_carrier != 0)
@@ -4403,8 +4378,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 				return(VID_OUT_OF_MEMORY);
 			}
 		}
-		
-		s->audio = 1;
 	}
 	
 	if(s->conf.fm_right_level > 0 && s->conf.fm_right_carrier != 0)
@@ -4444,8 +4417,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 				return(VID_OUT_OF_MEMORY);
 			}
 		}
-		
-		s->audio = 1;
 	}
 	
 	/* NICAM audio */
@@ -4460,7 +4431,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		}
 		
 		s->nicam_buf_len = 0;
-		s->audio = 1;
 	}
 	
 	/* DANCE audio */
@@ -4475,7 +4445,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		}
 		
 		s->dance_buf_len = 0;
-		s->audio = 1;
 	}
 	
 	/* AM audio */
@@ -4487,15 +4456,10 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 			vid_free(s);
 			return(r);
 		}
-		
-		s->audio = 1;
 	}
 	
 	/* Add the audio process */
-	if(s->audio == 1)
-	{
-		_add_lineprocess(s, "audio", 1, NULL, _vid_audio_process, NULL);
-	}
+	_add_lineprocess(s, "audio", 1, NULL, _vid_audio_process, NULL);
 	
 	/* FM video */
 	if(s->conf.modulation == VID_FM)
@@ -4513,7 +4477,7 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 			_init_fm_energy_dispersal(
 				&s->fm_video,
 				s->sample_rate,
-				(rational_t) { s->sample_rate, s->width * s->conf.lines }, // s->conf.frame_rate
+				(r64_t) { s->sample_rate, s->width * s->conf.lines }, // s->conf.frame_rate
 				round(INT16_MAX * s->conf.fm_energy_dispersal)
 			);
 		}
@@ -4593,9 +4557,10 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		}
 		
 		/* Blank the lines */
-		for(x = 0; x < s->width; x++)
+		for(x = 0; x < s->max_width; x++)
 		{
-			s->oline[r].output[x * 2] = s->blanking_level;
+			s->oline[r].output[x * 2 + 0] = s->blanking_level;
+			s->oline[r].output[x * 2 + 1] = 0;
 		}
 		
 		s->oline[r].width = 0;
@@ -4604,6 +4569,8 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		s->oline[r].vbialloc = 0;
 		s->oline[r].previous = &s->oline[(r + s->olines - 1) % s->olines];
 		s->oline[r].next = &s->oline[(r + 1) % s->olines];
+		s->oline[r].audio = NULL;
+		s->oline[r].audio_len = 0;
 	}
 	
 	/* Setup lineprocess output windows (non-threaded version) */
@@ -4658,6 +4625,11 @@ void vid_free(vid_t *s)
 		sis_free(&s->sis);
 	}
 	
+	if(s->conf.cc608)
+	{
+		cc608_free(&s->cc608);
+	}
+	
 	if(s->conf.vitc)
 	{
 		vitc_free(&s->vitc);
@@ -4698,8 +4670,11 @@ void vid_free(vid_t *s)
 		mac_free(s);
 	}
 	
+	fifo_reader_close(&s->audio_reader);
+	fifo_free(&s->audiofifo);
+	
 	/* Free allocated memory */
-	free(s->yiq_level_lookup);
+	free(s->yuv_level_lookup);
 	free(s->colour_lookup);
 	fir_int16_free(&s->secam_l_fir);
 	fir_int16_free(&s->fm_secam_fir);
@@ -4726,6 +4701,8 @@ void vid_free(vid_t *s)
 		}
 		free(s->oline);
 	}
+	
+	fir_int16_free(&s->chrominance_fir);
 	
 	free(s->chrominance_buffer);
 	free(s->burst_win);
@@ -4756,7 +4733,7 @@ size_t vid_get_framebuffer_length(vid_t *s)
 	return(sizeof(uint32_t) * s->active_width * s->conf.active_lines);
 }
 
-static vid_line_t *_vid_next_line(vid_t *s, size_t *samples)
+static vid_line_t *_vid_next_line(vid_t *s)
 {
 	vid_line_t *l = s->output_process->lines[0];
 	int i, j;
@@ -4787,6 +4764,12 @@ static vid_line_t *_vid_next_line(vid_t *s, size_t *samples)
 		/* Calculate frame offset from top left */
 		s->vframe_x = (s->active_width - s->vframe.width) / 2;
 		s->vframe_y = (s->conf.active_lines - s->vframe.height) / 2;
+		
+		/* Extract CC608 subtitles */
+		if(s->conf.cc608)
+		{
+			cc608_fifo_write(&s->cc608.ccfifo, s->vframe.cc608, 2);
+		}
 	}
 	
 	for(i = 0; i < s->nprocesses; i++)
@@ -4811,23 +4794,17 @@ static vid_line_t *_vid_next_line(vid_t *s, size_t *samples)
 		s->bframe++;
 	}
 	
-	/* Return a pointer to the output buffer */
-	if(samples)
-	{
-		*samples = l->width;
-	}
-	
 	return(l);
 }
 
-int16_t *vid_next_line(vid_t *s, size_t *samples)
+vid_line_t *vid_next_line(vid_t *s)
 {
 	vid_line_t *l;
 	
 	/* Drop any delay lines introduced by scramblers / filters */
 	do
 	{
-		l = _vid_next_line(s, samples);
+		l = _vid_next_line(s);
 		if(l == NULL) return(NULL);
 	}
 	while(l->line < 1);
@@ -4835,6 +4812,6 @@ int16_t *vid_next_line(vid_t *s, size_t *samples)
 	s->frame = l->frame;
 	s->line  = l->line;
 	
-	return(l->output);
+	return(l);
 }
 
