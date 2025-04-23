@@ -1,6 +1,6 @@
 /* hacktv - Analogue video transmitter for the HackRF                    */
 /*=======================================================================*/
-/* Copyright 2023 Philip Heron <phil@sanslogic.co.uk>                    */
+/* Copyright 2025 Philip Heron <phil@sanslogic.co.uk>                    */
 /*                                                                       */
 /* This program is free software: you can redistribute it and/or modify  */
 /* it under the terms of the GNU General Public License as published by  */
@@ -15,48 +15,17 @@
 /* You should have received a copy of the GNU General Public License     */
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef _RF_H
-#define _RF_H
+#ifndef _SPDIF_H
+#define _SPDIF_H
 
-/* Return codes */
-#define RF_OK             0
-#define RF_ERROR         -1
-#define RF_OUT_OF_MEMORY -2
+#include <stdint.h>
 
-/* Signal types */
-#define RF_INT16_COMPLEX 0
-#define RF_INT16_REAL    1
+#define SPDIF_BLOCK_SAMPLES (192 * 2)
+#define SPDIF_BLOCK_BYTES (SPDIF_BLOCK_SAMPLES * 8)
+#define SPDIF_BLOCK_BITS (SPDIF_BLOCK_BYTES * 8)
 
-/* File output types */
-#define RF_UINT8  0
-#define RF_INT8   1
-#define RF_UINT16 2
-#define RF_INT16  3
-#define RF_INT32  4
-#define RF_FLOAT  5 /* 32-bit float */
-
-/* RF output function prototypes */
-typedef int (*rf_write_t)(void *ctx, const int16_t *iq_data, size_t samples);
-typedef int (*rf_write_audio_t)(void *ctx, const int16_t *audio, size_t samples);
-typedef int (*rf_close_t)(void *ctx);
-
-typedef struct {
-	
-	void *ctx;
-	rf_write_t write;
-	rf_write_t write_audio;
-	rf_close_t close;
-	
-} rf_t;
-
-extern int rf_write(rf_t *s, const int16_t *iq_data, size_t samples);
-extern int rf_write_audio(rf_t *s, const int16_t *audio, size_t samples);
-extern int rf_close(rf_t *s);
-
-#include "rf_file.h"
-#include "rf_hackrf.h"
-#include "rf_soapysdr.h"
-#include "rf_fl2k.h"
+extern uint32_t spdif_bitrate(uint32_t sample_rate);
+extern void spdif_block(uint8_t b[SPDIF_BLOCK_BYTES], const int16_t pcm[SPDIF_BLOCK_SAMPLES]);
 
 #endif
 

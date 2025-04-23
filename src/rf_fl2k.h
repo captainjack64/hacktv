@@ -18,7 +18,12 @@
 #ifndef _FL2K_H
 #define _FL2K_H
 
-extern int rf_fl2k_open(rf_t *s, const char *device, unsigned int sample_rate);
+#define FL2K_AUDIO_NONE   0
+#define FL2K_AUDIO_MONO   1
+#define FL2K_AUDIO_STEREO 2
+#define FL2K_AUDIO_SPDIF  3
+
+extern int rf_fl2k_open(rf_t *s, const char *device, unsigned int sample_rate, int baseband, int audio_mode);
 
 #endif
 

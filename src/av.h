@@ -19,12 +19,14 @@
 #define _AV_H
 
 #include <stdint.h>
+#include <pthread.h>
 #include "common.h"
 
 /* Return codes */
 #define AV_OK             0
 #define AV_ERROR         -1
 #define AV_OUT_OF_MEMORY -2
+#define AV_EOF           -3
 
 typedef struct {
 	
@@ -38,17 +40,40 @@ typedef struct {
 	int line_stride;
 	
 	/* The pixel aspect ratio */
-	rational_t pixel_aspect_ratio;
+	r64_t pixel_aspect_ratio;
 	
-	/* Interlace flag */
+	/* Interlace flag:
+	 * 0 = Non-interlaced
+	 * 1 = Top field first
+	 * 2 = Bottom field first */
 	int interlaced;
+	
+	/* CC608 subtitle data */
+	uint8_t cc608[2];
 	
 } av_frame_t;
 
+
+
+/* AV module callbacks:
+ *
+ * av_read_video(): Returns AV_OK when a frame is available, or AV_EOF if
+ *                  the source has no further video frames.
+ *                  Any return code that is not AV_OK is treated as AV_EOF */
+
 typedef int (*av_read_video_t)(void *ctx, av_frame_t *frame);
-typedef int16_t *(*av_read_audio_t)(void *ctx, size_t *samples);
-typedef int (*av_eof_t)(void *ctx);
+
+/* av_read_audio(): Returns AV_OK when audio samples are available, or AV_EOF if
+ *                  the source has no further audio samples.
+ *                  Any return code that is not AV_OK is treated as AV_EOF */
+
+typedef int (*av_read_audio_t)(void *ctx, int16_t **samples, size_t *nsamples);
+
+/* av_close(): The source is being closed. The return code is ignored */
+
 typedef int (*av_close_t)(void *ctx);
+
+
 
 /* Frame fit/crop modes */
 typedef enum {
@@ -62,21 +87,24 @@ typedef struct {
 	/* Source interfaces */
 	void *av_font;
 	
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	
 	/* Video settings */
 	int width;
 	int height;
-	rational_t frame_rate;
-	rational_t display_aspect_ratios[2];
+	r64_t frame_rate;
+	r64_t display_aspect_ratios[2];
 	av_fit_mode_t fit_mode;
-	rational_t min_display_aspect_ratio;
-	rational_t max_display_aspect_ratio;
+	r64_t min_display_aspect_ratio;
+	r64_t max_display_aspect_ratio;
 	av_frame_t default_frame;
 	
 	/* Video state */
 	unsigned int frames;
 	
 	/* Audio settings */
-	rational_t sample_rate;
+	r64_t sample_rate;
 	
 	/* Audio state */
 	unsigned int samples;
@@ -85,7 +113,6 @@ typedef struct {
 	void *av_source_ctx;
 	av_read_video_t read_video;
 	av_read_audio_t read_audio;
-	av_eof_t eof;
 	av_close_t close;
 	
 } av_t;
@@ -93,14 +120,14 @@ typedef struct {
 extern void av_frame_init(av_frame_t *frame, int width, int height, uint32_t *framebuffer, int pstride, int lstride);
 
 extern int av_read_video(av_t *s, av_frame_t *frame);
-extern int16_t *av_read_audio(av_t *s, size_t *samples);
+extern int av_read_audio(av_t *s, int16_t **samples, size_t *nsamples);
 extern int av_eof(av_t *s);
 extern int av_close(av_t *s);
 
-extern rational_t av_display_aspect_ratio(av_frame_t *frame);
-extern void av_set_display_aspect_ratio(av_frame_t *frame, rational_t display_aspect_ratio);
+extern r64_t av_display_aspect_ratio(av_frame_t *frame);
+extern void av_set_display_aspect_ratio(av_frame_t *frame, r64_t display_aspect_ratio);
 
-extern rational_t av_calculate_frame_size(av_t *s, rational_t resolution, rational_t pixel_aspect_ratio);
+extern r64_t av_calculate_frame_size(av_t *s, r64_t resolution, r64_t pixel_aspect_ratio);
 
 extern void av_hflip_frame(av_frame_t *frame);
 extern void av_vflip_frame(av_frame_t *frame);

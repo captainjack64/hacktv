@@ -43,8 +43,8 @@ typedef struct {
 	float gamma;
 	int interlace;
 	av_fit_mode_t fit_mode;
-	rational_t min_aspect;
-	rational_t max_aspect;
+	r64_t min_aspect;
+	r64_t max_aspect;
 	int repeat;
 	int shuffle;
 	int verbose;
@@ -66,10 +66,12 @@ typedef struct {
 	int acp;
 	int vits;
 	int vitc;
+	int cc608;
 	int filter;
 	int subtitles;
 	int txsubtitles;
 	int nocolour;
+	int s_video;
 	int noaudio;
 	int nonicam;
 	int a2stereo;
@@ -105,10 +107,12 @@ typedef struct {
 	int16_t raw_bb_blanking_level;
 	int16_t raw_bb_white_level;
 	int secam_field_id;
+	int secam_field_id_lines;
 	int list_modes;
 	int json;
 	char *ffmt;
 	char *fopts;
+	int fl2k_audio;
 	
 	/* Video encoder state */
 	vid_t vid;
