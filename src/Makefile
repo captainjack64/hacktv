@@ -1,7 +1,7 @@
 
 VERSION := $(shell git log -1 --pretty='%cd' --date=format:'%Y%m%d')-$(shell git describe --dirty --always)
 CC      := $(CROSS_HOST)gcc
-PKGCONF := $(CROSS_HOST)pkg-config
+PKGCONF := pkg-config
 CFLAGS  := -g -Wall -Wno-unused-result -pthread -O3 $(EXTRA_CFLAGS) -DVERSION=\"$(VERSION)\"
 LDFLAGS := -g -lm -lz -lpng16 -pthread $(EXTRA_LDFLAGS)
 OBJS    := fifo.o vitc.o hacktv.o common.o fir.o vbidata.o teletext.o wss.o video.o mac.o dance.o videocrypt.o videocrypts.o videocrypt-ca.o syster.o syster-ca.o acp.o vits.o nicam728.o sis.o av.o av_test.o av_ffmpeg.o rf_file.o font.o subtitles.o eurocrypt.o graphics.o keyboard.o rf.o spdif.o cc608.o
