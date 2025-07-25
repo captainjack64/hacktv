@@ -517,22 +517,23 @@ static void _update_udt(uint8_t udt[25], time_t timestamp)
 	struct tm tm;
 	int i, mjd;
 	
+	/* Get the timezone offset */
+	
+#ifndef WIN32
 	/* Windows implements localtime differently, using localtime_s rather than localtime_r */
-	#ifndef WIN32
-		/* Get the timezone offset */
-		localtime_r(&timestamp, &tm);
-		i = tm.tm_gmtoff / 1800;
-		if(i < 0) i = -i | (1 << 5);
-		
-		gmtime_r(&timestamp, &tm);
-	#else
-		/* Get the timezone offset */
-		localtime_s(&tm, &timestamp);
-		i = _timezone / 1800;
-		if(i < 0) i = -i | (1 << 5);
-		
-		gmtime_s(&tm, &timestamp);
-	#endif
+	localtime_r(&timestamp, &tm);
+	i = tm.tm_gmtoff / 1800;
+	
+	gmtime_r(&timestamp, &tm);
+#else
+	localtime_s(&tm, &timestamp);
+	i = _timezone / 1800;
+	if(i < 0) i = -i | (1 << 5);
+	
+	gmtime_s(&tm, &timestamp);
+#endif
+	
+	if(i < 0) i = -i | (1 << 5);
 	
 	/* Calculate Modified Julian Date */
 	mjd = 367.0 * (1900 + tm.tm_year)

@@ -502,6 +502,7 @@ enum {
 	_OPT_LETTERBOX,
 	_OPT_PILLARBOX,
 	_OPT_FL2K_AUDIO,
+	_OPT_THREADS,
 	_OPT_VERSION,
 };
 
@@ -602,6 +603,7 @@ int main(int argc, char *argv[])
 		{ "volume",         required_argument, 0, _OPT_VOLUME },
 		{ "fl2k-audio",     required_argument, 0, _OPT_FL2K_AUDIO },
 		{ "showecm",        no_argument,       0, _OPT_SHOW_ECM },
+		{ "threads",        no_argument,       0, _OPT_THREADS },
 		{ "version",        no_argument,       0, _OPT_VERSION },
 		{ 0,                0,                 0,  0  }
 	};
@@ -611,6 +613,7 @@ int main(int argc, char *argv[])
 	char *pre, *sub;
 	int l;
 	int r;
+	r64_t rn;
 	
 	/* Disable console output buffer in Windows */
 	#ifdef WIN32
@@ -751,11 +754,29 @@ int main(int argc, char *argv[])
 			break;
 		
 		case 's': /* -s, --samplerate <value> */
-			s.samplerate = atoi(optarg);
+			
+			rn = r64_parse(optarg, NULL);
+			if(rn.den == 0)
+			{
+				fprintf(stderr, "Invalid sample rate\n");
+				return(-1);
+			}
+			
+			s.samplerate = (rn.num + rn.den / 2) / rn.den;
+			
 			break;
 		
 		case _OPT_PIXELRATE: /* --pixelrate <value> */
-			s.pixelrate = atoi(optarg);
+			
+			rn = r64_parse(optarg, NULL);
+			if(rn.den == 0)
+			{
+				fprintf(stderr, "Invalid pixel rate\n");
+				return(-1);
+			}
+			
+			s.pixelrate = (rn.num + rn.den / 2) / rn.den;
+			
 			break;
 		
 		case 'l': /* -l, --level <value> */
