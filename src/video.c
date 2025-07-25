@@ -4286,7 +4286,7 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 			return(r);
 		}
 		
-		_add_lineprocess(s, "discret11", 2, &s->ng, d11_render_line, NULL);
+		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
 	}
 	
 	/* Initialise ACP renderer */
