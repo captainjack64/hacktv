@@ -19,6 +19,7 @@
 #define _COMMON_H
 
 #include <stdint.h>
+#include <unistd.h> /* For _POSIX_BARRIERS */
 
 /* These factors where calculated with: f = M_PI / 2.0 / asin(0.9 - 0.1); */
 #define RT1090 1.6939549523182869 /* Factor to convert 10-90% rise time to 0-100% */
@@ -97,6 +98,32 @@ static inline void cint32_mula(cint32_t *r, const cint32_t *a, const cint32_t *b
 	r->i += i >> 31;
 	r->q += q >> 31;
 }
+
+#if !defined(_POSIX_BARRIERS) || _POSIX_BARRIERS <= 0
+
+/* For systems that don't include a native POSIX Barriers implementation
+ * Looking at you Apple....
+*/
+
+#include <pthread.h>
+
+typedef struct {
+	
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	int count;
+	int pending;
+	int cycle;
+	
+} pthread_barrier_t;
+
+#define PTHREAD_BARRIER_SERIAL_THREAD -1
+
+extern int pthread_barrier_destroy(pthread_barrier_t *barrier);
+extern int pthread_barrier_init(pthread_barrier_t *restrict barrier, void *attr, unsigned count);
+extern int pthread_barrier_wait(pthread_barrier_t *barrier);
+
+#endif
 
 #endif
 
