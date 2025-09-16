@@ -2402,7 +2402,7 @@ void _test_sample_rate(const vid_config_t *conf, unsigned int sample_rate)
 	/* Not really. Suggest some good sample rates */
 	r = sample_rate / m;
 	fprintf(stderr, "Warning: Pixel rate %u may not work well with this mode.\n", sample_rate);
-	fprintf(stderr, "Next valid pixel rates: %u, %u\n", m * r, m * (r + 1));
+	fprintf(stderr, "Next valid pixel rates: %d, %d\n", m * r, m * (r + 1));
 }
 
 static int _vid_next_line_rawbb(vid_t *s, void *arg, int nlines, vid_line_t **lines)
@@ -4268,7 +4268,7 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "videocrypts", VCS_DELAY_LINES, 0, &s->vcs, vcs_render_line, NULL);
 	}
 	
-	/* Initalise syster encoder */
+	/* Initialise syster encoder */
 	if(s->conf.syster || s->conf.systercnr)
 	{
 		if((r = ng_init(&s->ng, s)) != VID_OK)
@@ -4280,6 +4280,18 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "syster", NG_DELAY_LINES, 0, &s->ng, ng_render_line, NULL);
 	}
 
+	/* Initalise D11 encoder */
+	if(s->conf.d11)
+	{
+		if((r = d11_init(&s->ng, s, s->conf.d11)) != VID_OK)
+		{
+			vid_free(s);
+			return(r);
+		}
+		
+		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
+	}
+	
 	/* Initalise D11 encoder */
 	if(s->conf.d11)
 	{
