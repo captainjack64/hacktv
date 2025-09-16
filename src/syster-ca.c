@@ -45,7 +45,7 @@ unsigned char const S[] = {
 	0x2E, 0x95, 0xB2, 0x6F, 0x79, 0x06, 0xC7, 0xF8,	0x4B, 0xE0, 0xD1, 0x3C, 0xA4, 0x5A, 0x1D, 0x83,
 	0x0C, 0xE2, 0x7B, 0x18, 0x90, 0x4D, 0xC7, 0xB1,	0x63, 0x8F, 0xDE, 0x25, 0x39, 0xF6, 0xA4, 0x5A,
 	0xF2, 0x17, 0x85, 0x4E, 0x5C, 0xB0, 0x2B, 0xED,	0xA4, 0x79, 0x38, 0x93, 0x6F, 0xCA, 0xD1, 0x06
- };
+};
 
 /* Key expansion table */
 unsigned char const C[] = {	
@@ -65,9 +65,9 @@ unsigned char const E[] = {
 	15, 16, 17, 18, 19, 20, 19, 20,
 	21, 22, 23, 24, 23, 24, 25, 26,
 	27, 28, 27, 28, 29, 30, 31,  0
- };
- 
- /* Permuation table */
+};
+
+/* Permuation table */
 unsigned char const P[] = {
 	0x31, 0x12, 0x50, 0x33, 0x13, 0x21, 0x42, 0x00,
 	0x51, 0x52, 0x30, 0x43, 0x53, 0x70, 0x22, 0x03,
@@ -89,9 +89,9 @@ static void _permute(unsigned char *in, unsigned char *buffer1, int *p)
 {
 	int i, j;
 	unsigned char T[8];
-
+	
 	memcpy(T, in, 8);
-
+	
 	for(j = 7; j >= 0; j-- ) 
 	{
 		for(i = 0; i < 8; i++ ) 
@@ -114,11 +114,11 @@ static void _permute(unsigned char *in, unsigned char *buffer1, int *p)
 
 /* Expansion */
 static void _expand_des(unsigned char const *e, unsigned char *data, unsigned char *result)
-{	
+{
 	unsigned char d, i, j;
-
+	
 	memset(result, 0 , 8);
-
+	
 	for(j = 0; j < 8; j++) 
 	{
 		for( i = 6; i > 0; i-- ) {
@@ -131,9 +131,9 @@ static void _expand_des(unsigned char const *e, unsigned char *data, unsigned ch
 
 /* Key rotation */
 static void _key_rotate(int rounds, unsigned char *k)
-{	
+{
 	int i, j;
-
+	
 	/* Rotate each half of key separately */
 	for(i = 0; i < LS[rounds]; i++)
 	{
@@ -151,7 +151,7 @@ static void _key_rotate(int rounds, unsigned char *k)
 void _syster_des_f(unsigned char *k, unsigned char *cw, int m)
 {
 	int i;
-
+	
 	/* Expanded key and control word */
 	unsigned char ecw[8], ek[8];
 	
@@ -167,12 +167,11 @@ void _syster_des_f(unsigned char *k, unsigned char *cw, int m)
 		/* Rotate key */
 		_key_rotate(i, k);				
 	}
-
-
+	
 	for(i = 0; i < 16; i++) 
 	{
 		int c, j;
-
+		
 		/* Right half of decoded 8-bit CW */
 		unsigned char r[4];
 		
@@ -182,23 +181,23 @@ void _syster_des_f(unsigned char *k, unsigned char *cw, int m)
 		   m: 1 = encrypt
 		*/
 		_expand_des(C, kr[(m ? 15 - i : i)], ek);
-
+		
 		/* Plain text expansion */
 		_expand_des(E, cw, ecw);
-
+		
 		/* Main */
 		for(j = 31, c = 0; c < 8; c++)
 		{
 			unsigned char x, sb, m;
 			int b, l;
-
+			
 			/* XOR key with CW */
 			x = (ek[c] ^ ecw[c]) & 0x3F;
-
+			
 			/* S-box selection */
 			sb = S[x >> 1 | (0x20 * (8 - c) & 0xFF)];
 			if(x & 1) sb = sb << 4 & 0xF0;
-
+			
 			/* Permutation */
 			for(l = 0; l < 4; l++, j--)
 			{
@@ -208,7 +207,7 @@ void _syster_des_f(unsigned char *k, unsigned char *cw, int m)
 				sb <<=1;
 			}
 		}
-
+		
 		/* XOR to create r then rotate left/right halves of CW */
 		for(int l = 0; l < 4; l++)
 		{				
@@ -222,25 +221,25 @@ void _syster_des_f(unsigned char *k, unsigned char *cw, int m)
 uint64_t encrypt_syster_cw(unsigned char *ecm, unsigned char k64[8], int m)
 {
 	int round, i;
-
+	
 	unsigned char buffer1[8], cw[8], pcw[8];
-    uint64_t d, controlword;
-
-    /* Run twice - one for each half of the 16-byte encrypted control word */
+	uint64_t d, controlword;
+	
+	/* Run twice - one for each half of the 16-byte encrypted control word */
 	for(round = 0; round < 2; round++)
 	{
 		unsigned char k64ip[8], buffer2[8];
-
+		
 		/* Initial key permutation */
 		_permute(k64, k64ip, kp);
 		k64ip[0] = k64ip[4] << 4;
-
+		
 		/* Initial CW permutation */
 		_permute(ecm + round * 8, pcw, ip);
-
+		
 		/* Call main DES function */
 		_syster_des_f(k64ip, pcw, m);
-
+		
 		/* Final permutation of CW */
 		_permute(pcw, buffer2, fp);
 		
@@ -248,7 +247,7 @@ uint64_t encrypt_syster_cw(unsigned char *ecm, unsigned char k64[8], int m)
 		{
 			/* Copy plain CW into buffer */
 			memcpy(buffer1 + (round * 4), ecm + (round * 12), 4);
-
+			
 			/* Copy encrypted CW back into input */
 			memcpy(ecm + (round * 8), buffer2, 8);
 		}
@@ -258,18 +257,19 @@ uint64_t encrypt_syster_cw(unsigned char *ecm, unsigned char k64[8], int m)
 			memcpy(buffer1 + (round * 4), buffer2 + (round * 4), 4);
 		}
 	}
-
+	
 	/* Create final decoded control word */
 	for(i = 0; i < 4; i++)
 	{
 		cw[i] = buffer1[i + 4] & (i == 3 ? 0x7F : 0xFF);
 		cw[i + 4] = (buffer1[i] << 1 & (i == 3 ? 0x1F : 0xFF)) | (buffer1[(i == 0 ? 7 : i - 1)] >> 7 & 1);
 	}
-
-    for(i = controlword = 0; i < 8; i++) 
-    {
-        	d = cw[i];
-			controlword = d << (i * 8) | controlword;
-    }
-	return controlword;
+	
+	for(i = controlword = 0; i < 8; i++) 
+	{
+		d = cw[i];
+		controlword = d << (i * 8) | controlword;
+	}
+	
+	return(controlword);
 }

@@ -2402,7 +2402,7 @@ void _test_sample_rate(const vid_config_t *conf, unsigned int sample_rate)
 	/* Not really. Suggest some good sample rates */
 	r = sample_rate / m;
 	fprintf(stderr, "Warning: Pixel rate %u may not work well with this mode.\n", sample_rate);
-	fprintf(stderr, "Next valid pixel rates: %u, %u\n", m * r, m * (r + 1));
+	fprintf(stderr, "Next valid pixel rates: %d, %d\n", m * r, m * (r + 1));
 }
 
 static int _vid_next_line_rawbb(vid_t *s, void *arg, int nlines, vid_line_t **lines)
@@ -3827,6 +3827,9 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 	memset(s, 0, sizeof(vid_t));
 	s->conf = *conf;
 	
+	/* Cleared just before the threads are started */
+	s->thread_abort = 1;
+	
 	/* Defaults */
 	if(s->conf.hline <= 0 && s->conf.interlaced != 0) s->conf.hline = (s->conf.lines + 1) / 2;
 	if(s->conf.gamma <= 0) s->conf.gamma = 1.0;
@@ -4265,7 +4268,7 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "videocrypts", VCS_DELAY_LINES, 0, &s->vcs, vcs_render_line, NULL);
 	}
 	
-	/* Initalise syster encoder */
+	/* Initialise syster encoder */
 	if(s->conf.syster || s->conf.systercnr)
 	{
 		if((r = ng_init(&s->ng, s)) != VID_OK)
@@ -4277,6 +4280,18 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "syster", NG_DELAY_LINES, 0, &s->ng, ng_render_line, NULL);
 	}
 
+	/* Initalise D11 encoder */
+	if(s->conf.d11)
+	{
+		if((r = d11_init(&s->ng, s, s->conf.d11)) != VID_OK)
+		{
+			vid_free(s);
+			return(r);
+		}
+		
+		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
+	}
+	
 	/* Initalise D11 encoder */
 	if(s->conf.d11)
 	{
@@ -4710,29 +4725,34 @@ void vid_free(vid_t *s)
 	av_close(&s->av);
 	
 	/* Wait for threads to end */
-	s->thread_abort = 1;
-	while(s->nthreads > 0)
+	if(s->thread_abort == 0)
 	{
-		pthread_barrier_wait(&s->process_barrier);
-	}
-	
-	for(i = 0; i < s->nprocesses; i++)
-	{
-		if(s->processes[i].thread == 1)
+		s->thread_abort = 1;
+		
+		while(s->nthreads > 0)
 		{
-			pthread_join(s->processes[i].pthread, NULL);
+			pthread_barrier_wait(&s->process_barrier);
 		}
 		
-		if(s->processes[i].free)
+		for(i = 0; i < s->nprocesses; i++)
 		{
-			s->processes[i].free(s, s->processes[i].arg);
+			if(s->processes[i].thread == 1)
+			{
+				pthread_join(s->processes[i].pthread, NULL);
+			}
+			
+			if(s->processes[i].free)
+			{
+				s->processes[i].free(s, s->processes[i].arg);
+			}
+			
+			free(s->processes[i].lines);
 		}
 		
-		free(s->processes[i].lines);
+		free(s->processes);
+		
+		pthread_barrier_destroy(&s->process_barrier);
 	}
-	free(s->processes);
-	
-	pthread_barrier_destroy(&s->process_barrier);
 	
 	if(s->conf.passthru)
 	{
