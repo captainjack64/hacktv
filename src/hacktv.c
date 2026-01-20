@@ -430,6 +430,7 @@ enum {
 	_OPT_RAW_BB_FILE,
 	_OPT_RAW_BB_BLANKING,
 	_OPT_RAW_BB_WHITE,
+	_OPT_CPS,
 	_OPT_SECAM_FIELD_ID,
 	_OPT_SECAM_FIELD_ID_LINES,
 	_OPT_FFMT,
@@ -517,6 +518,7 @@ int main(int argc, char *argv[])
 		{ "raw-bb-file",    required_argument, 0, _OPT_RAW_BB_FILE },
 		{ "raw-bb-blanking", required_argument, 0, _OPT_RAW_BB_BLANKING },
 		{ "raw-bb-white",   required_argument, 0, _OPT_RAW_BB_WHITE },
+		{ "cps",            required_argument, 0, _OPT_CPS },
 		{ "secam-field-id", no_argument,       0, _OPT_SECAM_FIELD_ID },
 		{ "secam-field-id-lines", required_argument, 0, _OPT_SECAM_FIELD_ID_LINES },
 		{ "json",           no_argument,       0, _OPT_JSON },
@@ -958,6 +960,10 @@ int main(int argc, char *argv[])
 		
 		case _OPT_RAW_BB_WHITE: /* --raw-bb-white <value> */
 			s.raw_bb_white_level = strtol(optarg, NULL, 0);
+			break;
+		
+		case _OPT_CPS: /* --cps <file> */
+			s.cps = optarg;
 			break;
 		
 		case _OPT_SECAM_FIELD_ID: /* --secam-field-id */
@@ -1433,6 +1439,7 @@ int main(int argc, char *argv[])
 	vid_conf.raw_bb_file = s.raw_bb_file;
 	vid_conf.raw_bb_blanking_level = s.raw_bb_blanking_level;
 	vid_conf.raw_bb_white_level = s.raw_bb_white_level;
+	vid_conf.cps = s.cps;
 	vid_conf.secam_field_id = s.secam_field_id;
 	vid_conf.secam_field_id_lines = s.secam_field_id_lines;
 	

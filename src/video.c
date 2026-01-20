@@ -454,6 +454,87 @@ const vid_config_t vid_config_525pal = {
 	.eu_co          = 0.493,
 };
 
+const vid_config_t vid_config_625pal_n = {
+	
+	/* Composite 625PAL-N */
+	.output_type    = RF_INT16_REAL,
+	
+	.level          = 1.0, /* Overall signal level */
+	.video_level    = 1.0, /* Power level of video */
+	
+	.video_bw       = 4.2e6,
+	
+	.type           = VID_RASTER_625,
+	.frame_rate     = { 25, 1 },
+	.frame_aspects  = { { 4, 3 } },
+	.lines          = 625,
+	.interlaced     = 1,
+	
+	.active_lines   = 576,
+	.active_width   = 0.00005195, /* 51.95µs */
+	.active_left    = 0.00001040, /* |-->| 10.40µs */
+	
+	.hsync_width       = 0.00000470, /* 4.70 ±0.20µs */
+	.vsync_short_width = 0.00000235, /* 2.35 ±0.10µs */
+	.vsync_long_width  = 0.00002730, /* 27.3 ±0.10µs */
+	
+	.white_level    =  0.70,
+	.black_level    =  0.00,
+	.blanking_level =  0.00,
+	.sync_level     = -0.30,
+	
+	.colour_mode    = VID_PAL,
+	.burst_width    = 0.00000252, /* 2.52 ±0.28 μs */
+	.burst_rise     = 0.00000030, /* 0.30 ±0.10µs */
+	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1μs */
+	.burst_level    = 33.0 / 73.0, /* Approximation */
+	.colour_carrier = { 14328225, 4 }, /* 3582056.25 Hz */
+	
+	.ev_co          = 0.877,
+	.eu_co          = 0.493,
+};
+
+const vid_config_t vid_config_525pal_m = {
+	
+	/* Composite 525PAL-M */
+	.output_type    = RF_INT16_REAL,
+	
+	.level          = 1.0, /* Overall signal level */
+	.video_level    = 1.0, /* Power level of video */
+	
+	.video_bw       = 4.2e6,
+	
+	.type           = VID_RASTER_525,
+	.frame_rate     = { 30000, 1001 },
+	.frame_aspects  = { { 4, 3 } },
+	.lines          = 525,
+	.interlaced     = 1,
+	
+	.active_lines   = 480,
+	.active_width   = 0.00005280, /* 52.80µs */
+	.active_left    = 0.00000920, /* |-->| 9.2 +0.2 -0.1µs */
+	
+	.hsync_width       = 0.00000470, /*  4.70 ±0.10µs */
+	.vsync_short_width = 0.00000230, /*  2.30 ±0.10μs */
+	.vsync_long_width  = 0.00002710, /* 27.10μs */
+	.sync_rise         = 0.00000020, /*  0.25µs */
+	
+	.white_level    =  0.70,
+	.black_level    =  0.00,
+	.blanking_level =  0.00,
+	.sync_level     = -0.30,
+	
+	.colour_mode    = VID_PAL,
+	.burst_width    = 0.00000252, /* 2.52 ±0.28 μs */
+	.burst_rise     = 0.00000030, /* 0.30 ±0.10µs */
+	.burst_left     = 0.00000530, /* |-->| 5.3 ±0.1μs */
+	.burst_level    = 33.0 / 73.0, /* Approximation */
+	.colour_carrier = { 511312500, 143 }, /* 3575611.888... Hz */
+	
+	.ev_co          = 0.877,
+	.eu_co          = 0.493,
+};
+
 const vid_config_t vid_config_secam_l = {
 	
 	/* System L (SECAM) */
@@ -1964,6 +2045,8 @@ const vid_configs_t vid_configs[] = {
 	{ "pal-m",         &vid_config_pal_m,            "PAL colour, 30/1.001 fps, 525 lines, AM (complex), 4.5 MHz FM audio" },
 	{ "pal-n",         &vid_config_pal_n,            "PAL colour, 25 fps, 625 lines, AM (complex), 4.5 MHz FM audio" },
 	{ "525pal",        &vid_config_525pal,           "PAL colour, 30/1.001 fps, 525 lines, unmodulated (real)" },
+	{ "625pal-n",      &vid_config_625pal_n,         "PAL colour, 25 fps, 625 lines, unmodulated (real)" },
+	{ "525pal-m",      &vid_config_525pal_m,         "PAL colour, 30/1.001 fps, 525 lines, unmodulated (real)" },
 	{ "l",             &vid_config_secam_l,          "SECAM colour, 25 fps, 625 lines, AM (complex), 6.5 MHz AM audio" },
 	{ "d",             &vid_config_secam_dk,         "SECAM colour, 25 fps, 625 lines, AM (complex), 6.5 MHz FM audio" },
 	{ "k",             &vid_config_secam_dk,         "SECAM colour, 25 fps, 625 lines, AM (complex), 6.5 MHz FM audio" },
@@ -2166,6 +2249,70 @@ const static double fm_audio_j17_taps[65] = {
 	-0.000430,-0.000420,-0.000309,-0.000310,-0.000223,-0.000232,-0.000162,
 	-0.000175,-0.000119
 };
+
+/* PLN/CPS test card data */
+typedef struct {
+	uint16_t id;
+	int blanking_level;
+	int white_level;
+	int output_frames;
+	int c_blocks;
+} _cps_standard_t;
+
+static const _cps_standard_t _cps_stds[] = {
+	{ 0x2101, 0x100, 0x34C, 4, 2 }, /* 625 PAL / D2 */
+	{ 0x2181, 0x0F0, 0x320, 4, 2 }, /* 625 PAL (Analogue) */
+	{ 0x2125, 0x100, 0x34C, 4, 2 }, /* 625 PALplus */
+	{ 0x2205, 0x0F0, 0x320, 2, 2 }, /* 625 SECAM-V */
+	{ 0x2025, 0x0F0, 0x320, 2, 1 }, /* 525 NTSC/D2 */
+	{ 0x1325, 0x0F0, 0x320, 1, 0 }, /* 405 Monochrome */
+	{ },
+};
+
+typedef struct {
+	
+	uint8_t ub_0x00; /* Item/object type? */
+	uint8_t std1;
+	uint16_t lines_per_frame;
+	uint16_t samples_per_line;
+	uint16_t line_duration_ns;
+	uint8_t std2;
+	char text1[17]; /* 16 chars + \0 */
+	char text2[17]; /* 16 chars + \0 */
+	uint8_t ub_0x29;
+	
+	/* Movement Region */
+	uint16_t mr_top_line;
+	uint16_t mr_first_sample;
+	uint16_t mr_bottom_line;
+	uint16_t mr_last_sample;
+	
+	/* Movement Object */
+	uint16_t mo_samples_per_line;
+	uint16_t mo_lines_per_frame;
+	
+	/* Length in bytes of each block in the
+	 * main test card and movement object */
+	uint32_t bytes_per_block[4];
+	uint32_t bytes_per_mo_block[4];
+	
+	uint8_t ub_0x56;
+	uint8_t ub_0x57;
+	uint8_t clock_crystal;
+	uint8_t pattern_group;
+	uint8_t ub_0x5a;
+	uint8_t ub_0x5b;
+	uint8_t ub_0x5c;
+	
+	r64_t pixel_rate;
+	int blanking_level;
+	int white_level;
+	
+	int16_t *data;
+	size_t nsamples;
+	size_t p;
+	
+} _cps_t;
 
 /* Calculate the complex gain for the SECAM chrominance
  * sub-carrier at f Hz (bell curve) */
@@ -2439,6 +2586,338 @@ static int _vid_next_line_rawbb(vid_t *s, void *arg, int nlines, vid_line_t **li
 	for(x = 0; x < s->max_width; x++)
 	{
 		l->output[x * 2 + 1] = 0;
+	}
+	
+	return(1);
+}
+
+static int _decompress_cps(uint8_t *dst, const uint8_t *src, int length)
+{
+	int i, r;
+	
+	/* Decompress CPS block. Returns number of bytes output */
+	
+	/* 7F   00 7F = Escape sequence for 7F
+	 * 7F   00 80 = Escape sequence for 80
+	 * 7F   xx yy = Repeat yy xx+1 times
+	 * 80 xxxx yy = Repeat yy xxxx+1 times
+	 * 80 0FF9 yy = Maximum repeat count?
+	 * 
+	 * The last three bytes are never in RLE block?
+	 * 7F and 80 are escaped individually, even if part of a potential RLE sequence
+	*/
+	
+	for(i = 0; length > 0; src++, length--)
+	{
+		r = 1;
+		
+		if(*src == 0x7F)
+		{
+			if(length < 3) return(i);
+			
+			r += src[1];
+			length -= 2;
+			src += 2;
+		}
+		else if(*src == 0x80)
+		{
+			if(length < 4) return(i);
+			
+			r += (src[1] << 8) | src[2];
+			length -= 3;
+			src += 3;
+		}
+		
+		if(dst != NULL) memset(&dst[i], *src, r);
+		i += r;
+	}
+	
+	return(i);
+}
+
+static int _load_cps(_cps_t *cps, const char *filename, int16_t blanking_level, int16_t white_level, int s_video)
+{
+	FILE *f;
+	uint8_t hdr[93];
+	uint8_t *blocks[4] = { NULL, NULL, NULL, NULL };
+	int16_t *out;
+	int i, j;
+	const int ngroups = 10;
+	const char *groups[] = {
+		"UNSPECIFIED",
+		"BARS",
+		"FLAT FIELDS",
+		"MONITOR SETUP",
+		"LINEARITY",
+		"PULSES",
+		"SWEEPS",
+		"TIMING",
+		"TEST LINES",
+		"OTHERS",
+	};
+	const int nclocks = 10;
+	r64_t clocks[10] = {
+		{   13500000,   1 }, /* Rec 601 / PALplus */
+		{   17734475,   1 }, /* PAL 4fsc */
+		{  157500000,  11 }, /* NTSC 4fsc */
+		{   14328225,   1 }, /* PAL-N 4fsc */
+		{ 5204525000, 143 }, /* PAL-M 4fsc */
+		{   18562500,   1 }, /* 1125/60 & 1250/50 */
+		{ 2700000000, 143 }, /* 1125/59.94 & 1050/59.94 */
+		
+		/* These three are listed as "User defined" in the TPG20 service manual
+		 * but have these values in the Pattern Master STANDARD.DAT sample file */
+		{   18000000,   1 }, /* ? */
+		{   12960000,   1 }, /* 405-line */
+		{   74250000,   1 }, /* ? */
+	};
+	const _cps_standard_t *std;
+	
+	fprintf(stderr, "Loading PLN/CPS file %s\n", filename);
+	
+	f = fopen(filename, "rb");
+	if(!f)
+	{
+		perror(filename);
+		return(VID_ERROR);
+	}
+	
+	/* Load the PLN/CPS header */
+	i = fread(hdr, 93, 1, f);
+	if(i != 1)
+	{
+		fclose(f);
+		fprintf(stderr, "Error reading header\n");
+		return(VID_ERROR);
+	}
+	
+	/* Parse the header. ub = unknown bytes */
+	cps->ub_0x00               = hdr[0x00];
+	cps->std1                  = hdr[0x01];
+	cps->lines_per_frame       = (hdr[0x02] << 8) | hdr[0x03];
+	cps->samples_per_line      = (hdr[0x04] << 8) | hdr[0x05];
+	cps->line_duration_ns      = (hdr[0x06] << 8) | hdr[0x07];
+	cps->std2                  = hdr[0x08];
+	memcpy(cps->text1, &hdr[0x09], 16); cps->text1[0x16] = '\0';
+	memcpy(cps->text2, &hdr[0x19], 16); cps->text2[0x16] = '\0';
+	cps->ub_0x29               = hdr[0x29];
+	cps->mr_top_line           = (hdr[0x2A] << 8) | hdr[0x2B];
+	cps->mr_first_sample       = (hdr[0x2C] << 8) | hdr[0x2D];
+	cps->mr_bottom_line        = (hdr[0x2E] << 8) | hdr[0x2F];
+	cps->mr_last_sample        = (hdr[0x30] << 8) | hdr[0x31];
+	cps->mo_samples_per_line   = (hdr[0x32] << 8) | hdr[0x33];
+	cps->mo_lines_per_frame    = (hdr[0x34] << 8) | hdr[0x35];
+	cps->bytes_per_block[0]    = (hdr[0x36] << 24) | (hdr[0x37] << 16) | (hdr[0x38] << 8) | hdr[0x39];
+	cps->bytes_per_block[1]    = (hdr[0x3A] << 24) | (hdr[0x3B] << 16) | (hdr[0x3C] << 8) | hdr[0x3D];
+	cps->bytes_per_block[2]    = (hdr[0x3E] << 24) | (hdr[0x3F] << 16) | (hdr[0x40] << 8) | hdr[0x41];
+	cps->bytes_per_block[3]    = (hdr[0x42] << 24) | (hdr[0x43] << 16) | (hdr[0x44] << 8) | hdr[0x45];
+	cps->bytes_per_mo_block[0] = (hdr[0x46] << 24) | (hdr[0x47] << 16) | (hdr[0x48] << 8) | hdr[0x49];
+	cps->bytes_per_mo_block[1] = (hdr[0x4A] << 24) | (hdr[0x4B] << 16) | (hdr[0x4C] << 8) | hdr[0x4D];
+	cps->bytes_per_mo_block[2] = (hdr[0x4E] << 24) | (hdr[0x4F] << 16) | (hdr[0x50] << 8) | hdr[0x51];
+	cps->bytes_per_mo_block[3] = (hdr[0x52] << 24) | (hdr[0x53] << 16) | (hdr[0x54] << 8) | hdr[0x55];
+	cps->ub_0x56               = hdr[0x56];
+	cps->ub_0x57               = hdr[0x57];
+	cps->clock_crystal         = hdr[0x58];
+	cps->pattern_group         = hdr[0x59];
+	cps->ub_0x5a               = hdr[0x5A];
+	cps->ub_0x5b               = hdr[0x5B];
+	cps->ub_0x5c               = hdr[0x5C];
+	
+	/* I'm assuming the first byte is a file type ID */
+	if(cps->ub_0x00 != 0xFF)
+	{
+		fprintf(stderr, "Error: Not a PLN/CPS file?\n");
+		fclose(f);
+		return(VID_ERROR);
+	}
+	
+	/* Display some information on the file */
+	fprintf(stderr, "Pattern: \"%s%s\"\n", cps->text1, cps->text2);
+	fprintf(stderr, "Group: %s (%d)\n", 
+		cps->pattern_group >= ngroups ? "UNKNOWN" : groups[cps->pattern_group],
+		cps->pattern_group
+	);
+	fprintf(stderr, "Frame size: %dx%d\n", cps->samples_per_line, cps->lines_per_frame);
+	if(cps->clock_crystal >= nclocks)
+	{
+		fprintf(stderr, "Clock rate: Unknown (%d)\n", cps->clock_crystal);
+		cps->pixel_rate = (r64_t) { 0, 1 };
+	}
+	else
+	{
+		cps->pixel_rate = clocks[cps->clock_crystal];
+		
+		if(cps->pixel_rate.den == 1)
+		{
+			fprintf(stderr, "Clock rate: %lu Hz\n", cps->pixel_rate.num);
+		}
+		else
+		{
+			fprintf(stderr, "Clock rate: %.3f Hz\n", (double) cps->pixel_rate.num / cps->pixel_rate.den);
+		}
+	}
+	fprintf(stderr, "Std: 0x%02X 0x%02X\n", cps->std1, cps->std2);
+	
+	/* Load the four blocks into memory */
+	for(i = 0; i < 4; i++)
+	{
+		if(cps->bytes_per_block[i] == 0) continue;
+		
+		blocks[i] = malloc(cps->bytes_per_block[i]);
+		if(!blocks[i]) break;
+		
+		j = fread(blocks[i], cps->bytes_per_block[i], 1, f);
+		if(j != 1) break;
+		
+		/* Optionally decompress the block */
+		if(cps->std2 & 0x10)
+		{
+			uint8_t *block;
+			
+			/* Calculate how large the decompressed block will be */
+			j = _decompress_cps(NULL, blocks[i], cps->bytes_per_block[i]);
+			
+			/* Allocate memory and decompress */
+			block = malloc(j);
+			if(!blocks[i]) break;
+			cps->bytes_per_block[i] = _decompress_cps(block, blocks[i], cps->bytes_per_block[i]);
+			
+			/* Swap the blocks */
+			free(blocks[i]);
+			blocks[i] = block;
+		}
+	}
+	
+	fclose(f);
+	
+	if(i != 4)
+	{
+		fprintf(stderr, "Error loading block %d\n", i + 1);
+		for(; i >= 0; i--) free(blocks[i]);
+		return(VID_OUT_OF_MEMORY);
+	}
+	
+	/* Unset the compression flag */
+	cps->std2 &= ~0x10;
+	
+	for(std = _cps_stds; std->id != 0; std++)
+	{
+		if(std->id == ((cps->std1 << 8) | (cps->std2 & 0xEF))) break;
+	}
+	
+	if(std->id == 0)
+	{
+		fprintf(stderr, "Unsupported PLN/CPS standard\n");
+		return(VID_ERROR);
+	}
+	
+	/* Build the baseband signal */
+	cps->nsamples = cps->bytes_per_block[0] * std->output_frames;
+	cps->data = malloc(cps->nsamples * sizeof(int16_t) * 2);
+	if(!cps->data)
+	{
+		for(i = 0; i < 4; i++) free(blocks[i]);
+		return(VID_OUT_OF_MEMORY);
+	}
+	
+	out = cps->data;
+	for(i = 0; i < std->output_frames; i++)
+	{
+		int cinv, cblk;
+		
+		/* For each output frame select which chroma
+		 * block to use (C1/C2) and whether to invert it */
+		if(std->c_blocks == 0)
+		{
+			/* Monochrome, no colour */
+			cblk = 0;
+		}
+		else
+		{
+			cblk = i % std->c_blocks;
+			cinv = (i / std->c_blocks) & 1;
+		}
+		
+		for(j = 0; j < cps->bytes_per_block[0]; j++, out += 2)
+		{
+			int l, c = 0;
+			
+			/* Rebuild the 10-bit Y value from blocks 0 and 3 */
+			l = (((blocks[0][j] - 0x81) & 0xFF) << 2)
+			  | ((blocks[3][j] & 0x0C) >> 2);
+			
+			if(std->c_blocks > 0)
+			{
+				/* SECAM addition to invert phase each frame and 3rd line */
+				if(cps->std1 == 0x22)
+				{
+					cinv  = (i * cps->lines_per_frame + j / cps->samples_per_line) % 3 == 0;
+					cinv ^= i & 1;
+				}
+				
+				/* Rebuild the 9-bit colour sub-carrier */
+				c = (((int8_t) blocks[1 + cblk][j]) << 2)
+				    | ((blocks[3][j] & (2 - cblk)) ? 0x02 : 0x00);
+				if(cinv) c = -c;
+			}
+			
+			/* Scale values for the current mode */
+			l = blanking_level + (l - std->blanking_level) * (white_level - blanking_level) / (std->white_level - std->blanking_level);
+			c = c * (white_level - blanking_level) / (std->white_level - std->blanking_level);
+			
+			out[0] = l;
+			out[1] = 0;
+			out[s_video ? 1 : 0] += c;
+		}
+	}
+	
+	/* We're done with the data blocks */
+	for(i = 0; i < 4; i++) free(blocks[i]);
+	
+	/* p is the next sample to transmit */
+	cps->p = 0;
+	
+	return(VID_OK);
+}
+
+static void _vid_free_cpsbb(vid_t *s, void *arg)
+{
+	_cps_t *cps = arg;
+	
+	free(cps->data);
+	free(cps);
+}
+
+static int _vid_next_line_cpsbb(vid_t *s, void *arg, int nlines, vid_line_t **lines)
+{
+	vid_line_t *l = lines[0];
+	_cps_t *cps = arg;
+	int i;
+	
+	l->width     = s->width;
+	l->frame     = s->bframe;
+	l->line      = s->bline;
+	l->vbialloc  = 0;
+	l->lut       = NULL;
+	l->audio     = NULL;
+	l->audio_len = 0;
+	
+	/* Load the next line */
+	i = cps->nsamples - cps->p;
+	if(i < l->width)
+	{
+		/* Split copy */
+		memcpy(l->output, &cps->data[cps->p * 2], i * 2 * sizeof(int16_t));
+		cps->p = l->width - i;
+		memcpy(&l->output[i * 2], cps->data, cps->p * 2 * sizeof(int16_t));
+	}
+	else
+	{
+		memcpy(l->output, &cps->data[cps->p * 2], l->width * 2 * sizeof(int16_t));
+		if((cps->p += l->width) >= cps->nsamples)
+		{
+			cps->p -= cps->nsamples;
+		}
 	}
 	
 	return(1);
@@ -4179,6 +4658,13 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 	
 	if(s->conf.raw_bb_file != NULL)
 	{
+		if(s->conf.cps != NULL)
+		{
+			fprintf(stderr, "RAW and PLN/CPS baseband files can't be used at the same time.\n");
+			vid_free(s);
+			return(VID_ERROR);
+		}
+		
 		s->raw_bb_file = fopen(s->conf.raw_bb_file, "rb");
 		if(!s->raw_bb_file)
 		{
@@ -4188,6 +4674,38 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		}
 		
 		_add_lineprocess(s, "rawbb", 1, 0, NULL, _vid_next_line_rawbb, NULL);
+	}
+	else if(s->conf.cps != NULL)
+	{
+		_cps_t *cps = calloc(sizeof(_cps_t), 1);
+		
+		if(!cps)
+		{
+			vid_free(s);
+			return(VID_OUT_OF_MEMORY);
+		}
+		
+		r = _load_cps(cps, s->conf.cps, s->blanking_level, s->white_level, s->conf.s_video);
+		if(r != VID_OK)
+		{
+			free(cps);
+			vid_free(s);
+			return(VID_ERROR);
+		}
+		
+		_add_lineprocess(s, "cpsbb", 1, 0, cps, _vid_next_line_cpsbb, _vid_free_cpsbb);
+		
+		if(cps->pixel_rate.den != 0 &&
+		   (cps->pixel_rate.den != 1 ||
+		    cps->pixel_rate.num != s->pixel_rate))
+		{
+			fprintf(stderr, "Enabling resampler\n");
+			_init_vresampler(s,
+				cps->pixel_rate,
+				(r64_t) { s->pixel_rate, 1 },
+				s->conf.s_video ? 2 : 1
+			);
+		}
 	}
 	else if(s->conf.type == VID_MAC)
 	{

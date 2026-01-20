@@ -153,6 +153,9 @@ typedef struct {
 	int16_t raw_bb_blanking_level;
 	int16_t raw_bb_white_level;
 	
+	/* CPS/PLN test card baseband input */
+	char *cps;
+	
 	/* Signal offset and passthru */
 	int64_t offset;
 	char *passthru;
