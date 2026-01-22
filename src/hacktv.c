@@ -145,7 +145,8 @@ static void print_usage(void)
 		"fl2k output options\n"
 		"\n"
 		"  -o, --output fl2k[:<dev>]      Open an fl2k device for output.\n"
-		"      --fl2k-audio <mode>        Audio mode (none, stereo, spdif), default: none\n"
+		"      --fl2k-audio <mode>        Audio mode (none, mono, stereo, spdif),\n"
+		"                                 default: none\n"
 		"\n"
 		"  Each of the FL2K's three output channels can be used for:\n"
 		"\n"
@@ -1041,6 +1042,10 @@ int main(int argc, char *argv[])
 			if(strcmp(optarg, "none") == 0)
 			{
 				s.fl2k_audio = FL2K_AUDIO_NONE;
+			}
+			else if(strcmp(optarg, "mono") == 0)
+			{
+				s.fl2k_audio = FL2K_AUDIO_MONO;
 			}
 			else if(strcmp(optarg, "stereo") == 0)
 			{
