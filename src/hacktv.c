@@ -152,7 +152,7 @@ static void print_usage(void)
 		"\n"
 		"  Red: Baseband video / Complex I signal\n"
 		"  Green: Complex Q signal / Analogue audio (Left) / Nothing\n"
-		"  Blue: Analogue audio (Right) / Digital audio (S/PDIF) / Nothing\n"
+		"  Blue: Analogue audio (Right/Mono) / Digital audio (S/PDIF) / Nothing\n"
 		"\n"
 		"  The 0.7v p-p voltage level of the FL2K is too low to create a correct\n"
 		"  composite video signal, it will appear too dark without amplification.\n"
