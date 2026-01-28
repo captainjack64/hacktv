@@ -2698,8 +2698,8 @@ static int _load_cps(_cps_t *cps, const char *filename, int16_t blanking_level, 
 	cps->samples_per_line      = (hdr[0x04] << 8) | hdr[0x05];
 	cps->line_duration_ns      = (hdr[0x06] << 8) | hdr[0x07];
 	cps->std2                  = hdr[0x08];
-	memcpy(cps->text1, &hdr[0x09], 16); cps->text1[0x16] = '\0';
-	memcpy(cps->text2, &hdr[0x19], 16); cps->text2[0x16] = '\0';
+	memcpy(cps->text1, &hdr[0x09], 16); cps->text1[16] = '\0';
+	memcpy(cps->text2, &hdr[0x19], 16); cps->text2[16] = '\0';
 	cps->ub_0x29               = hdr[0x29];
 	cps->mr_top_line           = (hdr[0x2A] << 8) | hdr[0x2B];
 	cps->mr_first_sample       = (hdr[0x2C] << 8) | hdr[0x2D];
