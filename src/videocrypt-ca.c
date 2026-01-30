@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "videocrypt-ca.h"
+#include "videocrypt10-ca.h"
 
 /* Small section of EEPROM data used in Sky 09 cards. Required for nanocommand processing */
 static const uint8_t ext_ee[] =
@@ -57,25 +58,6 @@ static const uint32_t xtea_key[4] = {
 	0x00112233, 0x44556677, 0x8899AABB, 0xCCDDEEFF
 };
 
-/* Calculate Videocrypt message CRC */
-static uint8_t _crc(uint8_t *data)
-{
-	int x;
-	uint8_t crc;
-
-	for(crc = x = 0; x < 31; x++)
-	{
-		crc += data[x];
-	}
-
-	return (~crc + 1);
-}
-
-static uint8_t _rotate_left(uint8_t x)
-{
-	return (((x) << 1) | ((x) >> 7)) & 0xFF;
-}
-
 /* Reverse nibbles in a byte */
 static inline uint8_t _swap_nibbles(uint8_t a)
 {
@@ -85,23 +67,6 @@ static inline uint8_t _swap_nibbles(uint8_t a)
 void _rand_vc_seed(uint8_t *message)
 {
 	for(int i = 12; i < 27; i++) message[i] = rand() + 0xFF;
-}
-
-/* Reverse calculated control word */
-uint64_t _rev_cw(uint8_t in[8])
-{
-	int i;
-	uint64_t cw;
-	
-	/* Mask high nibble of last byte as it's not used */
-	in[7] &= 0x0F;
-	
-	for(i = 0, cw = 0; i < 8; i++)
-	{
-		cw |= (uint64_t) in[i] << (i * 8);
-	}
-	
-	return(cw);
 }
 
 /* XOR "round" function to obfuscate card serial number */
@@ -130,7 +95,7 @@ void _xor_serial(uint8_t *message, int card_cmd, uint32_t cardserial, int prefix
 
 	for (i=0; i < 4;i++)
 	{
-		b = _rotate_left(b);
+		b = _vc_rotate_left(b);
 		b += a;
 		xor[i] = b;
 	}
@@ -141,7 +106,8 @@ void _xor_serial(uint8_t *message, int card_cmd, uint32_t cardserial, int prefix
 	message[9] =  ((cardserial >> 16) & 0xFF) ^ xor[2];
 	message[10] = ((cardserial >> 8)  & 0xFF) ^ xor[3];
 	message[11] = ((cardserial >> 0)  & 0xFF);
-	for(i = 12; i < 27; i++) message[i] = message[11];
+
+	memset(&message[12], message[11], 15);
 }
 
 void _vc_kernel07(uint8_t *out, int *oi, const uint8_t in, _vc_mode_t *m)
@@ -154,8 +120,8 @@ void _vc_kernel07(uint8_t *out, int *oi, const uint8_t in, _vc_mode_t *m)
 	b = key[(out[*oi] >> 4)];
 	c = key[(out[*oi] & 0x0F) + 16];
 	c = m->kernel_type == VC_KERNEL_1 ? c + b : ~(c + b);
-	c = m->kernel_type == VC_KERNEL_1 ? c + in : _rotate_left(c) + in;
-	c = _rotate_left(c);
+	c = m->kernel_type == VC_KERNEL_1 ? c + in : _vc_rotate_left(c) + in;
+	c = _vc_rotate_left(c);
 	c = _swap_nibbles(c);
 	*oi = (*oi + 1) & 7;
 	out[*oi] ^= c;
@@ -196,7 +162,7 @@ uint64_t _vc_process_p07_msg(uint8_t *message, _vc_mode_t *m)
 	}
 
 	/* Generate checksum */
-	message[31] = _crc(message);
+	message[31] = _vc_crc(message);
 	
 	/* Iterate through _vc_kernel07 64 more times (99 in total) */
 	for (i = 0; i < 64; i++) _vc_kernel07(cw, &oi, message[31], m);
@@ -206,30 +172,29 @@ uint64_t _vc_process_p07_msg(uint8_t *message, _vc_mode_t *m)
 
 void vc_seed_sky(_vc_block_t *s, _vc_mode_t *m)
 {
-	/* Random seed for bytes 12 to 26 */
-	_rand_vc_seed(s->messages[5]);
+	_rand_vc_seed(s->message_data->messages[5]);
 	
 	/* Process Videocrypt message */
-	s->codeword = _vc_process_p07_msg(s->messages[5], m);
+	s->message_data->answer = _vc_process_p07_msg(s->message_data->messages[5], m);
 }
 
 void vc_emm_nz(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
 {
 	int i;
 	
-	int emmdata[7] = { 0xF0, 0x0e, 0x1f, 0x20, 0x00, 0x00, 0x02 };
+	int emmdata[7] = { 0xF0, 0x0E, 0x1F, 0x20, 0x00, 0x00, 0x02 };
 	
 	/* Copy EMM data into message block */
-	for(i = 0; i < 7; i++) s->messages[2][i] = emmdata[i];
+	for(i = 0; i < 7; i++) s->message_data->messages[2][i] = emmdata[i];
 
 	/* Additional 08 prefix for Sky New Zealand cards */
 	cardserial |= 0x08 << 24;
 	
 	/* Obfuscate card serial */
-	_xor_serial(s->messages[2], cmd, cardserial, m->emm_byte);
+	_xor_serial(s->message_data->messages[2], cmd, cardserial, m->emm_byte);
 	
 	/* Process Videocrypt message */
-	_vc_process_p07_msg(s->messages[2], m);
+	_vc_process_p07_msg(s->message_data->messages[2], m);
 }
 
 void vc_emm_p07(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
@@ -239,38 +204,37 @@ void vc_emm_p07(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
 	int emmdata[7] = { 0xE0, 0x3F, 0x3E, 0xEC, 0x1C, 0x60, 0x0F };
 	
 	/* Copy EMM data into message block */
-	for(i = 0; i < 7; i++) s->messages[2][i] = emmdata[i];
+	for(i = 0; i < 7; i++) s->message_data->messages[2][i] = emmdata[i];
 	
 	/* Obfuscate card serial */
-	_xor_serial(s->messages[2], cmd, cardserial, m->emm_byte);
+	_xor_serial(s->message_data->messages[2], cmd, cardserial, m->emm_byte);
 	
 	/* Process Videocrypt message */
-	_vc_process_p07_msg(s->messages[2], m);
+	_vc_process_p07_msg(s->message_data->messages[2], m);
 }
 
-void vc_seed_vc2(_vc2_block_t *s, _vc_mode_t *m)
+void vc_seed_vc2(_vc_block_t *s, _vc_mode_t *m)
 {
-	/* Random seed for bytes 12 to 26 */
-	_rand_vc_seed(s->messages[5]);
+	_rand_vc_seed(s->message_data->messages[5]);
 	
 	/* Process Videocrypt message */
-	s->codeword = _vc_process_p07_msg(s->messages[5], m);
+	s->message_data->answer = _vc_process_p07_msg(s->message_data->messages[5], m);
 }
 
-void vc2_emm(_vc2_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
+void vc2_emm(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
 {
 	int i;
 	
 	int emmdata[7] = { 0xE1,0x81,0x36,0x00,0xFF,0xFF,0xB4 };
 	
 	/* Copy EMM data into message block */
-	for(i = 0; i < 7; i++) s->messages[2][i] = emmdata[i];
+	for(i = 0; i < 7; i++) s->message_data->messages[2][i] = emmdata[i];
 	
 	/* Obfuscate card serial */
-	_xor_serial(s->messages[2], cmd, cardserial, m->emm_byte);
+	_xor_serial(s->message_data->messages[2], cmd, cardserial, m->emm_byte);
 	
 	/* Process Videocrypt message */
-	_vc_process_p07_msg(s->messages[2], m);
+	_vc_process_p07_msg(s->message_data->messages[2], m);
 }
 
 void _vc_kernel09(const _vc_key_t *k, const uint8_t in, uint8_t *out)
@@ -290,7 +254,7 @@ void _vc_kernel09(const _vc_key_t *k, const uint8_t in, uint8_t *out)
 		m = b * c;
 		temp[i + 2] ^= (m & 0xFF);
 		temp[i + 3] += m >> 8;
-		a = _rotate_left(a) + 0x49;
+		a = _vc_rotate_left(a) + 0x49;
 	}
 	
 	m = temp[6] * temp[7];
@@ -323,7 +287,7 @@ uint64_t _vc_process_p09_msg(uint8_t *message, _vc_mode_t *m)
 		
 		for (i = 0; i < 4; i++)
 		{
-			b = _rotate_left(b);
+			b = _vc_rotate_left(b);
 			b += a;
 			xor[i] = b;
 		}
@@ -412,7 +376,7 @@ uint64_t _vc_process_p09_msg(uint8_t *message, _vc_mode_t *m)
 	}
 	
 	/* Generate checksum */
-	message[31] = _crc(message);
+	message[31] = _vc_crc(message);
 	
 	/* Iterate through _vc_kernel09 64 more times (99 in total)*/
 	for (i = 0; i < 64; i++) _vc_kernel09(m->key, (bb ? bb : message[31]), cw);
@@ -422,11 +386,10 @@ uint64_t _vc_process_p09_msg(uint8_t *message, _vc_mode_t *m)
 
 void vc_seed_sky_p09(_vc_block_t *s, _vc_mode_t *m)
 {
-	/* Random seed for bytes 12 to 26 */
-	_rand_vc_seed(s->messages[5]);
+	_rand_vc_seed(s->message_data->messages[5]);
 
 	/* Process Videocrypt message */
-	s->codeword =  _vc_process_p09_msg(s->messages[5], m);
+	s->message_data->answer = _vc_process_p09_msg(s->message_data->messages[5], m);
 }
 
 void vc_emm_p09(_vc_block_t *s, int cmd, uint32_t cardserial, _vc_mode_t *m)
@@ -436,28 +399,28 @@ void vc_emm_p09(_vc_block_t *s, int cmd, uint32_t cardserial, _vc_mode_t *m)
 	int emmdata[7] = { 0xE1, 0x52, 0x01, 0x25, 0x80, 0xFF, 0x20 };
 	
 	/* Copy EMM data into message block */
-	for(i = 0; i < 7; i++) s->messages[2][i] = emmdata[i];
+	for(i = 0; i < 7; i++) s->message_data->messages[2][i] = emmdata[i];
 	
 	/* Obfuscate card serial */
-	_xor_serial(s->messages[2], cmd, cardserial, 0xA9);
+	_xor_serial(s->message_data->messages[2], cmd, cardserial, m->emm_byte);
 
 	/* Process Videocrypt message */
-	_vc_process_p09_msg(s->messages[2], m);
+	_vc_process_p09_msg(s->message_data->messages[2], m);
 }
 
 void vc_seed_xtea(_vc_block_t *s)
 {
 	/* Random seed for bytes 11 to 31 */
-	for(int i=11; i < 32; i++) s->messages[5][i] = rand() + 0xFF;
+	for(int i=11; i < 32; i++) s->message_data->messages[5][i] = rand() + 0xFF;
 	
 	int i;
 	uint32_t v0, v1, sum = 0;
 	uint32_t delta = 0x9E3779B9;
 	
-	s->messages[5][6] = 0x63;
+	s->message_data->messages[5][6] = 0x63;
 	
-	memcpy(&v1, &s->messages[5][11], 4);
-	memcpy(&v0, &s->messages[5][15], 4);
+	memcpy(&v1, &s->message_data->messages[5][11], 4);
+	memcpy(&v0, &s->message_data->messages[5][15], 4);
 	
 	for (i = 0; i < 32;i++)
 	{
@@ -467,13 +430,13 @@ void vc_seed_xtea(_vc_block_t *s)
 	
 		if(i == 7)
 		{
-			memcpy(&s->messages[5][19], &v1, 4);
-			memcpy(&s->messages[5][23], &v0, 4);
+			memcpy(&s->message_data->messages[5][19], &v1, 4);
+			memcpy(&s->message_data->messages[5][23], &v0, 4);
 		}
 	}
 	
 	/* Reverse calculated control word */
-	s->codeword = ((uint64_t) v0 << 32 | v1) & 0x0FFFFFFFFFFFFFFFUL;
+	s->message_data->answer = ((uint64_t) v0 << 32 | v1) & 0x0FFFFFFFFFFFFFFFUL;
 }
 
 /* Code below is to support seed generation for "dumb"/memory card */
@@ -533,7 +496,7 @@ void _hash_ppv(uint64_t *answ, size_t len)
 		for (j = 1; j != len; j++) 
 		{
 			m = (tab_1421[i] + answ[j - 1]) & 0xFF;
-			answ[j] = _rotate_left(answ[j] ^ moduli[m]);
+			answ[j] = _vc_rotate_left(answ[j] ^ moduli[m]);
 		}
 		answ[0] ^= answ[len-1];
 	}
@@ -548,11 +511,11 @@ void vc_seed_ppv(_vc_block_t *s, uint8_t ppv_card_data[7])
 	uint64_t serial[5];
 	
 	/* Random bytes */
-	s->messages[0][21] = rand() + 0xFF;
-	s->messages[0][22] = rand() + 0xFF;
+	s->message_data->messages[0][21] = rand() + 0xFF;
+	s->message_data->messages[0][22] = rand() + 0xFF;
 	
 	/* Copy data into buffers */
-	for(i = 0; i < 31; i++)    msg[i] = s->messages[0][i];
+	for(i = 0; i < 31; i++)    msg[i] = s->message_data->messages[0][i];
 	for(i = 0; i <  5; i++) serial[i] = ppv_card_data[i];
 	
 	_hash_ppv(serial, 5);
@@ -566,7 +529,7 @@ void vc_seed_ppv(_vc_block_t *s, uint8_t ppv_card_data[7])
 	msg[8] &= 0x0F;
 	
 	/* Reverse calculated control word */
-	for(i = 0, s->codeword = 0; i < 8; i++)	s->codeword = msg[i + 1] << (i * 8) | s->codeword;
+	for(i = 0, s->message_data->answer = 0; i < 8; i++)	s->message_data->answer = msg[i + 1] << (i * 8) | s->message_data->answer;
 }
 
 void vc_seed(_vc_block_t *s, _vc_mode_t *m)
@@ -593,7 +556,12 @@ void vc_seed(_vc_block_t *s, _vc_mode_t *m)
 		case(VC_SKY09_NANO):
 			vc_seed_sky_p09(s, m);
 			break;
-			
+		
+		case(VC_SKY10):
+		case(VC_SKY10_PPV):
+			vc_seed_sky_p10(s, m->mode);
+			break;
+
 		case(VC_XTEA):
 			vc_seed_xtea(s);
 			break;

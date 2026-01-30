@@ -1659,7 +1659,7 @@ static int _line_625(vid_t *s, int frame, int line, uint8_t *data, int x)
 {
 	uint16_t poly = s->mac.prbs[line - 1];
 	uint16_t b;
-	uint8_t df[16];
+	uint8_t df[16] = {0};
 	uint8_t il[69];
 	_rdf_t *rdf;
 	int dx, ix;

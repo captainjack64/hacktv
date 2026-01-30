@@ -364,4 +364,3 @@ int vcs_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 	
 	return(1);
 }
-

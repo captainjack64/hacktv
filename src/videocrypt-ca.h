@@ -20,29 +20,67 @@
 
 #include <stdint.h>
 
+static inline uint8_t _vc_rotate_left(uint8_t x)
+{
+	return (x << 1) | (x >> 7);
+}
+
+static inline uint8_t _vc_crc(const uint8_t *data)
+{
+	uint8_t crc = 0;
+	for (int i = 0; i < 31; i++)
+	{
+		crc += data[i];
+	}
+	return (~crc + 1);
+}
+
+/* Reverse calculated control word */
+static inline uint64_t _rev_cw(uint8_t in[8])
+{
+	int i;
+	uint64_t cw;
+	
+	/* Mask high nibble of last byte as it's not used */
+	in[7] &= 0x0F;
+	
+	for(i = 0, cw = 0; i < 8; i++)
+	{
+		cw |= (uint64_t) in[i] << (i * 8);
+	}
+	
+	return(cw);
+}
+
 typedef struct {
 	const uint8_t key[256];
 } _vc_key_t;
 
+/* Message data structure */
 typedef struct {
-	uint8_t mode;
-	uint64_t codeword;
-	uint8_t messages[7][32];
-} _vc_block_t;
+    uint8_t messages[8][32];  /* Message array - VC1 uses [0-6], VC2 uses [0-7] */
+    uint8_t message[32];      /* Current/working message */
+    uint8_t hash[4];
+    uint64_t answer;
+    int has_hash;             /* Only used for Sky10 */
+    int has_answer;           /* Only used for Sky10 */
+} message_data_t;
 
 typedef struct {
 	uint8_t mode;
-	uint64_t codeword;
-	uint8_t messages[8][32];
-} _vc2_block_t;
+	message_data_t *message_data;     /* Primary data structure */
+	int showecm;                      /* Debug flag for ECM printing */
+} _vc_block_t;
+
+/* Note: _vc2_block_t removed - it was identical to _vc_block_t */
 
 
 typedef struct {
 	const char          *id;   /* Name of Videocrypt mode */
+	const int       version;   /* VC version: 1 or 2 */
 	const int        cwtype;   /* Static or dynamic CW */
 	const int          mode;   /* Mode */
-	_vc_block_t     *blocks;   /* VC1 blocks */
-	_vc2_block_t   *blocks2;   /* VC2 blocks */
+	_vc_block_t     *blocks;   /* Block array (VC1 or VC2) */
 	const int           len;   /* Block length */
 	const int           emm;   /* EMM mode? */
 	const char *channelname;   /* Channel/display name */
@@ -56,6 +94,8 @@ typedef struct {
 } _vc_mode_t;
 
 enum {
+	VC_VER1 = 1,
+	VC_VER2 = 2,
 	VC_CW_STATIC = 100,
 	VC_CW_DYNAMIC,
 	VC_EMM,
@@ -94,6 +134,6 @@ extern void vc_emm(_vc_block_t *s, _vc_mode_t *m, uint32_t cardserial, int b, in
 extern void vc_seed_ppv(_vc_block_t *s, uint8_t _ppv_card_data[7]);
 
 /* Videocrypt 2 */
-extern void vc_seed_vc2(_vc2_block_t *s, _vc_mode_t *m);
-extern void vc2_emm(_vc2_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial);
+extern void vc_seed_vc2(_vc_block_t *s, _vc_mode_t *m);
+extern void vc2_emm(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial);
 #endif

@@ -63,35 +63,33 @@
  * Key table offset
 */
 
-static _vc_mode_t _vc1_modes[] = {
-	{ "free",        VC_CW_STATIC,  VC_FREE,       _fa_blocks,        NULL, 1, 0,      "                        ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "ppv",         VC_CW_DYNAMIC, VC_PPV,        _ppv_blocks,       NULL, 1, 0,      "                        ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "jstv",        VC_CW_DYNAMIC, VC_JSTV,       _vc1_blocks,       NULL, 2, 0,      "   HACKTV    JSTV  MODE ", 0x00, 0x20, 0x00,  _jstv_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "sky02",       VC_CW_DYNAMIC, VC_SKY02,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV    SKY02 MODE ", 0x01, 0x0E, 0xA2,   _sky_key, 0x00, VC_KERNEL_1, VC_SIG_1 },
-	{ "sky03",       VC_CW_DYNAMIC, VC_SKY03,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV    SKY03 MODE ", 0x01, 0x12, 0xA3,   _sky_key, 0x00, VC_KERNEL_2, VC_SIG_1 },
-	{ "sky04",       VC_CW_DYNAMIC, VC_SKY04,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV    SKY04 MODE ", 0x01, 0x14, 0xA4,   _sky_key, 0x20, VC_KERNEL_2, VC_SIG_1 },
-	{ "sky05",       VC_CW_DYNAMIC, VC_SKY05,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV    SKY05 MODE ", 0x0C, 0x1C, 0xA5,   _sky_key, 0x40, VC_KERNEL_2, VC_SIG_1 },
-	{ "sky06",       VC_CW_DYNAMIC, VC_SKY06,      _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    SKY06 MODE ", 0x05, 0x1C, 0xA6,   _sky_key, 0x40, VC_KERNEL_2, VC_SIG_1 },
-	{ "sky07",       VC_CW_DYNAMIC, VC_SKY07,      _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    SKY07 MODE ", 0x0C, 0x3A, 0xA7,   _sky_key, 0x58, VC_KERNEL_2, VC_SIG_2 },
-	{ "sky09",       VC_CW_DYNAMIC, VC_SKY09,      _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    SKY09 MODE ", 0x0C, 0x43, 0xA9, _sky09_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "sky09nano",   VC_CW_DYNAMIC, VC_SKY09_NANO, _vc1_blocks,       NULL, 2, VC_EMM, "   SKY 09    NANO  MODE ", 0x0C, 0x43, 0xA9, _sky09_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "sky10",       VC_CW_STATIC,  VC_SKY10,      _sky10_blocks,     NULL, 2, 0,      "   HACKTV    SKY10 MODE ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "sky10ppv",    VC_CW_STATIC,  VC_SKY10_PPV,  _sky10ppv_blocks,  NULL, 2, 0,      "HACKTV SKY10  PPV MODE  ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "sky11",       VC_CW_STATIC,  VC_SKY11,      _sky11_blocks,     NULL, 2, 0,      "   HACKTV    SKY11 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "sky12",       VC_CW_STATIC,  VC_SKY12,      _sky12_blocks,     NULL, 2, 0,      "   HACKTV    SKY12 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "skynz01",     VC_CW_DYNAMIC, VC_SKYNZ01,    _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV   SKYNZ01 MODE", 0x02, 0x0e, 0x21, _skynz_key, 0x00, VC_KERNEL_1, VC_SIG_2 },
-	{ "skynz02",     VC_CW_DYNAMIC, VC_SKYNZ02,    _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV   SKYNZ02 MODE", 0x02, 0x0e, 0x22, _skynz_key, 0x00, VC_KERNEL_1, VC_SIG_2 },
-	{ "tac1",        VC_CW_DYNAMIC, VC_TAC1,       _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    TAC1  MODE ", 0x00, 0x29, 0x00,   _tac_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "tac2",        VC_CW_DYNAMIC, VC_TAC2,       _vc1_blocks,       NULL, 2, VC_EMM, "   HACKTV    TAC2  MODE ", 0x00, 0x49, 0x00,   _tac_key, 0x40, VC_KERNEL_2, VC_SIG_2 },
-	{ "xtea",        VC_CW_DYNAMIC, VC_XTEA,       _xtea_blocks,      NULL, 2, 0,      "   HACKTV    XTEA  MODE ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "dmx",         VC_CW_DYNAMIC, VC_DMX,        _vc1_blocks,       NULL, 2, 0,      "   HACKTV    DMX   MODE ", 0x00, 0x12, 0x00,   _dmx_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
-	{ "scast",       VC_CW_DYNAMIC, VC_SCAST,      _vc1_blocks,       NULL, 2, 0,      "   HACKTV   SPTSCST MODE", 0x01, 0x14, 0x00, _scast_key, 0x00, VC_KERNEL_1, VC_SIG_2 },
-	{ NULL }
-};
-
-static _vc_mode_t _vc2_modes[] = {
-	{ "free",        VC_CW_STATIC,  VC_FREE,  NULL, _fa2_blocks, 1, 0,      "           ", 0x00, 0x52, 0x00,     0x00, 0x00 },
-	{ "conditional", VC_CW_DYNAMIC, VC_MC,    NULL, _vc2_blocks, 2, VC_EMM, "MULTICHOICE", 0x82, 0x53, 0x81, _vc2_key, 0x00 },
+static _vc_mode_t _vc_modes[] = {
+	/* VC1 modes */
+	{ "free",        VC_VER1,   VC_CW_STATIC,  VC_FREE,        _fa_blocks,  1, 0,      "                        ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_FREE,     VC_FREE  },
+	{ "ppv",         VC_VER1,   VC_CW_DYNAMIC, VC_PPV,        _ppv_blocks,  1, 0,      "                        ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "jstv",        VC_VER1,   VC_CW_DYNAMIC, VC_JSTV,       _vc1_blocks,  2, 0,      "   HACKTV    JSTV  MODE ", 0x00, 0x20, 0x00,  _jstv_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky02",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY02,      _vc1_blocks,  2, 0,      "   HACKTV    SKY02 MODE ", 0x01, 0x0E, 0xA2,   _sky_key, 0x00, VC_KERNEL_1, VC_SIG_1 },
+	{ "sky03",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY03,      _vc1_blocks,  2, 0,      "   HACKTV    SKY03 MODE ", 0x01, 0x12, 0xA3,   _sky_key, 0x00, VC_KERNEL_2, VC_SIG_1 },
+	{ "sky04",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY04,      _vc1_blocks,  2, 0,      "   HACKTV    SKY04 MODE ", 0x01, 0x14, 0xA4,   _sky_key, 0x20, VC_KERNEL_2, VC_SIG_1 },
+	{ "sky05",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY05,      _vc1_blocks,  2, 0,      "   HACKTV    SKY05 MODE ", 0x0C, 0x1C, 0xA5,   _sky_key, 0x40, VC_KERNEL_2, VC_SIG_1 },
+	{ "sky06",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY06,      _vc1_blocks,  2, VC_EMM, "   HACKTV    SKY06 MODE ", 0x05, 0x1C, 0xA6,   _sky_key, 0x40, VC_KERNEL_2, VC_SIG_1 },
+	{ "sky07",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY07,      _vc1_blocks,  2, VC_EMM, "   HACKTV    SKY07 MODE ", 0x0C, 0x3A, 0xA7,   _sky_key, 0x58, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky09",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY09,      _vc1_blocks,  2, VC_EMM, "   HACKTV    SKY09 MODE ", 0x0C, 0x43, 0xA9, _sky09_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky09nano",   VC_VER1,   VC_CW_DYNAMIC, VC_SKY09_NANO, _vc1_blocks,  2, VC_EMM, "   SKY 09    NANO  MODE ", 0x0C, 0x43, 0xA9, _sky09_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky10",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY10,      _vc1_blocks,  2, 0,      "   HACKTV    SKY10 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky10ppv",    VC_VER1,   VC_CW_DYNAMIC, VC_SKY10_PPV,  _vc1_blocks,  2, 0,      "HACKTV SKY10  PPV MODE  ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky11",       VC_VER1,   VC_CW_STATIC,  VC_SKY11,    _sky11_blocks,  2, 0,      "   HACKTV    SKY11 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky12",       VC_VER1,   VC_CW_STATIC,  VC_SKY12,    _sky12_blocks,  2, 0,      "   HACKTV    SKY12 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "skynz01",     VC_VER1,   VC_CW_DYNAMIC, VC_SKYNZ01,    _vc1_blocks,  2, VC_EMM, "   HACKTV   SKYNZ01 MODE", 0x02, 0x0e, 0x21, _skynz_key, 0x00, VC_KERNEL_1, VC_SIG_2 },
+	{ "skynz02",     VC_VER1,   VC_CW_DYNAMIC, VC_SKYNZ02,    _vc1_blocks,  2, VC_EMM, "   HACKTV   SKYNZ02 MODE", 0x02, 0x0e, 0x22, _skynz_key, 0x00, VC_KERNEL_1, VC_SIG_2 },
+	{ "tac1",        VC_VER1,   VC_CW_DYNAMIC, VC_TAC1,       _vc1_blocks,  2, VC_EMM, "   HACKTV    TAC1  MODE ", 0x00, 0x29, 0x00,   _tac_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "tac2",        VC_VER1,   VC_CW_DYNAMIC, VC_TAC2,       _vc1_blocks,  2, VC_EMM, "   HACKTV    TAC2  MODE ", 0x00, 0x49, 0x00,   _tac_key, 0x40, VC_KERNEL_2, VC_SIG_2 },
+	{ "xtea",        VC_VER1,   VC_CW_DYNAMIC, VC_XTEA,      _xtea_blocks,  2, 0,      "   HACKTV    XTEA  MODE ", 0x00, 0x20, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "dmx",         VC_VER1,   VC_CW_DYNAMIC, VC_DMX,        _vc1_blocks,  2, 0,      "   HACKTV    DMX   MODE ", 0x00, 0x12, 0x00,   _dmx_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "scast",       VC_VER1,   VC_CW_DYNAMIC, VC_SCAST,      _vc1_blocks,  2, 0,      "   HACKTV   SPTSCST MODE", 0x01, 0x14, 0x00, _scast_key, 0x00, VC_KERNEL_1, VC_SIG_2 },
+	/* VC2 modes */
+	{ "free",        VC_VER2,   VC_CW_STATIC,  VC_FREE,       _fa2_blocks,  1, 0,      "           ",              0x00, 0x52, 0x00,       0x00, 0x00, VC_FREE,     VC_FREE  },
+	{ "conditional", VC_VER2,   VC_CW_DYNAMIC, VC_MC,         _vc2_blocks,  2, VC_EMM, "MULTICHOICE",              0x82, 0x53, 0x81,   _vc2_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
 	{ NULL }
 };
 
@@ -243,9 +241,6 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 	}
 	
 	s->counter  = 0;
-	s->cw       = VC_PRBS_CW_FA;
-	
-	s->counter  = 0;
 	s->cw       = rand();
 	s->vcmode1  = mode;
 	s->vcmode2  = mode2;
@@ -253,9 +248,9 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 	/* Find Videocrypt mode to use */
 	if(mode != NULL)
 	{
-		for(s->mode = _vc1_modes; s->mode->id != NULL; s->mode++)
+		for(s->mode = _vc_modes; s->mode->id != NULL; s->mode++)
 		{
-			if(strcmp(mode, s->mode->id) == 0) break;
+			if(strcmp(mode, s->mode->id) == 0 && s->mode->version == VC_VER1) break;
 		}
 		
 		if(s->mode->id == NULL)
@@ -266,6 +261,37 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 		
 		s->blocks = s->mode->blocks;
 		s->block_len = s->mode->len;
+		
+		/* Set showecm flag for all blocks */
+		for(i = 0; i < s->block_len; i++)
+		{
+			s->blocks[i].showecm = vid->conf.showecm;
+		}
+		
+		/* For dynamic modes, we need to allocate copies of message_data
+		 * since the seed functions will modify them. For static modes,
+		 * message_data already points to const static data. */
+		if(s->mode->cwtype == VC_CW_DYNAMIC || strcmp(mode, "ppv") == 0)
+		{
+			/* Dynamic mode - allocate and copy from template */
+			for(i = 0; i < s->block_len; i++)
+			{
+				message_data_t *template = s->blocks[i].message_data;
+				s->blocks[i].message_data = (message_data_t*)calloc(1, sizeof(message_data_t));
+				if(!s->blocks[i].message_data)
+				{
+					/* Free any previously allocated blocks */
+					for(int j = 0; j < i; j++)
+					{
+						free(s->blocks[j].message_data);
+					}
+					return(VID_OUT_OF_MEMORY);
+				}
+				/* Copy template data to dynamic allocation */
+				*s->blocks[i].message_data = *template;
+			}
+		}
+		/* else: Static mode - message_data already points to const static data, no allocation needed */
 		
 		if(strcmp(mode, "ppv") == 0)
 		{
@@ -282,12 +308,12 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 		else if(s->mode->cwtype == VC_CW_DYNAMIC)
 		{
 			/* Set channel date */
-			s->blocks[0].messages[5][1] = s->mode->date;
-			s->blocks[1].messages[5][1] = s->mode->date;
+			s->blocks[0].message_data->messages[5][1] = s->mode->date;
+			s->blocks[1].message_data->messages[5][1] = s->mode->date;
 
 			/* Set channel ID */
-			s->blocks[0].messages[5][6] = s->mode->channelid;
-			s->blocks[1].messages[5][6] = s->mode->channelid;
+			s->blocks[0].message_data->messages[5][6] = s->mode->channelid;
+			s->blocks[1].message_data->messages[5][6] = s->mode->channelid;
 
 			vc_seed(&s->blocks[0], s->mode);
 			vc_seed(&s->blocks[1], s->mode);
@@ -315,13 +341,13 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 		if(strcmp(mode, "free") != 0)
 		{
 			/* Set channel name */
-			s->blocks[1].messages[0][0] = 0x20;
-			s->blocks[1].messages[0][1] = 0x00;
-			s->blocks[1].messages[0][2] = 0x60 + strlen(s->mode->channelname);
+			s->blocks[1].message_data->messages[0][0] = 0x20;
+			s->blocks[1].message_data->messages[0][1] = 0x00;
+			s->blocks[1].message_data->messages[0][2] = 0x60 + strlen(s->mode->channelname);
 
 			for(i = 0; i < strlen(s->mode->channelname); i++)
 			{
-				s->blocks[1].messages[0][i + 3] = s->mode->channelname[i];
+				s->blocks[1].message_data->messages[0][i + 3] = s->mode->channelname[i];
 			}
 		} 
 	}
@@ -329,9 +355,9 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 	/* Find Videocrypt II mode to use */
 	if(mode2 != NULL)
 	{
-		for(s->mode = _vc2_modes; s->mode->id != NULL; s->mode++)
+		for(s->mode = _vc_modes; s->mode->id != NULL; s->mode++)
 		{
-			if(strcmp(mode2, s->mode->id) == 0) break;
+			if(strcmp(mode2, s->mode->id) == 0 && s->mode->version == VC_VER2) break;
 		}
 		
 		if(s->mode->id == NULL)
@@ -340,22 +366,51 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 			return(VID_ERROR);
 		}
 		
-		s->blocks2 = s->mode->blocks2;
+		s->blocks2 = s->mode->blocks;
 		s->block2_len = s->mode->len;
+		
+		/* Set showecm flag for all blocks */
+		for(i = 0; i < s->block2_len; i++)
+		{
+			s->blocks2[i].showecm = vid->conf.showecm;
+		}
+		
+		/* For dynamic modes, allocate copies. For static modes, use existing pointers. */
+		if(s->mode->cwtype == VC_CW_DYNAMIC)
+		{
+			/* Dynamic mode - allocate and copy from template */
+			for(i = 0; i < s->block2_len; i++)
+			{
+				message_data_t *template = s->blocks2[i].message_data;
+				s->blocks2[i].message_data = (message_data_t*)calloc(1, sizeof(message_data_t));
+				if(!s->blocks2[i].message_data)
+				{
+					/* Free any previously allocated VC2 blocks */
+					for(int j = 0; j < i; j++)
+					{
+						free(s->blocks2[j].message_data);
+					}
+					return(VID_OUT_OF_MEMORY);
+				}
+				/* Copy template data to dynamic allocation */
+				*s->blocks2[i].message_data = *template;
+			}
+		}
+		/* else: Static mode - message_data already points to const static data */
 
 		if(s->mode->cwtype == VC_CW_DYNAMIC)
 		{
 			/* Set ECM mode */
-			s->blocks2[0].messages[5][0] = 0xF9;
-			s->blocks2[1].messages[5][0] = 0xF9;
+			s->blocks2[0].message_data->messages[5][0] = 0xF9;
+			s->blocks2[1].message_data->messages[5][0] = 0xF9;
 
 			/* Set channel date */
-			s->blocks2[0].messages[5][1] = s->mode->date;
-			s->blocks2[1].messages[5][1] = s->mode->date;
+			s->blocks2[0].message_data->messages[5][1] = s->mode->date;
+			s->blocks2[1].message_data->messages[5][1] = s->mode->date;
 
 			/* Set channel ID */
-			s->blocks2[0].messages[5][2] = s->mode->channelid;
-			s->blocks2[1].messages[5][2] = s->mode->channelid;
+			s->blocks2[0].message_data->messages[5][2] = s->mode->channelid;
+			s->blocks2[1].message_data->messages[5][2] = s->mode->channelid;
 
 			vc_seed_vc2(&s->blocks2[0], s->mode);
 			vc_seed_vc2(&s->blocks2[1], s->mode);
@@ -365,7 +420,7 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 			{
 				for(i = 0; i < 8; i++)
 				{
-					s->blocks2[1].messages[0][i + 17] = (s->blocks[0].codeword ^ s->blocks2[1].codeword) >> (8 * i) & 0xFF;
+					s->blocks2[1].message_data->messages[0][i + 17] = (s->blocks[0].message_data->answer ^ s->blocks2[1].message_data->answer) >> (8 * i) & 0xFF;
 				}
 			}
 		}
@@ -376,15 +431,15 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 		{
 			for(i = 0; i < 2; i++)
 			{
-				s->blocks2[i].messages[0][0] = 0x21;
-				s->blocks2[i].messages[0][1] = 0x02;
+				s->blocks2[i].message_data->messages[0][0] = 0x21;
+				s->blocks2[i].message_data->messages[0][1] = 0x02;
 			}
 
-			s->blocks2[0].messages[0][2] = 0x60 + strlen(s->mode->channelname);
+			s->blocks2[0].message_data->messages[0][2] = 0x60 + strlen(s->mode->channelname);
 
 			for(i = 0; i < strlen(s->mode->channelname); i++)
 			{
-				s->blocks2[0].messages[0][i + 3] = s->mode->channelname[i];
+				s->blocks2[0].message_data->messages[0][i + 3] = s->mode->channelname[i];
 			}
 		}
 		
@@ -425,7 +480,48 @@ int vc_init(vc_t *s, vid_t *vid, const char *mode, const char *mode2)
 
 void vc_free(vc_t *s)
 {
-	free(s->lut);
+	int i;
+	
+	/* Safety check */
+	if(!s) return;
+	
+	/* Only free message_data if it was dynamically allocated (VC_CW_DYNAMIC or PPV modes) */
+	/* For static modes (free-access), message_data points to const static data */
+	if(s->mode && (s->mode->cwtype == VC_CW_DYNAMIC || (s->vcmode1 && strcmp(s->vcmode1, "ppv") == 0)))
+	{
+		/* Free message_data for VC1 blocks (only if dynamically allocated) */
+		if(s->blocks && s->block_len > 0)
+		{
+			for(i = 0; i < s->block_len; i++)
+			{
+				if(s->blocks[i].message_data)
+				{
+					free(s->blocks[i].message_data);
+					s->blocks[i].message_data = NULL;
+				}
+			}
+		}
+		
+		/* Free message_data for VC2 blocks (only if dynamically allocated) */
+		if(s->blocks2 && s->block2_len > 0)
+		{
+			for(i = 0; i < s->block2_len; i++)
+			{
+				if(s->blocks2[i].message_data)
+				{
+					free(s->blocks2[i].message_data);
+					s->blocks2[i].message_data = NULL;
+				}
+			}
+		}
+	}
+	/* else: Static mode - message_data points to const static data, don't free */
+	
+	if(s->lut)
+	{
+		free(s->lut);
+		s->lut = NULL;
+	}
 }
 
 int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
@@ -453,17 +549,17 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 				 * message in the block is a duplicate of the first. */
 				for(crc = x = 0; x < 31; x++)
 				{
-					crc += v->message[x] = v->blocks[v->block].messages[((v->counter >> 3) & 7) % 7][x];
+					crc += v->blocks[v->block].message_data->message[x] = v->blocks[v->block].message_data->messages[((v->counter >> 3) & 7) % 7][x];
 				}
 				
-				v->message[x] = ~crc + 1;
+				v->blocks[v->block].message_data->message[x] = ~crc + 1;
 			}
 			
 			if((v->counter & 4) == 0)
 			{
 				/* The first half of the message. Transmitted for 4 frames */
 				_encode_vbi(
-					v->vbi, v->message,
+					v->vbi, v->blocks[v->block].message_data->message,
 					_sequence[(v->counter >> 4) & 7],
 					v->counter & 0xFF
 				);
@@ -472,7 +568,7 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 			{
 				/* The second half of the message. Transmitted for 4 frames */
 				_encode_vbi(
-					v->vbi, v->message + 16,
+					v->vbi, v->blocks[v->block].message_data->message + 16,
 					_rnibble(_sequence[(v->counter >> 4) & 7]),
 					v->blocks[v->block].mode
 				);
@@ -487,17 +583,17 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 				/* The active message is updated every 2nd frame */
 				for(crc = x = 0; x < 31; x++)
 				{
-					crc += v->message2[x] = v->blocks2[v->block2].messages[(v->counter >> 1) & 7][x];
+					crc += v->blocks2[v->block2].message_data->message[x] = v->blocks2[v->block2].message_data->messages[(v->counter >> 1) & 7][x];
 				}
 				
-				v->message2[x] = ~crc + 1;
+				v->blocks2[v->block2].message_data->message[x] = ~crc + 1;
 			}
 			
 			if((v->counter & 1) == 0)
 			{
 				/* The first half of the message */
 				_encode_vbi(
-					v->vbi2, v->message2,
+					v->vbi2, v->blocks2[v->block2].message_data->message,
 					_sequence2[(v->counter >> 1) & 7],
 					v->counter & 0xFF
 				);
@@ -506,7 +602,7 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 			{
 				/* The second half of the message */
 				_encode_vbi(
-					v->vbi2, v->message2 + 16,
+					v->vbi2, v->blocks2[v->block2].message_data->message + 16,
 					_rnibble(_sequence2[(v->counter >> 1) & 7]),
 					(v->counter & 0x08 ? 0x00 : v->blocks2[v->block2].mode)
 				);
@@ -526,7 +622,7 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 			/* Apply the current block codeword */
 			if(v->blocks)
 			{
-				v->cw = v->blocks[v->block].codeword;
+				v->cw = v->blocks[v->block].message_data->answer;
 			}
 			
 			/* Generate new seeds */
@@ -548,32 +644,32 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 						
 						char fmt[24];
 						sprintf(fmt,"KA - 0X%02X   KB - 0X%02X", (uint8_t) v->ppv_card_data[5], (uint8_t) v->ppv_card_data[6]);
-						v->blocks[v->block].messages[strcmp(mode,"ppv") == 0 ? 1 : 0][0] = 0x20;
-						v->blocks[v->block].messages[strcmp(mode,"ppv") == 0 ? 1 : 0][1] = 0x00;
-						v->blocks[v->block].messages[strcmp(mode,"ppv") == 0 ? 1 : 0][2] = 0xF5;
-						for(i = 0; i < 22; i++) v->blocks[v->block].messages[strcmp(mode,"ppv") == 0 ? 1 : 0][i + 3] = fmt[i];
+						v->blocks[v->block].message_data->messages[strcmp(mode,"ppv") == 0 ? 1 : 0][0] = 0x20;
+						v->blocks[v->block].message_data->messages[strcmp(mode,"ppv") == 0 ? 1 : 0][1] = 0x00;
+						v->blocks[v->block].message_data->messages[strcmp(mode,"ppv") == 0 ? 1 : 0][2] = 0xF5;
+						for(i = 0; i < 22; i++) v->blocks[v->block].message_data->messages[strcmp(mode,"ppv") == 0 ? 1 : 0][i + 3] = fmt[i];
 						
 					}
 					
 					vc_seed_ppv(&v->blocks[v->block], v->ppv_card_data);
 				}
 				
-				if(s->conf.showserial) v->blocks[v->block].messages[strcmp(mode,"ppv") == 0 ? 1 : 0][0] = 0x24;
+				if(s->conf.showserial) v->blocks[v->block].message_data->messages[strcmp(mode,"ppv") == 0 ? 1 : 0][0] = 0x24;
 				
 			}
 			
 			/* Print ECM */
 			if(s->conf.showecm && mode)
 			{
-				fprintf(stderr, "\n\nVC1 ECM In:  ");
-				for(i = 0; i < 32; i++) fprintf(stderr, "%02X ", v->blocks[v->block].messages[strcmp(mode,"ppv") == 0 ? 0 : 5][i]);
-				fprintf(stderr,"\nVC1 ECM Out: ");
-				for(i = 0; i < 8; i++) fprintf(stderr, "%02" PRIX64 " ", v->blocks[v->block].codeword >> (8 * i) & 0xFF);
+				fprintf(stderr, "\nVC1 ECM In:         ");
+				for(i = 0; i < 32; i++) fprintf(stderr, "%02X ", v->blocks[v->block].message_data->messages[strcmp(mode,"ppv") == 0 ? 0 : 5][i]);
+				fprintf(stderr,"\nVC1 ECM Out:        ");
+				for(i = 0; i < 8; i++) fprintf(stderr, "%02" PRIX64 " ", v->blocks[v->block].message_data->answer >> (8 * i) & 0xFF);
 				
 				if(s->conf.enableemm || s->conf.disableemm)
 				{
 					fprintf(stderr, "\nVC1 EMM In:  ");
-					for(i = 0; i < 32; i++) fprintf(stderr, "%02X ", v->blocks[v->block].messages[2][i]);
+					for(i = 0; i < 32; i++) fprintf(stderr, "%02X ", v->blocks[v->block].message_data->messages[2][i]);
 				}
 			}
 
@@ -590,7 +686,7 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 			/* Apply the current block codeword */
 			if(v->blocks2 && !mode)
 			{
-				v->cw = v->blocks2[v->block2].codeword;
+				v->cw = v->blocks2[v->block2].message_data->answer;
 			}
 
 			if(mode2)
@@ -602,10 +698,10 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 				if(mode)
 				{
 					/* Sync seeds with Videocrypt I */
-					cw = (v->counter % 0x3F < 0x0F || v->counter % 0x3F > 0x2F ? v->blocks[v->block].codeword : v->cw) ^ v->blocks2[v->block2].codeword;
+					cw = (v->counter % 0x3F < 0x0F || v->counter % 0x3F > 0x2F ? v->blocks[v->block].message_data->answer : v->cw) ^ v->blocks2[v->block2].message_data->answer;
 					for(i = 0; i < 8; i++)
 					{
-						v->blocks2[v->block2].messages[0][i + 17] = cw >> (8 * i) & 0xFF;
+						v->blocks2[v->block2].message_data->messages[0][i + 17] = cw >> (8 * i) & 0xFF;
 					}
 				}
 			}
@@ -614,14 +710,14 @@ int vc_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 			if(s->conf.showecm && mode2)
 			{
 				fprintf(stderr, "\n\nVC2 ECM In:  ");
-				for(i = 0; i < 32; i++) fprintf(stderr, "%02X ", v->blocks2[v->block2].messages[5][i]);
+				for(i = 0; i < 32; i++) fprintf(stderr, "%02X ", v->blocks2[v->block2].message_data->messages[5][i]);
 				fprintf(stderr,"\nVC2 ECM Out: ");
-				for(i = 0; i < 8; i++) fprintf(stderr, "%02" PRIX64 " ", v->blocks2[v->block2].codeword >> (8 * i) & 0xFF);
+				for(i = 0; i < 8; i++) fprintf(stderr, "%02" PRIX64 " ", v->blocks2[v->block2].message_data->answer >> (8 * i) & 0xFF);
 				
 				if(s->conf.enableemm || s->conf.disableemm)
 				{
 					fprintf(stderr, "\nVC2 EMM In:  ");
-					for(i = 0; i < 31; i++) fprintf(stderr, "%02X ", v->blocks2[v->block2].messages[2][i]);
+					for(i = 0; i < 31; i++) fprintf(stderr, "%02X ", v->blocks2[v->block2].message_data->messages[2][i]);
 				}
 			}
 			

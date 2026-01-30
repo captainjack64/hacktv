@@ -701,6 +701,8 @@ int main(int argc, char *argv[])
 			pre = optarg;
 			sub = strchr(pre, ':');
 			
+			char *colon = sub;
+			
 			if(sub != NULL)
 			{
 				/* Split the optarg into two */
@@ -732,11 +734,9 @@ int main(int argc, char *argv[])
 			else
 			{
 				/* Unrecognised output type, default to file */
-				if(sub != NULL)
+				if(colon != NULL)
 				{
-					/* Recolonise */
-					sub--;
-					*sub = ':';
+					*colon = ':';
 				}
 				
 				s.output_type = "file";
@@ -1828,4 +1828,3 @@ int main(int argc, char *argv[])
 	
 	return(0);
 }
-

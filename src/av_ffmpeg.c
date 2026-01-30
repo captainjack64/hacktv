@@ -1295,7 +1295,7 @@ int av_ffmpeg_open(vid_t *vid, void *ctx, char *input_url, char *format, char *o
 	}
 	
 	/* Open the video */
-	if((r = avformat_open_input(&s->format_ctx, input_url, fmt, &opts)) < 0)
+	if((r = avformat_open_input(&s->format_ctx, input_url, (AVInputFormat *)fmt, &opts)) < 0)
 	{
 		fprintf(stderr, "Error opening file '%s'\n", input_url);
 		_print_ffmpeg_error(r);
