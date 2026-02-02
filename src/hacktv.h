@@ -106,6 +106,7 @@ typedef struct {
 	char *raw_bb_file;
 	int16_t raw_bb_blanking_level;
 	int16_t raw_bb_white_level;
+	char *cps;
 	int secam_field_id;
 	int secam_field_id_lines;
 	int list_modes;

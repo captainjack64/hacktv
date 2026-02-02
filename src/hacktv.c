@@ -178,13 +178,14 @@ static void print_usage(void)
 		"fl2k output options\n"
 		"\n"
 		"  -o, --output fl2k[:<dev>]      Open an fl2k device for output.\n"
-		"      --fl2k-audio <mode>        Audio mode (none, stereo, spdif), default: none\n"
+		"      --fl2k-audio <mode>        Audio mode (none, mono, stereo, spdif),\n"
+		"                                 default: none\n"
 		"\n"
 		"  Each of the FL2K's three output channels can be used for:\n"
 		"\n"
 		"  Red: Baseband video / Complex I signal\n"
 		"  Green: Complex Q signal / Analogue audio (Left) / Nothing\n"
-		"  Blue: Analogue audio (Right) / Digital audio (S/PDIF) / Nothing\n"
+		"  Blue: Analogue audio (Right/Mono) / Digital audio (S/PDIF) / Nothing\n"
 		"\n"
 		"  The 0.7v p-p voltage level of the FL2K is too low to create a correct\n"
 		"  composite video signal, it will appear too dark without amplification.\n"
@@ -488,6 +489,7 @@ enum {
 	_OPT_RAW_BB_FILE,
 	_OPT_RAW_BB_BLANKING,
 	_OPT_RAW_BB_WHITE,
+	_OPT_CPS,
 	_OPT_SECAM_FIELD_ID,
 	_OPT_SECAM_FIELD_ID_LINES,
 	_OPT_FFMT,
@@ -583,6 +585,7 @@ int main(int argc, char *argv[])
 		{ "raw-bb-file",    required_argument, 0, _OPT_RAW_BB_FILE },
 		{ "raw-bb-blanking", required_argument, 0, _OPT_RAW_BB_BLANKING },
 		{ "raw-bb-white",   required_argument, 0, _OPT_RAW_BB_WHITE },
+		{ "cps",            required_argument, 0, _OPT_CPS },
 		{ "secam-field-id", no_argument,       0, _OPT_SECAM_FIELD_ID },
 		{ "secam-field-id-lines", required_argument, 0, _OPT_SECAM_FIELD_ID_LINES },
 		{ "json",           no_argument,       0, _OPT_JSON },
@@ -1104,6 +1107,10 @@ int main(int argc, char *argv[])
 			s.raw_bb_white_level = strtol(optarg, NULL, 0);
 			break;
 		
+		case _OPT_CPS: /* --cps <file> */
+			s.cps = optarg;
+			break;
+		
 		case _OPT_SECAM_FIELD_ID: /* --secam-field-id */
 			s.secam_field_id = 1;
 			break;
@@ -1179,6 +1186,10 @@ int main(int argc, char *argv[])
 			if(strcmp(optarg, "none") == 0)
 			{
 				s.fl2k_audio = FL2K_AUDIO_NONE;
+			}
+			else if(strcmp(optarg, "mono") == 0)
+			{
+				s.fl2k_audio = FL2K_AUDIO_MONO;
 			}
 			else if(strcmp(optarg, "stereo") == 0)
 			{
@@ -1655,6 +1666,7 @@ int main(int argc, char *argv[])
 	vid_conf.raw_bb_file = s.raw_bb_file;
 	vid_conf.raw_bb_blanking_level = s.raw_bb_blanking_level;
 	vid_conf.raw_bb_white_level = s.raw_bb_white_level;
+	vid_conf.cps = s.cps;
 	vid_conf.secam_field_id = s.secam_field_id;
 	vid_conf.secam_field_id_lines = s.secam_field_id_lines;
 	

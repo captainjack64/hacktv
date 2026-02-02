@@ -146,13 +146,15 @@ static int _rf_write_audio(void *private, const int16_t *audio, size_t samples)
 	
 	while(samples > 0)
 	{
-		r = fifo_write_ptr(&rf->buffer[1], (void **) &buf[0], 1);
+		r = fifo_write_ptr(&rf->buffer[2], (void **) &buf[1], 1);
+		
+		if(rf->audio_mode == FL2K_AUDIO_STEREO)
+		{
+			i = fifo_write_ptr(&rf->buffer[1], (void **) &buf[0], 1);
+			if(i < r) r = i;
+		}
+		
 		if(r < 0) break;
-		
-		i = fifo_write_ptr(&rf->buffer[2], (void **) &buf[1], 1);
-		if(i < 0) break;
-		
-		if(i < r) r = i;
 		
 		for(i = 0; i < r && samples > 0; i++)
 		{
@@ -160,13 +162,22 @@ static int _rf_write_audio(void *private, const int16_t *audio, size_t samples)
 			if(rf->interp >= rf->sample_rate)
 			{
 				rf->interp -= rf->sample_rate;
-				rf->audio[0] = audio[0] - INT16_MIN;
-				rf->audio[1] = audio[1] - INT16_MIN;
+				
+				if(rf->audio_mode == FL2K_AUDIO_STEREO)
+				{
+					rf->audio[0] = audio[0] - INT16_MIN;
+					rf->audio[1] = audio[1] - INT16_MIN;
+				}
+				else
+				{
+					rf->audio[1] = (audio[0] + audio[1]) / 2 - INT16_MIN;
+				}
+				
 				samples--;
 				audio += 2;
 			}
 			
-			for(c = 0; c < 2; c++)
+			for(c = (rf->audio_mode == FL2K_AUDIO_STEREO ? 0 : 1); c < 2; c++)
 			{
 				/* Apply a delta-sigma modulation / dither using the lost
 				 * lower 8-bits of the 16-bit audio samples. Use a low pass
@@ -182,7 +193,11 @@ static int _rf_write_audio(void *private, const int16_t *audio, size_t samples)
 			}
 		}
 		
-		fifo_write(&rf->buffer[1], i);
+		if(rf->audio_mode == FL2K_AUDIO_STEREO)
+		{
+			fifo_write(&rf->buffer[1], i);
+		}
+		
 		fifo_write(&rf->buffer[2], i);
 	}
 	
@@ -314,7 +329,18 @@ int rf_fl2k_open(rf_t *s, const char *device, unsigned int sample_rate, int base
 		fifo_reader_init(&rf->reader[1], &rf->buffer[1], 0);
 	}
 	
-	if(audio_mode == FL2K_AUDIO_STEREO)
+	if(audio_mode == FL2K_AUDIO_MONO)
+	{
+		rf->interp = 0;
+		
+		/* Blue channel is mono audio */
+		fifo_init(&rf->buffer[2], BUFFERS, FL2K_BUF_LEN);
+		fifo_reader_init(&rf->reader[2], &rf->buffer[2], 0);
+		
+		/* Register the callback */
+		s->write_audio = _rf_write_audio;
+	}
+	else if(audio_mode == FL2K_AUDIO_STEREO)
 	{
 		if(!rf->baseband)
 		{
