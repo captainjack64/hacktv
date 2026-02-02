@@ -2825,7 +2825,7 @@ static int _load_cps(_cps_t *cps, const char *filename, int16_t blanking_level, 
 	out = cps->data;
 	for(i = 0; i < std->output_frames; i++)
 	{
-		int cinv, cblk;
+		int cinv = 0, cblk;
 		
 		/* For each output frame select which chroma
 		 * block to use (C1/C2) and whether to invert it */
