@@ -62,6 +62,7 @@ typedef struct {
 	int showserial;
 	char *syster;
 	int systeraudio;
+	int d14;
 	char *eurocrypt;
 	int acp;
 	int vits;

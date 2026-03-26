@@ -4821,6 +4821,18 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		
 		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
 	}
+
+	/* Initialise D14 encoder */
+	if(s->conf.d14)
+	{
+		if((r = discret14_init(&s->discret14, s)) != VID_OK)
+		{
+			vid_free(s);
+			return(r);
+		}
+		
+		_add_lineprocess(s, "discret14", 2, 0, &s->discret14, discret14_render_line, NULL);
+	}
 	
 	/* Initialise ACP renderer */
 	if(s->conf.acp)
@@ -5307,7 +5319,12 @@ void vid_free(vid_t *s)
 	{
 		acp_free(&s->acp);
 	}
-	
+
+	if(s->conf.d14)
+	{
+		discret14_free(&s->discret14);
+	}
+
 	if(s->conf.syster || s->conf.d11 || s->conf.systercnr)
 	{
 		ng_free(&s->ng);

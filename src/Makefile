@@ -11,6 +11,8 @@ OBJS    := acp.o \
            cc608.o \
            common.o \
            dance.o \
+           discret14.o \
+           discret14-ca.o \
            eurocrypt.o \
            fifo.o \
            fir.o \

@@ -90,6 +90,7 @@ static void print_usage(void)
 		"      --findkey                  Attempt to find keys of PPV Videocrypt card.\n"
 		"      --syster <mode>            Enable Nagravision Syster scrambling. (PAL only)\n"
 		"      --d11 <mode>               Enable Discret 11 scrambling. (PAL only)\n"
+		"      --d14                      Enable Discret 14 scrambling. (PAL only)\n"
 		"      --systercnr <mode>         Enable Syster cut and rotate scrambling (***INCOMPLETE***). (PAL only)\n"
 		"      --systeraudio              Invert the audio spectrum when using Syster, Syster CnR or D11 scrambling.\n"
 		"      --acp                      Enable Analogue Copy Protection signal.\n"
@@ -443,6 +444,7 @@ enum {
 	_OPT_DISCRET,
 	_OPT_SMARTCRYPT,
 	_OPT_SYSTERAUDIO,
+	_OPT_D14,
 	_OPT_EUROCRYPT,
 	_OPT_ACP,
 	_OPT_VITS,
@@ -547,6 +549,7 @@ int main(int argc, char *argv[])
 		{ "d11",            required_argument, 0, _OPT_DISCRET },
 		{ "systercnr",      required_argument, 0, _OPT_SMARTCRYPT },
 		{ "systeraudio",    no_argument,       0, _OPT_SYSTERAUDIO },
+		{ "d14",            no_argument,       0, _OPT_D14 },
 		{ "acp",            no_argument,       0, _OPT_ACP },
 		{ "vits",           no_argument,       0, _OPT_VITS },
 		{ "vitc",           no_argument,       0, _OPT_VITC },
@@ -656,6 +659,7 @@ int main(int argc, char *argv[])
 	s.d11 = NULL;
 	s.systercnr = NULL;
 	s.systeraudio = 0;
+	s.d14 = 0;
 	s.acp = 0;
 	s.vits = 0;
 	s.vitc = 0;
@@ -919,6 +923,10 @@ int main(int argc, char *argv[])
 		case _OPT_DISCRET: /* --d11 */
 			free(s.d11);
 			s.d11 = strdup(optarg);
+			break;
+
+		case _OPT_D14: /* --d14 */
+			s.d14 = 1;
 			break;
 		
 		case _OPT_SMARTCRYPT: /* --systercnr */
@@ -1543,7 +1551,18 @@ int main(int argc, char *argv[])
 		vid_conf.systercnr = s.systercnr;
 		vid_conf.systeraudio = s.systeraudio;
 	}
-	
+
+	if(s.d14)
+	{
+		if(vid_conf.type != VID_RASTER_625)
+		{
+			fprintf(stderr, "Discret 14 is only compatible with 625 line modes.\n");
+			return(-1);
+		}
+		
+		vid_conf.d14 = 1;
+	}
+
 	if(s.eurocrypt)
 	{
 		if(vid_conf.type != VID_MAC)
