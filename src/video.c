@@ -4810,18 +4810,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
 	}
 	
-	/* Initalise D11 encoder */
-	if(s->conf.d11)
-	{
-		if((r = d11_init(&s->ng, s, s->conf.d11)) != VID_OK)
-		{
-			vid_free(s);
-			return(r);
-		}
-		
-		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
-	}
-
 	/* Initialise D14 encoder */
 	if(s->conf.d14)
 	{
