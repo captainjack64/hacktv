@@ -173,7 +173,7 @@ fi
 if [[ ! -f $PREFIX/lib/libpng16.a ]]; then
 
 	if [[ ! -d libpng ]]; then
-		git clone --depth 1 https://github.com/glennrp/libpng.git
+		git clone --branch libpng16 --depth 1 https://github.com/glennrp/libpng.git
 	fi
 
 	cd libpng
