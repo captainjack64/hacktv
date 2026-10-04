@@ -91,6 +91,7 @@ static void print_usage(void)
 		"      --syster <mode>            Enable Nagravision Syster scrambling. (PAL only)\n"
 		"      --d11 <mode>               Enable Discret 11 scrambling. (PAL only)\n"
 		"      --d14                      Enable Discret 14 scrambling. (PAL only)\n"
+		"      --cablecrypt-tvcabo        Enable Cablecrypt (TV Cabo) scrambling. (PAL only)\n"
 		"      --systercnr <mode>         Enable Syster cut and rotate scrambling (***INCOMPLETE***). (PAL only)\n"
 		"      --systeraudio              Invert the audio spectrum when using Syster, Syster CnR or D11 scrambling.\n"
 		"      --acp                      Enable Analogue Copy Protection signal.\n"
@@ -445,6 +446,7 @@ enum {
 	_OPT_SMARTCRYPT,
 	_OPT_SYSTERAUDIO,
 	_OPT_D14,
+	_OPT_CABLECRYPT,
 	_OPT_EUROCRYPT,
 	_OPT_ACP,
 	_OPT_VITS,
@@ -550,6 +552,7 @@ int main(int argc, char *argv[])
 		{ "systercnr",      required_argument, 0, _OPT_SMARTCRYPT },
 		{ "systeraudio",    no_argument,       0, _OPT_SYSTERAUDIO },
 		{ "d14",            no_argument,       0, _OPT_D14 },
+		{ "cablecrypt-tvcabo", no_argument,    0, _OPT_CABLECRYPT },
 		{ "acp",            no_argument,       0, _OPT_ACP },
 		{ "vits",           no_argument,       0, _OPT_VITS },
 		{ "vitc",           no_argument,       0, _OPT_VITC },
@@ -660,6 +663,7 @@ int main(int argc, char *argv[])
 	s.systercnr = NULL;
 	s.systeraudio = 0;
 	s.d14 = 0;
+	s.cablecrypt = 0;
 	s.acp = 0;
 	s.vits = 0;
 	s.vitc = 0;
@@ -929,6 +933,10 @@ int main(int argc, char *argv[])
 			s.d14 = 1;
 			break;
 		
+		case _OPT_CABLECRYPT: /* --cablecrypt-tvcabo */
+			s.cablecrypt = 1;
+			break;
+
 		case _OPT_SMARTCRYPT: /* --systercnr */
 			free(s.systercnr);
 			s.systercnr = strdup(optarg);
@@ -1561,6 +1569,17 @@ int main(int argc, char *argv[])
 		}
 		
 		vid_conf.d14 = 1;
+	}
+
+	if(s.cablecrypt)
+	{
+		if(vid_conf.type != VID_RASTER_625)
+		{
+			fprintf(stderr, "Cablecrypt is only compatible with 625 line modes.\n");
+			return(-1);
+		}
+
+		vid_conf.cablecrypt = s.cablecrypt;
 	}
 
 	if(s.eurocrypt)

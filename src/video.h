@@ -43,6 +43,7 @@ typedef struct vid_t vid_t;
 #include "videocrypts.h"
 #include "syster.h"
 #include "discret14.h"
+#include "cablecrypt.h"
 #include "acp.h"
 #include "font.h"
 #include "subtitles.h"
@@ -238,6 +239,7 @@ typedef struct {
 	char *syster;
 	int systeraudio;
 	int d14;
+	int cablecrypt;
 	int acp;
 	int subtitles;
 	int txsubtitles;
@@ -468,6 +470,9 @@ struct vid_t {
 
 	/* Discret 14 test state */
 	discret14_t discret14;
+
+	/* Cablecrypt state */
+	cablecrypt_t cablecrypt;
 
 	/* ACP state */
 	acp_t acp;

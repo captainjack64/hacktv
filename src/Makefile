@@ -13,6 +13,7 @@ OBJS    := acp.o \
            dance.o \
            discret14.o \
            discret14-ca.o \
+           cablecrypt.o \
            eurocrypt.o \
            fifo.o \
            fir.o \

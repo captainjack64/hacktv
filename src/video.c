@@ -3487,6 +3487,17 @@ static int _vid_next_line_raster(vid_t *s, void *arg, int nlines, vid_line_t **l
 		{
 			*o = s->yuv_level_lookup[0x000000].y;
 		}
+
+		/* Cablecrypt: invert the active picture chroma */
+		if(s->conf.cablecrypt && pal && cablecrypt_chroma_invert(&s->cablecrypt, l->frame, l->line))
+		{
+			oc = &s->chrominance_buffer[al * 2];
+			for(x = al; x < ar; x++, oc += 2)
+			{
+				oc[0] = -oc[0];
+				oc[1] = -oc[1];
+			}
+		}
 	}
 	
 	if(pal)
@@ -4810,18 +4821,6 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
 	}
 	
-	/* Initalise D11 encoder */
-	if(s->conf.d11)
-	{
-		if((r = d11_init(&s->ng, s, s->conf.d11)) != VID_OK)
-		{
-			vid_free(s);
-			return(r);
-		}
-		
-		_add_lineprocess(s, "discret11", 2, 0, &s->ng, d11_render_line, NULL);
-	}
-
 	/* Initialise D14 encoder */
 	if(s->conf.d14)
 	{
@@ -4832,6 +4831,18 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		}
 		
 		_add_lineprocess(s, "discret14", 2, 0, &s->discret14, discret14_render_line, NULL);
+	}
+
+	/* Initialise Cablecrypt */
+	if(s->conf.cablecrypt)
+	{
+		if((r = cablecrypt_init(&s->cablecrypt, s)) != VID_OK)
+		{
+			vid_free(s);
+			return(r);
+		}
+		
+		_add_lineprocess(s, "cablecrypt", 2, 0, &s->cablecrypt, cablecrypt_render_line, NULL);
 	}
 	
 	/* Initialise ACP renderer */
@@ -5323,6 +5334,11 @@ void vid_free(vid_t *s)
 	if(s->conf.d14)
 	{
 		discret14_free(&s->discret14);
+	}
+
+	if(s->conf.cablecrypt)
+	{
+		cablecrypt_free(&s->cablecrypt);
 	}
 
 	if(s->conf.syster || s->conf.d11 || s->conf.systercnr)
