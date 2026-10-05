@@ -41,25 +41,25 @@ static int _test_read_video(void *ctx, av_frame_t *frame)
 	av_frame_init(frame, s->width, s->height, s->video, 1, s->width);
 	av_set_display_aspect_ratio(frame, (r64_t) { 4, 3 });
 
-	/* Get current time */
-	time_t secs = time(0);
-	struct tm *time = localtime(&secs);
-	s->font[TEXT_TIMESTAMP]->text = malloc(16 * sizeof(char));
-	sprintf(s->font[TEXT_TIMESTAMP]->text, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
-
 	/* Print clock */
 	if(s->font[TEXT_TIMESTAMP])
 	{
+		/* Get current time */
+		time_t secs = time(0);
+		struct tm *time = localtime(&secs);
+		s->font[TEXT_TIMESTAMP]->text = malloc(16 * sizeof(char));
+		sprintf(s->font[TEXT_TIMESTAMP]->text, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
+
 		print_generic_text(	s->font[TEXT_TIMESTAMP],
 							s->video,
 							s->width,
 							s->font[TEXT_TIMESTAMP]->text,
 							s->font[TEXT_TIMESTAMP]->x_loc, s->font[TEXT_TIMESTAMP]->y_loc, NO_TEXT_SHADOW, TEXT_BOX, 0, 1);
+
+		/* Free memory */
+		free(s->font[TEXT_TIMESTAMP]->text);
 	}
-	
-	/* Free memory */
-	free(s->font[TEXT_TIMESTAMP]->text);
-	
+
 	return(AV_OK);
 }
 
