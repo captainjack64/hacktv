@@ -63,9 +63,9 @@ static const uint8_t cc_sync_cw[8][4] = {
 #define CC_HOLD_MAX   100
 #define CC_FORCE      250       /* flip anyway after this many frames without a cut */
 
-#define CC_SYNC_LINE  319
-#define CC_AUTH2_LINE 318
-#define CC_AUTH1_LINE 6
+#define CC_AUTH1_LINE 5
+#define CC_AUTH2_LINE 317
+#define CC_SYNC_LINE  318
 
 static uint32_t _rand(cablecrypt_t *c)
 {
