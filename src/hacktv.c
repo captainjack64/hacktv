@@ -92,6 +92,8 @@ static void print_usage(void)
 		"      --d11 <mode>               Enable Discret 11 scrambling. (PAL only)\n"
 		"      --d14                      Enable Discret 14 scrambling. (PAL only)\n"
 		"      --cablecrypt-tvcabo        Enable Cablecrypt (TV Cabo) scrambling. (PAL only)\n"
+		"      --luxcrypt <mode>          Enable Luxcrypt scrambling, EXPERIMENTAL. (PAL only)\n"
+		"                                 rtl4 = normal picture, rtl5 = inverted picture.\n"
 		"      --systercnr <mode>         Enable Syster cut and rotate scrambling (***INCOMPLETE***). (PAL only)\n"
 		"      --systeraudio              Invert the audio spectrum when using Syster, Syster CnR or D11 scrambling.\n"
 		"      --acp                      Enable Analogue Copy Protection signal.\n"
@@ -448,6 +450,7 @@ enum {
 	_OPT_SYSTERAUDIO,
 	_OPT_D14,
 	_OPT_CABLECRYPT,
+	_OPT_LUXCRYPT,
 	_OPT_EUROCRYPT,
 	_OPT_ACP,
 	_OPT_VITS,
@@ -554,6 +557,7 @@ int main(int argc, char *argv[])
 		{ "systeraudio",    no_argument,       0, _OPT_SYSTERAUDIO },
 		{ "d14",            no_argument,       0, _OPT_D14 },
 		{ "cablecrypt-tvcabo", no_argument,    0, _OPT_CABLECRYPT },
+		{ "luxcrypt",       required_argument, 0, _OPT_LUXCRYPT },
 		{ "acp",            no_argument,       0, _OPT_ACP },
 		{ "vits",           no_argument,       0, _OPT_VITS },
 		{ "vitc",           no_argument,       0, _OPT_VITC },
@@ -665,6 +669,7 @@ int main(int argc, char *argv[])
 	s.systeraudio = 0;
 	s.d14 = 0;
 	s.cablecrypt = 0;
+	s.luxcrypt = 0;
 	s.acp = 0;
 	s.vits = 0;
 	s.vitc = 0;
@@ -936,6 +941,16 @@ int main(int argc, char *argv[])
 		
 		case _OPT_CABLECRYPT: /* --cablecrypt-tvcabo */
 			s.cablecrypt = 1;
+			break;
+
+		case _OPT_LUXCRYPT: /* --luxcrypt <mode> */
+			if(strcmp(optarg, "rtl4") == 0) s.luxcrypt = 1;
+			else if(strcmp(optarg, "rtl5") == 0) s.luxcrypt = 2;
+			else
+			{
+				fprintf(stderr, "Unrecognised Luxcrypt mode '%s'. Use rtl4 or rtl5.\n", optarg);
+				return(-1);
+			}
 			break;
 
 		case _OPT_SMARTCRYPT: /* --systercnr */
@@ -1581,6 +1596,25 @@ int main(int argc, char *argv[])
 		}
 
 		vid_conf.cablecrypt = s.cablecrypt;
+	}
+
+	if(s.luxcrypt)
+	{
+		if(vid_conf.type != VID_RASTER_625)
+		{
+			fprintf(stderr, "Luxcrypt is only compatible with 625 line modes.\n");
+			return(-1);
+		}
+
+		if(s.videocrypt || s.videocrypt2 || s.videocrypts ||
+		   s.syster || s.systercnr || s.d11 || s.d14 ||
+		   s.cablecrypt || s.eurocrypt)
+		{
+			fprintf(stderr, "Using multiple scrambling modes is not supported.\n");
+			return(-1);
+		}
+
+		vid_conf.luxcrypt = s.luxcrypt;
 	}
 
 	if(s.eurocrypt)
