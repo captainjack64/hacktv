@@ -64,6 +64,13 @@ typedef struct {
 	
 	int block[47];
 	
+	/* Line shuffle */
+	uint64_t cw;                /* CW used by the scrambler for this block */
+	uint64_t next_cw;           /* CW sent in this block's F9 messages (conditional mode) */
+	int random_cw;              /* 1 = a new random CW every 32-frame block */
+	uint8_t shuffle[12][47];    /* Shuffle for the current frame */
+	int showecm;                /* Print the F9 messages and CWs */
+	
 } vcs_t;
 
 extern int vcs_init(vcs_t *s, vid_t *vs, const char *mode);
