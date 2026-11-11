@@ -14,6 +14,7 @@ OBJS    := acp.o \
            discret14.o \
            discret14-ca.o \
            cablecrypt.o \
+           luxcrypt.o \
            eurocrypt.o \
            fifo.o \
            fir.o \
@@ -31,6 +32,7 @@ OBJS    := acp.o \
            syster.o \
            syster-ca.o \
            teletext.o \
+           testcard.o \
            vbidata.o \
            video.o \
            videocrypt.o \

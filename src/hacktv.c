@@ -92,6 +92,8 @@ static void print_usage(void)
 		"      --d11 <mode>               Enable Discret 11 scrambling. (PAL only)\n"
 		"      --d14                      Enable Discret 14 scrambling. (PAL only)\n"
 		"      --cablecrypt-tvcabo        Enable Cablecrypt (TV Cabo) scrambling. (PAL only)\n"
+		"      --luxcrypt <mode>          Enable Luxcrypt scrambling, EXPERIMENTAL. (PAL only)\n"
+		"                                 rtl4 = normal picture, rtl5 = inverted picture.\n"
 		"      --systercnr <mode>         Enable Syster cut and rotate scrambling (***INCOMPLETE***). (PAL only)\n"
 		"      --systeraudio              Invert the audio spectrum when using Syster, Syster CnR or D11 scrambling.\n"
 		"      --acp                      Enable Analogue Copy Protection signal.\n"
@@ -151,7 +153,7 @@ static void print_usage(void)
 		"Input options\n"
 		"\n"
 		"  test:colourbars    Generate and transmit a test pattern.\n"
-		"  test:pm5544        Transmit a PM5544 test pattern. (Default)\n"
+		"  test:pm5544        Transmit a PM5544 test pattern.\n"
 		"  test:pm5644        Transmit a PM5644 (16:9) test pattern.\n"
 		"  test:ueitm         Transmit a UEITM test pattern.\n"
 		"  test:fubk          Transmit a FUBK test pattern.\n"
@@ -326,7 +328,8 @@ static void print_usage(void)
 		"hacktv supports the following modes:\n"
 		"\n"
 		"  free        = Free-access, no subscription card is required to decode.\n"
-		"  conditional = A valid BBC Select card is required to decode. (Does not work yet)\n"
+		"  conditional = A new random CW every 32 frames, sent in bytes 19-26 of the\n"
+		"                F9 messages. Needs a card that returns those bytes.\n"
 		"\n"
 		"Audio inversion is not yet supported.\n"
 		"\n"
@@ -468,6 +471,7 @@ enum {
 	_OPT_SYSTERAUDIO,
 	_OPT_D14,
 	_OPT_CABLECRYPT,
+	_OPT_LUXCRYPT,
 	_OPT_EUROCRYPT,
 	_OPT_ACP,
 	_OPT_VITS,
@@ -574,6 +578,7 @@ int main(int argc, char *argv[])
 		{ "systeraudio",    no_argument,       0, _OPT_SYSTERAUDIO },
 		{ "d14",            no_argument,       0, _OPT_D14 },
 		{ "cablecrypt-tvcabo", no_argument,    0, _OPT_CABLECRYPT },
+		{ "luxcrypt",       required_argument, 0, _OPT_LUXCRYPT },
 		{ "acp",            no_argument,       0, _OPT_ACP },
 		{ "vits",           no_argument,       0, _OPT_VITS },
 		{ "vitc",           no_argument,       0, _OPT_VITC },
@@ -685,6 +690,7 @@ int main(int argc, char *argv[])
 	s.systeraudio = 0;
 	s.d14 = 0;
 	s.cablecrypt = 0;
+	s.luxcrypt = 0;
 	s.acp = 0;
 	s.vits = 0;
 	s.vitc = 0;
@@ -956,6 +962,16 @@ int main(int argc, char *argv[])
 		
 		case _OPT_CABLECRYPT: /* --cablecrypt-tvcabo */
 			s.cablecrypt = 1;
+			break;
+
+		case _OPT_LUXCRYPT: /* --luxcrypt <mode> */
+			if(strcmp(optarg, "rtl4") == 0) s.luxcrypt = 1;
+			else if(strcmp(optarg, "rtl5") == 0) s.luxcrypt = 2;
+			else
+			{
+				fprintf(stderr, "Unrecognised Luxcrypt mode '%s'. Use rtl4 or rtl5.\n", optarg);
+				return(-1);
+			}
 			break;
 
 		case _OPT_SMARTCRYPT: /* --systercnr */
@@ -1603,6 +1619,25 @@ int main(int argc, char *argv[])
 		vid_conf.cablecrypt = s.cablecrypt;
 	}
 
+	if(s.luxcrypt)
+	{
+		if(vid_conf.type != VID_RASTER_625)
+		{
+			fprintf(stderr, "Luxcrypt is only compatible with 625 line modes.\n");
+			return(-1);
+		}
+
+		if(s.videocrypt || s.videocrypt2 || s.videocrypts ||
+		   s.syster || s.systercnr || s.d11 || s.d14 ||
+		   s.cablecrypt || s.eurocrypt)
+		{
+			fprintf(stderr, "Using multiple scrambling modes is not supported.\n");
+			return(-1);
+		}
+
+		vid_conf.luxcrypt = s.luxcrypt;
+	}
+
 	if(s.eurocrypt)
 	{
 		if(vid_conf.type != VID_MAC)
@@ -1852,7 +1887,7 @@ int main(int argc, char *argv[])
 			
 			if(strncmp(pre, "test", l) == 0)
 			{
-				r = av_test_open(&s.vid.av, sub, &s.vid.conf);
+				r = av_test_open(&s.vid, sub);
 			}
 			else if(strncmp(pre, "ffmpeg", l) == 0)
 			{

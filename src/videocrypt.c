@@ -79,6 +79,7 @@ static _vc_mode_t _vc_modes[] = {
 	{ "sky10",       VC_VER1,   VC_CW_DYNAMIC, VC_SKY10,      _vc1_blocks,  2, 0,      "   HACKTV    SKY10 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
 	{ "sky10ppv",    VC_VER1,   VC_CW_DYNAMIC, VC_SKY10_PPV,  _vc1_blocks,  2, 0,      "HACKTV SKY10  PPV MODE  ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
 	{ "sky11",       VC_VER1,   VC_CW_STATIC,  VC_SKY11,    _sky11_blocks,  2, 0,      "   HACKTV    SKY11 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ "sky11ppv",    VC_VER1,   VC_CW_STATIC,  VC_SKY11, _sky11ppv_blocks,  2, 0,      "HACKTV SKY11  PPV MODE  ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
 	{ "sky12",       VC_VER1,   VC_CW_STATIC,  VC_SKY12,    _sky12_blocks,  2, 0,      "   HACKTV    SKY12 MODE ", 0x00, 0x00, 0x00,       0x00, 0x00, VC_KERNEL_2, VC_SIG_2 },
 	{ "skynz01",     VC_VER1,   VC_CW_DYNAMIC, VC_SKYNZ01,    _vc1_blocks,  2, VC_EMM, "   HACKTV   SKYNZ01 MODE", 0x02, 0x0e, 0x21, _skynz_key, 0x00, VC_KERNEL_1, VC_SIG_1 },
 	{ "skynz02",     VC_VER1,   VC_CW_DYNAMIC, VC_SKYNZ02,    _vc1_blocks,  2, VC_EMM, "   HACKTV   SKYNZ02 MODE", 0x02, 0x0e, 0x22, _skynz_key, 0x00, VC_KERNEL_1, VC_SIG_1 },

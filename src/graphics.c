@@ -42,14 +42,6 @@ const pngs_t png_logos[] = {
 	{ NULL,             NULL,                0,          0 }
 };
 
-const pngs_t png_tests[] = {
-	{ "pm5544",         _png_test_pm5544, IMG_POS_CENTRE,  sizeof(_png_test_pm5544) },
-	{ "pm5644",         _png_test_pm5644, IMG_POS_CENTRE,  sizeof(_png_test_pm5644) },
-	{ "fubk",           _png_test_fubk,   IMG_POS_CENTRE,  sizeof(_png_test_fubk) },
-	{ "ueitm",          _png_test_ueitm,  IMG_POS_CENTRE,  sizeof(_png_test_ueitm) },
-	{ NULL,             NULL,             0,           0 }
-};
-
 const pngs_t png_media_icons[] = {
 	{ "play",          _png_media_play,  IMG_POS_CENTRE,  sizeof(_png_media_play) },
 	{ "pause",         _png_media_pause, IMG_POS_CENTRE,  sizeof(_png_media_pause) },
@@ -219,25 +211,6 @@ int load_png(image_t **s, int width, int height, char *image_name, float scale, 
 			return(HACKTV_ERROR);
 		}
 	}
-	else if(type == IMG_TEST)
-	{
-		for(pngs = png_tests; pngs->name != NULL; pngs++)
-		{	
-			if(strcmp(image->name, pngs->name) == 0) break;
-		}
-		
-		if(pngs->name == NULL)
-		{
-			fprintf(stderr, "\n%s: Unrecognised test pattern name.\n", image->name);
-			fprintf(stderr, "\nValid values are:\n");
-			
-			for(pngs = png_tests; pngs->name != NULL; pngs++)
-			{
-				 fprintf(stderr,"\t-- %s\n", pngs->name);
-			}
-			return(HACKTV_ERROR);
-		}
-	}
 	else
 	{
 		for(pngs = png_media_icons; pngs->name != NULL; pngs++)
@@ -287,6 +260,49 @@ int load_png(image_t **s, int width, int height, char *image_name, float scale, 
 	return(HACKTV_ERROR);
 }
 
+
+int load_png_rgba(const char *name, uint32_t **data, int *width, int *height)
+{
+	const pngs_t *pngs;
+	image_t image;
+	int x, y;
+	
+	for(pngs = png_logos; pngs->name != NULL; pngs++)
+	{
+		if(strcmp(name, pngs->name) == 0) break;
+	}
+	
+	if(pngs->name == NULL) return(HACKTV_ERROR);
+	
+	memset(&image, 0, sizeof(image_t));
+	image.name = (char *) name;
+	
+	if(_read_png_data(&image, pngs) != HACKTV_OK) return(HACKTV_ERROR);
+	
+	*data = malloc(image.width * image.height * sizeof(uint32_t));
+	
+	for(y = 0; y < image.height; y++)
+	{
+		png_bytep row = image.row_pointers[y];
+		
+		for(x = 0; *data && x < image.width; x++)
+		{
+			png_bytep px = &row[x * 4];
+			(*data)[y * image.width + x] = px[3] << 24 | px[0] << 16 | px[1] << 8 | px[2];
+		}
+		
+		free(row);
+	}
+	
+	free(image.row_pointers);
+	
+	if(!*data) return(HACKTV_OUT_OF_MEMORY);
+	
+	*width = image.width;
+	*height = image.height;
+	
+	return(HACKTV_OK);
+}
 
 void overlay_image(uint32_t *framebuffer, image_t *l, int vid_width, int line_stride, int vid_height, int pos)
 {

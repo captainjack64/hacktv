@@ -4844,6 +4844,18 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		
 		_add_lineprocess(s, "cablecrypt", 2, 0, &s->cablecrypt, cablecrypt_render_line, NULL);
 	}
+
+	/* Initialise Luxcrypt */
+	if(s->conf.luxcrypt)
+	{
+		if((r = luxcrypt_init(&s->luxcrypt, s)) != VID_OK)
+		{
+			vid_free(s);
+			return(r);
+		}
+		
+		_add_lineprocess(s, "luxcrypt-vbi", 1, 0, &s->luxcrypt, luxcrypt_reserve_line, NULL);
+	}
 	
 	/* Initialise ACP renderer */
 	if(s->conf.acp)
@@ -4911,6 +4923,11 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		{
 			_add_lineprocess(s, "teletext", 1, 0, &s->tt, tt_render_line, NULL);
 		}
+	}
+	
+	if(s->conf.luxcrypt)
+	{
+		_add_lineprocess(s, "luxcrypt", 1, 0, &s->luxcrypt, luxcrypt_render_line, NULL);
 	}
 	
 	if(s->pixel_rate != s->sample_rate)
@@ -5339,6 +5356,11 @@ void vid_free(vid_t *s)
 	if(s->conf.cablecrypt)
 	{
 		cablecrypt_free(&s->cablecrypt);
+	}
+
+	if(s->conf.luxcrypt)
+	{
+		luxcrypt_free(&s->luxcrypt);
 	}
 
 	if(s->conf.syster || s->conf.d11 || s->conf.systercnr)

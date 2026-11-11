@@ -18,6 +18,6 @@
 #ifndef _TEST_H
 #define _TEST_H
 
-extern int av_test_open(av_t *av, char *test_screen, void *config);
+extern int av_test_open(vid_t *vid, char *test_screen);
 
 #endif

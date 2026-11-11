@@ -44,6 +44,7 @@ typedef struct vid_t vid_t;
 #include "syster.h"
 #include "discret14.h"
 #include "cablecrypt.h"
+#include "luxcrypt.h"
 #include "acp.h"
 #include "font.h"
 #include "subtitles.h"
@@ -240,6 +241,7 @@ typedef struct {
 	int systeraudio;
 	int d14;
 	int cablecrypt;
+	int luxcrypt;
 	int acp;
 	int subtitles;
 	int txsubtitles;
@@ -474,6 +476,9 @@ struct vid_t {
 	/* Cablecrypt state */
 	cablecrypt_t cablecrypt;
 
+	/* Luxcrypt state */
+	luxcrypt_t luxcrypt;
+
 	/* ACP state */
 	acp_t acp;
 	
@@ -556,6 +561,7 @@ extern void vid_free(vid_t *s);
 extern void vid_info(vid_t *s);
 extern size_t vid_get_framebuffer_length(vid_t *s);
 extern vid_line_t *vid_next_line(vid_t *s);
+extern vbidata_lut_t *_render_sync_pulses(vid_t *s, const double syncs[][4], int num);
 
 #endif
 

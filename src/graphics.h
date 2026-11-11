@@ -65,6 +65,7 @@ typedef struct {
 
 extern int read_png_file(image_t *image);
 extern void overlay_image(uint32_t *framebuffer, image_t *l, int vid_width, int line_stride, int vid_height, int pos);
+extern int load_png_rgba(const char *name, uint32_t **data, int *width, int *height);
 extern int load_png(image_t **s, int width, int height, char *filename, float scale, float ratio, int type);
 extern void resize_bitmap(uint32_t *input, uint32_t *output, int old_width, int old_height, int new_width, int new_height);
 #endif
