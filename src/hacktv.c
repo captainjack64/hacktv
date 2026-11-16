@@ -92,6 +92,8 @@ static void print_usage(void)
 		"      --d11 <mode>               Enable Discret 11 scrambling. (PAL only)\n"
 		"      --d14                      Enable Discret 14 scrambling. (PAL only)\n"
 		"      --cablecrypt-tvcabo        Enable Cablecrypt (TV Cabo) scrambling. (PAL only)\n"
+		"      --cablecrypt-emm <serial>  Send Cablecrypt EMMs authorising the decoder with this\n"
+		"                                 serial number (decimal, as on the label).\n"
 		"      --luxcrypt <mode>          Enable Luxcrypt scrambling, EXPERIMENTAL. (PAL only)\n"
 		"                                 rtl4 = normal picture, rtl5 = inverted picture.\n"
 		"      --systercnr <mode>         Enable Syster cut and rotate scrambling (***INCOMPLETE***). (PAL only)\n"
@@ -451,6 +453,7 @@ enum {
 	_OPT_SYSTERAUDIO,
 	_OPT_D14,
 	_OPT_CABLECRYPT,
+	_OPT_CABLECRYPT_EMM,
 	_OPT_LUXCRYPT,
 	_OPT_EUROCRYPT,
 	_OPT_ACP,
@@ -558,6 +561,7 @@ int main(int argc, char *argv[])
 		{ "systeraudio",    no_argument,       0, _OPT_SYSTERAUDIO },
 		{ "d14",            no_argument,       0, _OPT_D14 },
 		{ "cablecrypt-tvcabo", no_argument,    0, _OPT_CABLECRYPT },
+		{ "cablecrypt-emm", required_argument, 0, _OPT_CABLECRYPT_EMM },
 		{ "luxcrypt",       required_argument, 0, _OPT_LUXCRYPT },
 		{ "acp",            no_argument,       0, _OPT_ACP },
 		{ "vits",           no_argument,       0, _OPT_VITS },
@@ -670,6 +674,8 @@ int main(int argc, char *argv[])
 	s.systeraudio = 0;
 	s.d14 = 0;
 	s.cablecrypt = 0;
+	s.cablecrypt_emm = 0;
+	s.cablecrypt_serial = 0;
 	s.luxcrypt = 0;
 	s.acp = 0;
 	s.vits = 0;
@@ -942,6 +948,20 @@ int main(int argc, char *argv[])
 		
 		case _OPT_CABLECRYPT: /* --cablecrypt-tvcabo */
 			s.cablecrypt = 1;
+			break;
+
+		case _OPT_CABLECRYPT_EMM: /* --cablecrypt-emm <serial> */
+			{
+				char *end;
+				unsigned long v = strtoul(optarg, &end, 10);
+				if(*optarg < '0' || *optarg > '9' || *end != '\0' || v > 0xFFFFFF)
+				{
+					fprintf(stderr, "Invalid Cablecrypt serial '%s'. Use the decimal number on the decoder label (0-16777215).\n", optarg);
+					return(-1);
+				}
+				s.cablecrypt_emm = 1;
+				s.cablecrypt_serial = v;
+			}
 			break;
 
 		case _OPT_LUXCRYPT: /* --luxcrypt <mode> */
@@ -1597,6 +1617,13 @@ int main(int argc, char *argv[])
 		}
 
 		vid_conf.cablecrypt = s.cablecrypt;
+		vid_conf.cablecrypt_emm = s.cablecrypt_emm;
+		vid_conf.cablecrypt_serial = s.cablecrypt_serial;
+	}
+	else if(s.cablecrypt_emm)
+	{
+		fprintf(stderr, "--cablecrypt-emm requires --cablecrypt-tvcabo.\n");
+		return(-1);
 	}
 
 	if(s.luxcrypt)

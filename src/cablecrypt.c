@@ -20,7 +20,7 @@
  *   Sync line  frame marker: one of 8 codewords + 4 random bytes
  *   Auth line  key byte + luma and chroma flags + constant tail,
  *              one before each field
- *   EMM line   subscriber data - sent blank here
+ *   EMM line   subscriber data
  *
  * Line layout (625-line numbering), as measured in the recordings and as
  * read by the decoders:
@@ -66,6 +66,10 @@ static const uint8_t cc_sync_cw[8][4] = {
 #define CC_AUTH1_LINE 5
 #define CC_AUTH2_LINE 317
 #define CC_SYNC_LINE  318
+
+#define CC_EMM_LINES   6        /* EMM (D) lines before each Auth line */
+#define CC_EMM_PERIOD  250      /* frames between EMM bursts (10 s) */
+#define CC_EMM_FRAMES  1        /* frames per burst: the EMM in all 12 D lines */
 
 static uint32_t _rand(cablecrypt_t *c)
 {
@@ -119,6 +123,58 @@ static void _sync_line(vid_t *s, cablecrypt_t *c, vid_line_t *l)
 	memcpy(by, cc_sync_cw[r & 7], 4);
 	r = _rand(c);
 	by[4] = r; by[5] = r >> 8; by[6] = r >> 16; by[7] = r >> 24;
+	_data(s, c, l, by);
+}
+
+/* EMM packet plaintext D1-D7 for a decoder serial and 16-bit channel
+ * bitmap (bit n = channel ID n), with the D6 and D7 check bytes */
+static void _emm_packet(uint8_t d[7], uint32_t serial, uint16_t map)
+{
+	int i;
+
+	d[0] = (serial >> 16) & 0xFF;
+	d[1] = (serial >> 8) & 0xFF;
+	d[2] = serial & 0xFF;
+	d[3] = map >> 8;                                /* channel IDs 8-15 */
+	d[4] = map & 0xFF;                              /* channel IDs 1-7 */
+	d[5] = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[4];        /* D1-D6 XOR to 00 */
+	d[6] = 0;
+	for(i = 0; i < 6; i++)
+	{
+		int b = d[i], p = 0;
+		while(b) { p ^= b & 1; b >>= 1; }
+		if(p) d[6] |= 0x40 >> i;                /* parity of D1..D6 in bits 6..1 */
+	}
+}
+
+/* EMM slot of a line: 1-6, or 0 if the line is not an EMM line */
+static int _emm_slot(int line)
+{
+	int d;
+
+	d = CC_AUTH2_LINE - line;
+	if(d >= 1 && d <= CC_EMM_LINES) return(CC_EMM_LINES + 1 - d);
+
+	d = (CC_AUTH1_LINE - line + 625) % 625;
+	if(d >= 1 && d <= CC_EMM_LINES) return(CC_EMM_LINES + 1 - d);
+
+	return(0);
+}
+
+/* EMM line under a fresh random key byte: the addressed packet for one
+ * frame every CC_EMM_PERIOD frames (starting with the first), otherwise
+ * the slot's fill packet. Lines 624-625 belong to the next frame's group */
+static void _emm_line(vid_t *s, cablecrypt_t *c, vid_line_t *l, int slot)
+{
+	const uint8_t *pkt;
+	uint8_t by[8];
+	int i, fr;
+
+	fr = l->frame - 1 + (l->line > CC_AUTH2_LINE ? 1 : 0);
+	pkt = (fr % CC_EMM_PERIOD) < CC_EMM_FRAMES ? c->emm_pkt : c->fill_pkt[slot - 1];
+
+	by[0] = _rand(c) & 0xFF;
+	for(i = 0; i < 7; i++) by[1 + i] = pkt[i] ^ by[0];
 	_data(s, c, l, by);
 }
 
@@ -209,6 +265,22 @@ int cablecrypt_init(cablecrypt_t *s, vid_t *vid)
 	s->key = 0xB853C6F8;
 	s->hold = CC_HOLD_MIN + _rand(s) % (CC_HOLD_MAX - CC_HOLD_MIN + 1);
 
+	/* EMMs: authorise the decoder for the channel ID in the low nibble of
+	 * the Auth line's last byte (cc_auth_tail[4]). ID 0 is a free channel
+	 * that decodes on any box, so the EMM then sets no channel bits */
+	s->emm = vid->conf.cablecrypt_emm;
+	if(s->emm)
+	{
+		int i, id = cc_auth_tail[4] & 0x0F;
+
+		_emm_packet(s->emm_pkt, vid->conf.cablecrypt_serial, id ? 1 << id : 0);
+
+		/* Packet filler */
+		for(i = 0; i < 5; i++)
+			_emm_packet(s->fill_pkt[i], 0xFF00FF | ((0xFE - i) << 8), 0xFFFF);
+		_emm_packet(s->fill_pkt[5], 0xFFF9FF, 0xFF01);
+	}
+
 	return(VID_OK);
 }
 
@@ -296,8 +368,14 @@ int cablecrypt_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		return(1);
 	}
 
-	/* Blank: EMM slots, the old vsync lines and the dark lines
-	*  may be implemented in the future */
+	if(c->emm && (x = _emm_slot(line)) != 0)
+	{
+		_emm_line(s, c, l, x);
+		return(1);
+	}
+
+	/* Blank: EMM slots (without --cablecrypt-emm), the old vsync lines
+	 * and the dark lines */
 	if(line <= 5 || (line >= 311 && line <= 317) || line >= 623)
 	{
 		_blank(s, l);

@@ -64,6 +64,8 @@ typedef struct {
 	int systeraudio;
 	int d14;
 	int cablecrypt;
+	int cablecrypt_emm;
+	uint32_t cablecrypt_serial;
 	int luxcrypt;
 	char *eurocrypt;
 	int acp;

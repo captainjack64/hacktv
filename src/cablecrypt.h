@@ -48,6 +48,11 @@ typedef struct {
 
 	uint32_t rng;
 	int blk_left, blk_disp;     /* hsync displacement blocks */
+
+	/* EMM (D) lines */
+	int emm;                    /* 1 = send EMMs, 0 = D lines blank */
+	uint8_t emm_pkt[7];         /* EMM plaintext D1-D7 */
+	uint8_t fill_pkt[6][7];     /* fill packets per slot, sent between EMMs */
 } cablecrypt_t;
 
 extern int cablecrypt_init(cablecrypt_t *s, vid_t *vid);
