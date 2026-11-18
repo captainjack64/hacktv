@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include "video.h"
+#include "videocrypt-ca.h"
 
 #define VCS_SAMPLE_RATE         17734475
 #define VCS_WIDTH               1135
@@ -42,13 +43,6 @@
 #define VCS_DELAY_LINES 125
 
 typedef struct {
-	uint8_t mode;
-	uint8_t channel;
-	uint64_t codeword;
-	uint8_t messages[8][32];
-} _vcs_block_t;
-
-typedef struct {
 	
 	uint8_t counter;
 	
@@ -56,7 +50,7 @@ typedef struct {
 	vbidata_lut_t *lut;
 	
 	/* VCS blocks */
-	const _vcs_block_t *blocks;
+	_vc_block_t *blocks;
 	size_t block_num;
 	size_t block_len;
 	uint8_t message[32];
@@ -66,8 +60,8 @@ typedef struct {
 	
 	/* Line shuffle */
 	uint64_t cw;                /* CW used by the scrambler for this block */
-	uint64_t next_cw;           /* CW sent in this block's F9 messages (conditional mode) */
-	int random_cw;              /* 1 = a new random CW every 32-frame block */
+	uint64_t next_cw;           /* CW sent in this block's F9 messages */
+	_vc_mode_t *vcs_mode;       /* Card the ECMs are signed for */
 	uint8_t shuffle[12][47];    /* Shuffle for the current frame */
 	int showecm;                /* Print the F9 messages and CWs */
 	
@@ -78,4 +72,3 @@ extern void vcs_free(vcs_t *s);
 extern int vcs_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines);
 
 #endif
-

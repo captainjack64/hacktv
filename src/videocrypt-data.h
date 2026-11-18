@@ -16,25 +16,6 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <inttypes.h>
 
-/* hacktv - Analogue video transmitter for the HackRF                    */
-/*=======================================================================*/
-/* Copyright 2017 Philip Heron <phil@sanslogic.co.uk>                    */
-/*                                                                       */
-/* This program is free software: you can redistribute it and/or modify  */
-/* it under the terms of the GNU General Public License as published by  */
-/* the Free Software Foundation, either version 3 of the License, or     */
-/* (at your option) any later version.                                   */
-/*                                                                       */
-/* This program is distributed in the hope that it will be useful,       */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of        */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
-/* GNU General Public License for more details.                          */
-/*                                                                       */
-/* You should have received a copy of the GNU General Public License     */
-/* along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-#include <inttypes.h>
-
-
 static const _vc_key_t _sky_key[] = {{{             /* * * * * * * * * * * * * * * * * *  Key Offset  ****************************************************/
 	0x98, 0x5B, 0x21, 0x91, 0x28, 0x19, 0xD9, 0xD3, /* ---------|---------|            */ /* 0x00 */ /*   Date code ranges:                              */
 	0x67, 0x95, 0xFC, 0xE3, 0x06, 0x8A, 0xE8, 0xFB, /*  P02/03  |         |            */ /* 0x08 */ /* -\--- Sky 02: 0x00 -> 0x0F: Jan 1989 -> Apr 1990 */
@@ -135,6 +116,7 @@ static message_data_t _fa_blocks_data[] = {
 		.answer = VC_PRBS_CW_FA
 	}
 };
+
 static _vc_block_t _fa_blocks[] = {
 	{ .mode = 0x05, .message_data = &_fa_blocks_data[0] }
 };
@@ -175,6 +157,7 @@ static message_data_t _vc1_blocks_data[] = {
 		.answer = 0x12345
 	}
 };
+
 static _vc_block_t _vc1_blocks[] = {
 	{ .mode = 0x07, .message_data = &_vc1_blocks_data[0] },
 	{ .mode = 0x07, .message_data = &_vc1_blocks_data[1] }

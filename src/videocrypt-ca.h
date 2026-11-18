@@ -70,6 +70,7 @@ typedef struct {
 	uint8_t mode;
 	message_data_t *message_data;     /* Primary data structure */
 	int showecm;                      /* Debug flag for ECM printing */
+	uint8_t channel;                 /* VC-S audio flag */
 } _vc_block_t;
 
 /* Note: _vc2_block_t removed - it was identical to _vc_block_t */
@@ -122,6 +123,7 @@ enum {
 	VC_MC,
 	VC_DMX,
 	VC_PPV,
+	VC_VCS,
 	VC_KERNEL_1,
 	VC_KERNEL_2,
 	VC_SIG_1,

@@ -32,7 +32,19 @@
 #include <time.h>
 #include "video.h"
 #include "vbidata.h"
+#include "videocrypt-ca.h"
 
+#define VCS_MASK20      0xFFFFFu
+#define VCS_SEED_CONST  0x6FF00u
+#define VCS_CW_FA       ((((uint64_t) 1) << 60) - 1)
+
+static const _vc_key_t _teleservice_key[] = {{{
+	0x00, 0xCC, 0x80, 0xCD, 0x9A, 0x49, 0x67, 0x40,
+	0x07, 0xEB, 0x06, 0x0F, 0xD3, 0x1C, 0xF4, 0x0A,
+	0xA1, 0x14, 0x63, 0x33, 0x7D, 0x9C, 0x24, 0x16,
+	0xD2, 0x56, 0x57, 0x98, 0x36, 0xAA, 0x10, 0x8D
+	}}
+};
 
 /* The first line of each block */
 static const int _block_start[12] = {
@@ -63,38 +75,64 @@ static const uint8_t _hamming[16] = {
  * 1 = Inversion
 */
 
-/* Blocks for VCS free-access decoding */
-static const _vcs_block_t _fa_blocks[] = { { 0x11, 0x00, 0x0000000000000000 }};
+static message_data_t _fa_blocks_data[] = {
+	{
+		.messages = {{0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}},
+		.message = {0},
+		.hash = {0},
+		.answer = VCS_CW_FA
+	}
+};
 
-/* Blocks for VCS conditional-access decoding, sampled from BBC Select */
-static const _vcs_block_t _bbc_blocks[] = {
+static _vc_block_t _vcs_fa_blocks[] = {
+	{ .mode = 0x11, .channel = 0x00, .message_data = &_fa_blocks_data[0] }
+};
+
+static message_data_t _vcs_blocks_data[] = {
 	{
-		0x21, 0x05, 0x0000000000000000,
-		{
-			{ 0x00 },{ 0x00 },{ 0x00 },{ 0x00 },
-			{ 0xF9,0x3A,0xA1,0x25,0x07,0x20,0x20,0x02,0x4C,0x7A,0x8E,0xCA,0x7D,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x97,0x39,0xDB },
-			{ 0x00 },{ 0x00 },
-			{ 0x21,0x00,0x78,0x07,0x18,0x06,0xC6,0x42,0x42,0x43,0x20,0x53,0x45,0x4C,0x45,0x43,0x54,0x0D,0xC6,0x42,0x59,0x20,0x48,0x41,0x43,0x4B,0x54,0x56,0x03,0x00,0x00 },
-		}
+		.messages = {
+			{0}, {0}, {0}, {0},
+			{ 0xF9,0x3A,0xA1,0x25,0x07,0x20,0x20,0x02,0x4C,0x7A,0x8E,0xCA,0x7D },
+			{0}, {0},
+			{ 0x21,0x00,0x78,0x07,0x18,0x06,0xC6,0x42,0x42,0x43,0x20,0x53,0x45,0x4C,0x45,0x43,0x54,0x0D,0xC6,0x42,0x59,0x20,0x48,0x41,0x43,0x4B,0x54,0x56,0x03,0x00,0x00 }
+		},
+		.message = {0},
+		.hash = {0},
+		.answer = 12345
 	},
 	{
-		0x21, 0x05, 0x0000000000000000,
-		{
-			{ 0x00 },{ 0x00 },{ 0x00 },{ 0x00 },
-			{ 0xF9,0x3A,0xA1,0x25,0x07,0x20,0x20,0x02,0x4C,0x7A,0x8E,0xCA,0x7D,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x97,0x39,0xDB },
-			{ 0x00 },{ 0x00 },
-			{ 0x21,0x00,0x18,0x01,0x01,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 },
-		}
+		.messages = {
+			{0}, {0}, {0}, {0},
+			{ 0xF9,0x3A,0xA1,0x25,0x07,0x20,0x20,0x02,0x4C,0x7A,0x8E,0xCA,0x7D },
+			{0}, {0},
+			{ 0x21,0x00,0x18,0x01,0x01,0x04,0x00 }
+		},
+		.message = {0},
+		.hash = {0},
+		.answer = 23456
 	},
 	{
-		0x21, 0x05, 0x0000000000000000,
-		{
-			{ 0x00 },{ 0x00 },{ 0x00 },{ 0x00 },
-			{ 0xF9,0x3A,0xA1,0x25,0x07,0x20,0x20,0x02,0x4C,0x7A,0x8E,0xCA,0x7D,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x97,0x39,0xDB },
-			{ 0x00 },{ 0x00 },
-			{ 0x21,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 },
-		}
-	},
+		.messages = {
+			{0}, {0}, {0}, {0},
+			{ 0xF9,0x3A,0xA1,0x25,0x07,0x20,0x20,0x02,0x4C,0x7A,0x8E,0xCA,0x7D },
+			{0}, {0},
+			{ 0x21,0x00,0x00 }
+		},
+		.message = {0},
+		.hash = {0},
+		.answer = 34567
+	}
+};
+static _vc_block_t _vcs_vcs_blocks[] = {
+	{ .mode = 0x21, .channel = 0x05, .message_data = &_vcs_blocks_data[0] },
+	{ .mode = 0x21, .channel = 0x05, .message_data = &_vcs_blocks_data[1] },
+	{ .mode = 0x21, .channel = 0x05, .message_data = &_vcs_blocks_data[2] }
+};
+
+static _vc_mode_t _vcs_modes[] = {
+	{ "free",        VC_VER1, VC_CW_STATIC,    VC_FREE,  _vcs_fa_blocks,  1,   0,  "--unused--", 0x00, 0x00, 0x00,             NULL, 0x00, VC_FREE,     VC_FREE  },
+	{ "teleservice", VC_VER1, VC_CW_DYNAMIC,    VC_VCS, _vcs_vcs_blocks,  3,   0,  "--unused--", 0x01, 0x0F, 0x23, _teleservice_key, 0x00, VC_KERNEL_2, VC_SIG_2 },
+	{ NULL }
 };
 
 /* -=== Line shuffle generator ===-
@@ -112,10 +150,6 @@ static const _vcs_block_t _bbc_blocks[] = {
  *
  * fcnt is the frame count byte sent in the VBI for the frame.
 */
-
-#define VCS_MASK20      0xFFFFFu
-#define VCS_SEED_CONST  0x6FF00u
-#define VCS_CW_FA       ((((uint64_t) 1) << 60) - 1)
 
 static uint32_t _rotl20(uint32_t x, int n)
 {
@@ -210,18 +244,11 @@ static void _shuffle_frame(uint64_t cw, uint8_t fcnt, uint8_t q[12][47])
 	}
 }
 
-/* A random 60-bit CW */
-static uint64_t _random_cw(void)
+static void _vcs_new_ecm(vcs_t *s)
 {
-	uint64_t cw = 0;
-	int i;
-	
-	for(i = 0; i < 4; i++)
-	{
-		cw = (cw << 16) | (rand() & 0xFFFF);
-	}
-	
-	return(cw & VCS_CW_FA);
+	vc_seed(&s->blocks[s->block_num], s->vcs_mode);
+
+	s->next_cw = s->blocks[s->block_num].message_data->answer;
 }
 
 /* Reverse bits in an 8-bit value */
@@ -316,37 +343,45 @@ int vcs_init(vcs_t *s, vid_t *vid, const char *mode)
 	
 	s->counter  = 0;
 	
-	if(strcmp(mode, "free") == 0)
+	for(s->vcs_mode = _vcs_modes; s->vcs_mode->id != NULL; s->vcs_mode++)
 	{
-		/* Free access: the decoder uses a CW of all ones */
-		s->blocks    = _fa_blocks;
-		s->block_len = sizeof(_fa_blocks) / sizeof(_vcs_block_t);
-		s->cw        = VCS_CW_FA;
+		if(strcmp(mode, s->vcs_mode->id) == 0) break;
 	}
-	else if(strcmp(mode, "conditional") == 0)
+
+	if(s->vcs_mode->id == NULL)
 	{
-		/* Conditional access: a new random CW every 32-frame block,
-		 * sent in bytes 19-26 of that block's F9 messages and used
-		 * by the scrambler from the start of the following block */
-		time_t t;
-		
-		srand((unsigned) time(&t));
-		
-		s->blocks    = _bbc_blocks;
-		s->block_len = sizeof(_bbc_blocks) / sizeof(_vcs_block_t);
-		s->random_cw = 1;
-		s->cw        = _random_cw();
-		s->next_cw   = _random_cw();
-		s->showecm   = vid->conf.showecm;
+		fprintf(stderr, "Unrecognised Videocrypt-S mode '%s'.\n", mode);
+		return(VID_ERROR);
+	}
+
+	s->blocks    = s->vcs_mode->blocks;
+	s->block_len = s->vcs_mode->len;
+	s->block_num = 0;
+
+	if(s->vcs_mode->cwtype == VC_CW_STATIC)
+	{
+		s->cw = VCS_CW_FA;
 	}
 	else
 	{
-		fprintf(stderr, "Unrecognised Videocrypt S mode '%s'.\n", mode);
-		return(VID_ERROR);
+		time_t t;
+		size_t i;
+
+		srand((unsigned) time(&t));
+
+		s->showecm = vid->conf.showecm;
+
+		for(i = 0; i < s->block_len; i++)
+		{
+			s->blocks[i].message_data->messages[4][1] = s->vcs_mode->date;
+			s->blocks[i].message_data->messages[4][6] = s->vcs_mode->channelid;
+		}
+
+		_vcs_new_ecm(s);
+		s->cw = s->next_cw;
+		_vcs_new_ecm(s);
 	}
-	
-	s->block_num = 0;
-	
+
 	return(VID_OK);
 }
 
@@ -517,21 +552,9 @@ int vcs_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 			/* The active message is updated every 4th frame */
 			for(x = 0; x < 31; x++)
 			{
-				v->message[x] = v->blocks[v->block_num].messages[(v->counter >> 2) & 7][x];
+				v->message[x] = v->blocks[v->block_num].message_data->messages[(v->counter >> 2) & 7][x];
 			}
-			
-			/* Conditional access: the next CW goes in F9 bytes 19-26
-			 * (only the low nibble of byte 26 is used) */
-			if(v->random_cw && v->message[0] == 0xF9)
-			{
-				for(x = 0; x < 8; x++)
-				{
-					v->message[19 + x] = (v->next_cw >> (8 * x)) & 0xFF;
-				}
-				
-				v->message[26] &= 0x0F;
-			}
-			
+
 			for(crc = x = 0; x < 31; x++)
 			{
 				crc += v->message[x];
@@ -573,17 +596,22 @@ int vcs_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		/* After 32 frames, advance to the next VCS block and codeword */
 		if((v->counter & 0x1F) == 0)
 		{
-			/* Apply the CW sent in this block, and pick the next one */
-			if(v->random_cw)
+			/* Apply the CW sent in this block */
+			if(v->vcs_mode->cwtype == VC_CW_DYNAMIC)
 			{
 				v->cw = v->next_cw;
-				v->next_cw = _random_cw();
 			}
-			
+
 			/* Move to the next block */
 			if(++v->block_num == v->block_len)
 			{
 				v->block_num = 0;
+			}
+
+			/* Sign the next block's ECM, and take its CW */
+			if(v->vcs_mode->cwtype == VC_CW_DYNAMIC)
+			{
+				_vcs_new_ecm(v);
 			}
 		}
 	}

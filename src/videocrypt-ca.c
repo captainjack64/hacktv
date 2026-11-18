@@ -178,6 +178,19 @@ void vc_seed_sky(_vc_block_t *s, _vc_mode_t *m)
 	s->message_data->answer = _vc_process_p07_msg(s->message_data->messages[5], m);
 }
 
+void _rand_vcs_seed(uint8_t *message)
+{
+	for(int i = 19; i < 27; i++) message[i] = rand() & 0xFF;
+}
+
+void vc_seed_vcs(_vc_block_t *s, _vc_mode_t *m)
+{
+	_rand_vcs_seed(s->message_data->messages[4]);
+
+	/* Process Videocrypt message */
+	s->message_data->answer = _vc_process_p07_msg(s->message_data->messages[4], m);
+}
+
 void vc_emm_nz(_vc_block_t *s, _vc_mode_t *m, int cmd, uint32_t cardserial)
 {
 	int i;
@@ -565,7 +578,11 @@ void vc_seed(_vc_block_t *s, _vc_mode_t *m)
 		case(VC_XTEA):
 			vc_seed_xtea(s);
 			break;
-			
+
+		case(VC_VCS):
+			vc_seed_vcs(s, m);
+			break;
+
 		default:
 			break;
 	}
