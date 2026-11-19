@@ -42,6 +42,16 @@
 
 #define VCS_DELAY_LINES 125
 
+/* Line resampling to 4FSC timing */
+#define VCS_TAPS        16
+#define VCS_LONG_LINES  3  /* 0 - 2 of the 1137-clock lines crossed */
+
+typedef struct {
+	int n;                      /* Whole-sample part of the shift */
+	int whole;                  /* 1 if the shift is a whole number of samples */
+	int32_t h[VCS_TAPS];        /* Q15 interpolation taps */
+} vcs_shift_t;
+
 typedef struct {
 	
 	uint8_t counter;
@@ -64,6 +74,10 @@ typedef struct {
 	_vc_mode_t *vcs_mode;       /* Card the ECMs are signed for */
 	uint8_t shuffle[12][47];    /* Shuffle for the current frame */
 	int showecm;                /* Print the F9 messages and CWs */
+	
+	/* Precalculated line shifts, indexed [j * VCS_LONG_LINES + c] where j
+	 * is the number of lines moved and c the 1137-clock lines crossed */
+	vcs_shift_t *shift;
 	
 } vcs_t;
 

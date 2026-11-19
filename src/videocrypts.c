@@ -322,8 +322,116 @@ static void _encode_vbi(uint8_t vbi[40], const uint8_t data[16], uint8_t a, uint
 	_interleave(vbi);
 }
 
+/* -=== Line resampling to get to 4FSC ===- */
+#define VCS_4FSC  17734475.0
+
+/* Number of 1137-clock lines (312 and 624) crossed by a line moved j lines, starting at line n */
+static int _long_lines(vid_t *s, int n, int j)
+{
+	int c = 0;
+	int k;
+	
+	for(k = 0; k < j; k++)
+	{
+		int m = (n - 1 + k) % s->conf.lines + 1;
+		if(m == 312 || m == 624) c++;
+	}
+	
+	return(c);
+}
+
+/* Calculate the taps for a line moved j lines, crossing c 1137-clock lines */
+static void _shift_init(vid_t *s, vcs_shift_t *sh, int j, int c)
+{
+	double h[VCS_TAPS];
+	double delta, f, sum = 0;
+	int k;
+	
+	/* Shift in pixels to apply to the moved line */
+	delta = (double) (j * 1135 + 2 * c) * s->pixel_rate / VCS_4FSC - (double) j * s->width;
+	
+	sh->n = (int) floor(delta);
+	f = delta - sh->n;
+	
+	if(f < 1e-6 || f > 1 - 1e-6)
+	{
+		/* Whole-sample shift */
+		if(f > 0.5) sh->n++;
+		sh->whole = 1;
+		return;
+	}
+	
+	sh->whole = 0;
+	
+	/* Blackman-windowed sinc, taps at n - 7 .. n + 8 */
+	for(k = 0; k < VCS_TAPS; k++)
+	{
+		double t = (k - (VCS_TAPS / 2 - 1)) - f;
+		double sinc = sin(M_PI * t) / (M_PI * t);
+		double w = 0.42 + 0.5 * cos(2 * M_PI * t / VCS_TAPS) + 0.08 * cos(4 * M_PI * t / VCS_TAPS);
+		h[k] = sinc * w;
+		sum += h[k];
+	}
+	
+	/* Q15 coefficients */
+	for(k = 0; k < VCS_TAPS; k++)
+	{
+		sh->h[k] = lrint(h[k] / sum * 32768.0);
+	}
+}
+
+/* Copy samples x0 .. x1 - 1 of src to dst, shifted by sh */
+static void _shift_copy(int16_t *dst, const int16_t *src, int x0, int x1, int width, const vcs_shift_t *sh)
+{
+	int k, x;
+	
+	if(sh->whole)
+	{
+		for(x = x0; x < x1; x++)
+		{
+			int i = x + sh->n;
+			if(i < 0) i = 0;
+			if(i >= width) i = width - 1;
+			dst[x * 2] = src[i * 2];
+		}
+		
+		return;
+	}
+	
+	for(x = x0; x < x1; x++)
+	{
+		int64_t a = 1 << 14;
+		int i = x + sh->n - (VCS_TAPS / 2 - 1);
+		
+		if(i >= 0 && i + VCS_TAPS <= width)
+		{
+			const int16_t *p = &src[i * 2];
+			for(k = 0; k < VCS_TAPS; k++)
+			{
+				a += sh->h[k] * p[k * 2];
+			}
+		}
+		else
+		{
+			/* Near the line ends, repeat the end samples */
+			for(k = 0; k < VCS_TAPS; k++)
+			{
+				int m = i + k;
+				if(m < 0) m = 0;
+				if(m >= width) m = width - 1;
+				a += sh->h[k] * src[m * 2];
+			}
+		}
+		
+		a >>= 15;
+		dst[x * 2] = a > INT16_MAX ? INT16_MAX : (a < INT16_MIN ? INT16_MIN : a);
+	}
+}
+
 int vcs_init(vcs_t *s, vid_t *vid, const char *mode)
 {
+	int x;
+	
 	memset(s, 0, sizeof(vcs_t));
 	
 	/* Generate the VBI data symbols */
@@ -339,6 +447,19 @@ int vcs_init(vcs_t *s, vid_t *vid, const char *mode)
 	if(!s->lut)
 	{
 		return(VID_OUT_OF_MEMORY);
+	}
+	
+	/* Precalculate the resampling taps for every line move */
+	s->shift = malloc(sizeof(vcs_shift_t) * VCS_DELAY_LINES * VCS_LONG_LINES);
+	
+	if(!s->shift)
+	{
+		return(VID_OUT_OF_MEMORY);
+	}
+	
+	for(x = 0; x < VCS_DELAY_LINES * VCS_LONG_LINES; x++)
+	{
+		_shift_init(vid, &s->shift[x], x / VCS_LONG_LINES, x % VCS_LONG_LINES);
 	}
 	
 	s->counter  = 0;
@@ -388,99 +509,7 @@ int vcs_init(vcs_t *s, vid_t *vid, const char *mode)
 void vcs_free(vcs_t *s)
 {
 	free(s->lut);
-}
-
-/* -=== Line resampling to get to 4FSC ===- */
-#define VCS_4FSC  17734475.0
-#define VCS_TAPS  16
-
-/* Shift in pixels to apply to a line moved j lines, starting at line n */
-static double _move_shift(vid_t *s, int n, int j)
-{
-	int c = 0;
-	int k;
-	
-	/* Count the 1137-clock lines passed (312 and 624) */
-	for(k = 0; k < j; k++)
-	{
-		int m = (n - 1 + k) % s->conf.lines + 1;
-		if(m == 312 || m == 624) c++;
-	}
-	
-	return((double) (j * 1135 + 2 * c) * s->pixel_rate / VCS_4FSC - (double) j * s->width);
-}
-
-/* Copy samples x0 .. x1 - 1 of src to dst, reading src at x + delta */
-static void _shift_copy(int16_t *dst, const int16_t *src, int x0, int x1, int width, double delta)
-{
-	double h[VCS_TAPS];
-	int32_t hq[VCS_TAPS];
-	double f, sum = 0;
-	int n, k, x;
-	
-	n = (int) floor(delta);
-	f = delta - n;
-	
-	if(f < 1e-6 || f > 1 - 1e-6)
-	{
-		/* Whole-sample shift */
-		if(f > 0.5) n++;
-		
-		for(x = x0; x < x1; x++)
-		{
-			int i = x + n;
-			if(i < 0) i = 0;
-			if(i >= width) i = width - 1;
-			dst[x * 2] = src[i * 2];
-		}
-		
-		return;
-	}
-	
-	/* Blackman-windowed sinc, taps at n - 7 .. n + 8 */
-	for(k = 0; k < VCS_TAPS; k++)
-	{
-		double t = (k - (VCS_TAPS / 2 - 1)) - f;
-		double sinc = sin(M_PI * t) / (M_PI * t);
-		double w = 0.42 + 0.5 * cos(2 * M_PI * t / VCS_TAPS) + 0.08 * cos(4 * M_PI * t / VCS_TAPS);
-		h[k] = sinc * w;
-		sum += h[k];
-	}
-	
-	/* Q15 coefficients */
-	for(k = 0; k < VCS_TAPS; k++)
-	{
-		hq[k] = lrint(h[k] / sum * 32768.0);
-	}
-	
-	for(x = x0; x < x1; x++)
-	{
-		int64_t a = 1 << 14;
-		int i = x + n - (VCS_TAPS / 2 - 1);
-		
-		if(i >= 0 && i + VCS_TAPS <= width)
-		{
-			const int16_t *p = &src[i * 2];
-			for(k = 0; k < VCS_TAPS; k++)
-			{
-				a += (int32_t) hq[k] * p[k * 2];
-			}
-		}
-		else
-		{
-			/* Near the line ends, repeat the end samples */
-			for(k = 0; k < VCS_TAPS; k++)
-			{
-				int m = i + k;
-				if(m < 0) m = 0;
-				if(m >= width) m = width - 1;
-				a += (int32_t) hq[k] * src[m * 2];
-			}
-		}
-		
-		a >>= 15;
-		dst[x * 2] = a > INT16_MAX ? INT16_MAX : (a < INT16_MIN ? INT16_MIN : a);
-	}
+	free(s->shift);
 }
 
 int vcs_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
@@ -534,7 +563,7 @@ int vcs_render_line(vid_t *s, void *arg, int nlines, vid_line_t **lines)
 		_shift_copy(
 			l->output, lines[j]->output,
 			s->active_left, s->width, s->width,
-			_move_shift(s, l->line, j)
+			&v->shift[j * VCS_LONG_LINES + _long_lines(s, l->line, j)]
 		);
 	}
 	
