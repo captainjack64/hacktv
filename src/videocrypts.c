@@ -85,7 +85,7 @@ static message_data_t _fa_blocks_data[] = {
 };
 
 static _vc_block_t _vcs_fa_blocks[] = {
-	{ .mode = 0x11, .channel = 0x00, .message_data = &_fa_blocks_data[0] }
+	{ .mode = 0x11, .channel = 0x01, .message_data = &_fa_blocks_data[0] }
 };
 
 static message_data_t _vcs_blocks_data[] = {
@@ -124,9 +124,9 @@ static message_data_t _vcs_blocks_data[] = {
 	}
 };
 static _vc_block_t _vcs_vcs_blocks[] = {
-	{ .mode = 0x21, .channel = 0x05, .message_data = &_vcs_blocks_data[0] },
-	{ .mode = 0x21, .channel = 0x05, .message_data = &_vcs_blocks_data[1] },
-	{ .mode = 0x21, .channel = 0x05, .message_data = &_vcs_blocks_data[2] }
+	{ .mode = 0x21, .channel = 0x01, .message_data = &_vcs_blocks_data[0] },
+	{ .mode = 0x21, .channel = 0x01, .message_data = &_vcs_blocks_data[1] },
+	{ .mode = 0x21, .channel = 0x01, .message_data = &_vcs_blocks_data[2] }
 };
 
 static _vc_mode_t _vcs_modes[] = {

@@ -5,6 +5,7 @@ PKGCONF := pkg-config
 CFLAGS  := -g -Wall -Wno-unused-result -pthread -O3 $(EXTRA_CFLAGS) -DVERSION=\"$(VERSION)\"
 LDFLAGS := -g -lm -lz -lpng16 -pthread $(EXTRA_LDFLAGS)
 OBJS    := acp.o \
+           audioinvert.o \
            av.o \
            av_ffmpeg.o \
            av_test.o \

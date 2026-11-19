@@ -42,6 +42,7 @@ typedef struct vid_t vid_t;
 #include "videocrypt.h"
 #include "videocrypts.h"
 #include "syster.h"
+#include "audioinvert.h"
 #include "discret14.h"
 #include "cablecrypt.h"
 #include "luxcrypt.h"
@@ -238,7 +239,7 @@ typedef struct {
 	char *d11;
 	char *systercnr;
 	char *syster;
-	int systeraudio;
+	int invert_audio;
 	int d14;
 	int cablecrypt;
 	int cablecrypt_emm;
@@ -471,6 +472,9 @@ struct vid_t {
 	
 	/* Nagravision Syster state */
 	ng_t ng;
+	
+	/* Audio inversion state (Syster / D11 / Videocrypt S) */
+	audioinvert_t audioinv;
 
 	/* Discret 14 test state */
 	discret14_t discret14;

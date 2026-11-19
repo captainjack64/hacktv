@@ -3771,9 +3771,9 @@ static int _vid_audio_process(vid_t *s, void *arg, int nlines, vid_line_t **line
 			{
 				av_read_audio(&s->av, &s->audiobuffer, &s->audiobuffer_samples);
 				
-				if(s->conf.systeraudio == 1)
+				if(s->conf.invert_audio)
 				{
-					ng_invert_audio(&s->ng, s->audiobuffer, s->audiobuffer_samples);
+					audioinvert_process(&s->audioinv, s->audiobuffer, s->audiobuffer_samples);
 				}
 			}
 			
@@ -4797,6 +4797,16 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 		_add_lineprocess(s, "videocrypts", VCS_DELAY_LINES, 0, &s->vcs, vcs_render_line, NULL);
 	}
 	
+	/* Initialise audio inversion */
+	if(s->conf.invert_audio)
+	{
+		if((r = audioinvert_init(&s->audioinv)) != VID_OK)
+		{
+			vid_free(s);
+			return(r);
+		}
+	}
+	
 	/* Initialise syster encoder */
 	if(s->conf.syster || s->conf.systercnr)
 	{
@@ -5366,6 +5376,11 @@ void vid_free(vid_t *s)
 	if(s->conf.syster || s->conf.d11 || s->conf.systercnr)
 	{
 		ng_free(&s->ng);
+	}
+	
+	if(s->conf.invert_audio)
+	{
+		audioinvert_free(&s->audioinv);
 	}
 	
 	if(s->conf.videocrypt || s->conf.videocrypt2)
