@@ -17,41 +17,56 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "audioinvert.h"
+#include "hacktv.h"
 #include "video.h"
+#include "fir.h"
 
-/* 0 - 12.8 kHz complex FIR filter taps, sample rate 32 kHz */
+#define NTAPS AUDIOINVERT_NTAPS
 
-#define NTAPS 771
-
-static const int16_t _firi[NTAPS] = {
-	0,-2,-1,-1,-2,0,-2,-1,-1,-2,0,-2,-1,-1,-2,0,-2,-1,-1,-2,0,-2,-1,-1,-2,0,-2,-1,-1,-2,0,-3,-1,-1,-3,0,-3,-1,-1,-3,0,-3,-1,-1,-3,0,-3,-1,-1,-3,0,-3,-1,-1,-4,0,-4,-1,-1,-4,0,-4,-2,-2,-4,0,-4,-2,-2,-5,0,-5,-2,-2,-5,0,-5,-2,-2,-5,0,-5,-2,-2,-6,0,-6,-2,-2,-6,0,-6,-3,-3,-7,0,-7,-3,-3,-7,0,-8,-3,-3,-8,0,-8,-3,-3,-9,0,-9,-3,-3,-9,0,-10,-4,-4,-10,0,-10,-4,-4,-11,0,-11,-4,-4,-12,0,-12,-5,-5,-12,0,-13,-5,-5,-13,0,-14,-5,-5,-14,0,-15,-6,-6,-15,0,-16,-6,-6,-16,0,-17,-6,-7,-17,0,-18,-7,-7,-19,0,-19,-7,-7,-20,0,-20,-8,-8,-21,0,-22,-8,-8,-22,0,-23,-9,-9,-24,0,-24,-9,-10,-25,0,-26,-10,-10,-27,0,-28,-11,-11,-29,0,-29,-11,-11,-30,0,-31,-12,-12,-32,0,-33,-13,-13,-34,0,-35,-14,-14,-36,0,-37,-14,-14,-39,0,-39,-15,-15,-41,0,-42,-16,-16,-43,0,-44,-17,-17,-46,0,-47,-18,-18,-49,0,-50,-19,-19,-52,0,-53,-21,-21,-55,0,-56,-22,-22,-58,0,-60,-23,-23,-62,0,-63,-25,-25,-66,0,-67,-26,-26,-70,0,-72,-28,-28,-75,0,-77,-30,-30,-80,0,-82,-32,-32,-85,0,-87,-34,-34,-91,0,-94,-36,-37,-98,0,-101,-39,-39,-105,0,-108,-42,-43,-114,0,-117,-46,-46,-123,0,-127,-50,-50,-134,0,-138,-54,-55,-146,0,-151,-59,-60,-161,0,-167,-65,-66,-178,0,-185,-73,-74,-199,0,-208,-82,-83,-224,0,-236,-93,-95,-257,0,-272,-108,-110,-300,0,-321,-128,-132,-359,0,-389,-156,-162,-447,0,-493,-200,-210,-588,0,-671,-277,-299,-857,0,-1046,-452,-513,-1573,0,-2356,-1205,-1795,-9443,-34,9427,1808,1197,2360,0,1570,516,448,1048,0,855,301,276,672,0,587,212,199,494,0,446,163,155,390,0,359,132,127,321,0,300,111,107,273,0,257,96,92,237,0,224,84,81,208,0,198,74,72,186,0,178,67,65,167,0,160,60,59,152,0,146,55,54,138,0,134,50,49,127,0,123,46,45,117,0,113,43,42,108,0,105,40,39,101,0,98,37,36,94,0,91,34,34,88,0,85,32,32,82,0,80,30,30,77,0,75,28,28,72,0,70,27,26,67,0,66,25,24,63,0,62,23,23,60,0,58,22,22,56,0,55,21,20,53,0,52,20,19,50,0,49,18,18,47,0,46,17,17,44,0,43,16,16,42,0,41,15,15,39,0,38,15,14,37,0,36,14,13,35,0,34,13,13,33,0,32,12,12,31,0,30,12,11,29,0,29,11,11,28,0,27,10,10,26,0,25,10,9,24,0,24,9,9,23,0,22,8,8,22,0,21,8,8,20,0,20,7,7,19,0,19,7,7,18,0,17,7,6,17,0,16,6,6,16,0,15,6,6,15,0,14,5,5,14,0,13,5,5,13,0,12,5,5,12,0,11,4,4,11,0,11,4,4,10,0,10,4,4,10,0,9,3,3,9,0,9,3,3,8,0,8,3,3,8,0,7,3,3,7,0,7,3,2,6,0,6,2,2,6,0,6,2,2,5,0,5,2,2,5,0,5,2,2,5,0,5,2,2,4,0,4,2,2,4,0,4,1,1,4,0,4,1,1,3,0,3,1,1,3,0,3,1,1,3,0,3,1,1,3,0,3,1,1,3,0,2,1,1,2,0,2,1,1,2,0,2,1,1,2,0,2,1,1,2,0,2,1,1,2,0,2,1,1,2,0,
-};
-
-static const int16_t _firq[NTAPS] = {
-	0,-1,1,-1,1,0,-1,1,-1,1,0,-1,1,-1,1,0,-1,1,-1,1,0,-1,1,-1,1,0,-1,1,-1,1,0,-1,1,-1,1,0,-1,1,-1,1,0,-1,2,-2,1,0,-1,2,-2,1,0,-1,2,-2,1,0,-1,2,-2,1,0,-1,2,-2,1,0,-1,2,-2,1,0,-2,2,-3,2,0,-2,3,-3,2,0,-2,3,-3,2,0,-2,3,-3,2,0,-2,3,-4,2,0,-2,4,-4,2,0,-2,4,-4,3,0,-3,4,-4,3,0,-3,5,-5,3,0,-3,5,-5,3,0,-3,5,-6,3,0,-4,6,-6,4,0,-4,6,-6,4,0,-4,7,-7,4,0,-4,7,-7,5,0,-5,8,-8,5,0,-5,8,-8,5,0,-5,9,-9,6,0,-6,9,-10,6,0,-6,10,-10,6,0,-7,11,-11,7,0,-7,11,-12,7,0,-8,12,-12,8,0,-8,13,-13,8,0,-9,14,-14,9,0,-9,15,-15,9,0,-10,16,-16,10,0,-10,17,-17,10,0,-11,18,-18,11,0,-11,19,-19,12,0,-12,20,-20,12,0,-13,21,-21,13,0,-14,22,-23,14,0,-15,24,-24,15,0,-15,25,-25,16,0,-16,26,-27,17,0,-17,28,-29,18,0,-18,30,-30,19,0,-20,32,-32,20,0,-21,34,-34,21,0,-22,36,-36,23,0,-24,38,-39,24,0,-25,41,-41,26,0,-27,43,-44,27,0,-29,47,-47,29,0,-31,50,-51,32,0,-33,54,-55,34,0,-36,58,-59,37,0,-38,62,-64,40,0,-42,68,-69,43,0,-45,74,-76,47,0,-50,81,-83,52,0,-55,89,-92,57,0,-61,100,-102,64,0,-68,112,-115,72,0,-77,127,-132,83,0,-89,148,-153,97,0,-105,175,-182,116,0,-128,214,-224,144,0,-162,274,-291,189,0,-220,380,-413,276,0,-343,618,-709,507,0,-772,1650,-2485,3041,13108,3090,-2475,1656,-760,0,515,-707,621,-338,0,280,-412,381,-217,0,192,-290,275,-159,0,146,-223,214,-126,0,118,-181,175,-104,0,98,-152,148,-88,0,84,-131,128,-76,0,73,-115,112,-67,0,65,-102,100,-60,0,58,-91,90,-54,0,53,-83,81,-49,0,48,-75,74,-45,0,44,-69,68,-41,0,40,-63,63,-38,0,37,-59,58,-35,0,34,-54,54,-32,0,32,-51,50,-30,0,30,-47,47,-28,0,28,-44,44,-26,0,26,-41,41,-25,0,24,-39,38,-23,0,23,-36,36,-22,0,22,-34,34,-20,0,20,-32,32,-19,0,19,-30,30,-18,0,18,-28,28,-17,0,17,-27,27,-16,0,16,-25,25,-15,0,15,-24,24,-14,0,14,-22,22,-13,0,13,-21,21,-13,0,13,-20,20,-12,0,12,-19,19,-11,0,11,-18,18,-11,0,11,-17,17,-10,0,10,-16,16,-9,0,9,-15,15,-9,0,9,-14,14,-8,0,8,-13,13,-8,0,8,-12,12,-7,0,7,-12,12,-7,0,7,-11,11,-7,0,6,-10,10,-6,0,6,-10,10,-6,0,6,-9,9,-5,0,5,-8,8,-5,0,5,-8,8,-5,0,5,-7,7,-4,0,4,-7,7,-4,0,4,-6,6,-4,0,4,-6,6,-4,0,4,-6,5,-3,0,3,-5,5,-3,0,3,-5,5,-3,0,3,-4,4,-3,0,3,-4,4,-2,0,2,-4,4,-2,0,2,-3,3,-2,0,2,-3,3,-2,0,2,-3,3,-2,0,2,-3,3,-2,0,2,-3,2,-1,0,1,-2,2,-1,0,1,-2,2,-1,0,1,-2,2,-1,0,1,-2,2,-1,0,1,-2,2,-1,0,1,-2,2,-1,0,1,-1,1,-1,0,1,-1,1,-1,0,1,-1,1,-1,0,1,-1,1,-1,0,1,-1,1,-1,0,1,-1,1,-1,0,1,-1,1,-1,0,1,-1,1,-1,0,
-};
-
-/* 12.8 kHz complex carrier, sample rate 32 kHz */
-
-static const int16_t _mixi[5] = { 16383, -13254, 5063, 5063, -13254 };
-static const int16_t _mixq[5] = { 0, 9630, -15581, 15581, -9630 };
-
-int audioinvert_init(audioinvert_t *s)
+int audioinvert_init(audioinvert_t *s, double carrier, double level, int mono)
 {
-	/* Allocate memory for the audio inversion FIR filters */
-	s->firli = calloc(NTAPS * 2, sizeof(int16_t));
-	s->firlq = calloc(NTAPS * 2, sizeof(int16_t));
-	s->firri = calloc(NTAPS * 2, sizeof(int16_t));
-	s->firrq = calloc(NTAPS * 2, sizeof(int16_t));
-	s->mixx = 0;
-	s->firx = 0;
+	double taps[NTAPS];
+	double w;
+	int i, c;
 	
-	if(s->firli == NULL || s->firlq == NULL ||
-	   s->firri == NULL || s->firrq == NULL)
+	memset(s, 0, sizeof(audioinvert_t));
+	
+	s->mono = mono;
+	s->phase = 0;
+	s->delta = 2.0 * M_PI * carrier / HACKTV_AUDIO_SAMPLE_RATE;
+	
+	s->tapsi = calloc(NTAPS, sizeof(int16_t));
+	s->tapsq = calloc(NTAPS, sizeof(int16_t));
+	
+	for(c = 0; c < 2; c++)
+	{
+		s->firi[c] = calloc(NTAPS * 2, sizeof(int16_t));
+		s->firq[c] = calloc(NTAPS * 2, sizeof(int16_t));
+	}
+	
+	if(s->tapsi == NULL || s->tapsq == NULL ||
+	   s->firi[0] == NULL || s->firq[0] == NULL ||
+	   s->firi[1] == NULL || s->firq[1] == NULL)
 	{
 		audioinvert_free(s);
 		return(VID_OUT_OF_MEMORY);
+	}
+	
+	/* Design the 0 Hz - carrier complex filter: a low-pass filter with
+	 * a cutoff of half the carrier frequency, shifted up by the same.
+	 * The gain is doubled as taking the real part of the output halves it.
+	 * The taps are stored time-reversed, in the order they are applied */
+	fir_low_pass(taps, NTAPS, HACKTV_AUDIO_SAMPLE_RATE, carrier / 2, 0, 2.0 * level);
+	w = 2.0 * M_PI * (carrier / 2) / HACKTV_AUDIO_SAMPLE_RATE;
+	
+	for(i = 0; i < NTAPS; i++)
+	{
+		double t = i - (NTAPS - 1) / 2;
+		s->tapsi[i] = lround(taps[i] * cos(-w * t) * INT16_MAX);
+		s->tapsq[i] = lround(taps[i] * sin(-w * t) * INT16_MAX);
 	}
 	
 	return(VID_OK);
@@ -59,69 +74,95 @@ int audioinvert_init(audioinvert_t *s)
 
 void audioinvert_free(audioinvert_t *s)
 {
-	free(s->firli);
-	free(s->firlq);
-	free(s->firri);
-	free(s->firrq);
-	s->firli = s->firlq = s->firri = s->firrq = NULL;
+	int c;
+	
+	free(s->tapsi);
+	free(s->tapsq);
+	
+	for(c = 0; c < 2; c++)
+	{
+		free(s->firi[c]);
+		free(s->firq[c]);
+	}
+	
+	free(s->buf);
+	
+	memset(s, 0, sizeof(audioinvert_t));
 }
 
-void audioinvert_process(audioinvert_t *s, int16_t *audio, size_t samples)
+int16_t *audioinvert_process(audioinvert_t *s, const int16_t *audio, size_t samples)
 {
-	int i, x;
-	int a;
+	size_t i;
+	int c, x, nc;
+	int16_t mi, mq;
+	int64_t a;
 	
-	/* Invert the audio spectrum below 12.8 kHz.
+	/* Invert the audio spectrum below the carrier frequency.
 	 * 
 	 * Each audio channel is mixed with a complex sine wave to create a
-	 * DSB-SC signal at +12.8 kHz. A sharp FIR filter is then used to
-	 * remove everything but the lower sideband, with the result then
-	 * copied back into the audio buffer.
+	 * DSB-SC signal at +carrier. A sharp complex FIR filter is then used
+	 * to remove everything but the lower sideband, with the real part of
+	 * the result being the inverted audio.
 	 * 
 	 * The mixing and filtering use complex operations to avoid the
 	 * upper sideband interfering after mixing.
 	 */
 	
-	if(audio == NULL) return;
+	if(audio == NULL) return(NULL);
+	
+	/* Grow the output buffer if needed */
+	if(samples > s->buf_samples)
+	{
+		int16_t *buf = realloc(s->buf, samples * 2 * sizeof(int16_t));
+		if(buf == NULL) return(NULL);
+		s->buf = buf;
+		s->buf_samples = samples;
+	}
+	
+	nc = s->mono ? 1 : 2;
 	
 	for(i = 0; i < samples; i++)
 	{
-		/* Left */
-		s->firli[s->firx + NTAPS] = s->firli[s->firx] =
-			(audio[i * 2 + 0] * _mixi[s->mixx] -
-			 audio[i * 2 + 0] * _mixq[s->mixx]) >> 15;
-		s->firlq[s->firx + NTAPS] = s->firlq[s->firx] =
-			(audio[i * 2 + 0] * _mixq[s->mixx] +
-			 audio[i * 2 + 0] * _mixi[s->mixx]) >> 15;
+		/* Next carrier sample */
+		mi = lround(cos(s->phase) * INT16_MAX);
+		mq = lround(sin(s->phase) * INT16_MAX);
 		
-		/* Right */
-		s->firri[s->firx + NTAPS] = s->firri[s->firx] =
-			(audio[i * 2 + 1] * _mixi[s->mixx] -
-			 audio[i * 2 + 1] * _mixq[s->mixx]) >> 15;
-		s->firrq[s->firx + NTAPS] = s->firrq[s->firx] =
-			(audio[i * 2 + 1] * _mixq[s->mixx] +
-			 audio[i * 2 + 1] * _mixi[s->mixx]) >> 15;
+		s->phase += s->delta;
+		if(s->phase >= 2.0 * M_PI) s->phase -= 2.0 * M_PI;
+		
+		for(c = 0; c < nc; c++)
+		{
+			int32_t in = s->mono
+				? ((int32_t) audio[i * 2 + 0] + audio[i * 2 + 1]) / 2
+				: audio[i * 2 + c];
+			
+			s->firi[c][s->firx + NTAPS] = s->firi[c][s->firx] = (in * mi) >> 15;
+			s->firq[c][s->firx + NTAPS] = s->firq[c][s->firx] = (in * mq) >> 15;
+		}
 		
 		if(++s->firx == NTAPS) s->firx = 0;
-		if(++s->mixx == 5) s->mixx = 0;
 		
-		/* Left */
-		for(a = x = 0; x < NTAPS; x++)
+		for(c = 0; c < nc; c++)
 		{
-			a += s->firli[s->firx + x] * _firi[x] -
-			     s->firlq[s->firx + x] * _firq[x];
+			const int16_t *fi = &s->firi[c][s->firx];
+			const int16_t *fq = &s->firq[c][s->firx];
+			
+			for(a = x = 0; x < NTAPS; x++)
+			{
+				a += (int32_t) fi[x] * s->tapsi[x] -
+				     (int32_t) fq[x] * s->tapsq[x];
+			}
+			
+			a >>= 15;
+			s->buf[i * 2 + c] = a > INT16_MAX ? INT16_MAX : (a < INT16_MIN ? INT16_MIN : a);
 		}
 		
-		audio[i * 2 + 0] = a >> 15;
-		
-		/* Right */
-		for(a = x = 0; x < NTAPS; x++)
+		if(s->mono)
 		{
-			a += s->firri[s->firx + x] * _firi[x] -
-			     s->firrq[s->firx + x] * _firq[x];
+			s->buf[i * 2 + 1] = s->buf[i * 2 + 0];
 		}
-		
-		audio[i * 2 + 1] = a >> 15;
 	}
+	
+	return(s->buf);
 }
 

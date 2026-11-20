@@ -21,19 +21,42 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/* Audio spectrum inversion around 12.8 kHz, as used by
- * Syster / Discret 11 and Videocrypt S (BBC Select) */
+/* Audio spectrum inversion, as used by Syster / Discret 11 (12.8 kHz)
+ * and Videocrypt S / BBC Select (12.51 kHz) */
+
+#define AUDIOINVERT_NTAPS 771
 
 typedef struct {
-	int16_t *firli, *firlq; /* Left channel, I + Q */
-	int16_t *firri, *firrq; /* Right channel, I + Q */
-	int mixx;
+	
+	/* Complex FIR filter passing 0 Hz - carrier */
+	int16_t *tapsi, *tapsq;
+	
+	/* Filter windows, I + Q, per channel */
+	int16_t *firi[2], *firq[2];
 	int firx;
+	
+	/* Carrier oscillator */
+	double phase;
+	double delta;
+	
+	/* Mix stereo to mono before inverting */
+	int mono;
+	
+	/* Output buffer */
+	int16_t *buf;
+	size_t buf_samples;
+	
 } audioinvert_t;
 
-extern int audioinvert_init(audioinvert_t *s);
+/* carrier: inversion frequency in Hz
+ * level:   overall gain applied to the inverted audio
+ * mono:    1 to average the two channels before inverting */
+extern int audioinvert_init(audioinvert_t *s, double carrier, double level, int mono);
 extern void audioinvert_free(audioinvert_t *s);
-extern void audioinvert_process(audioinvert_t *s, int16_t *audio, size_t samples);
+
+/* Inverts stereo samples into the internal buffer, returns a pointer to it.
+ * The input is left unmodified. Returns NULL if audio is NULL. */
+extern int16_t *audioinvert_process(audioinvert_t *s, const int16_t *audio, size_t samples);
 
 #endif
 

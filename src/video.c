@@ -3773,7 +3773,8 @@ static int _vid_audio_process(vid_t *s, void *arg, int nlines, vid_line_t **line
 				
 				if(s->conf.invert_audio)
 				{
-					audioinvert_process(&s->audioinv, s->audiobuffer, s->audiobuffer_samples);
+					s->audiobuffer = audioinvert_process(&s->audioinv, s->audiobuffer, s->audiobuffer_samples);
+					if(!s->audiobuffer) s->audiobuffer_samples = 0;
 				}
 			}
 			
@@ -4800,7 +4801,18 @@ int vid_init(vid_t *s, unsigned int sample_rate, unsigned int pixel_rate, const 
 	/* Initialise audio inversion */
 	if(s->conf.invert_audio)
 	{
-		if((r = audioinvert_init(&s->audioinv)) != VID_OK)
+		if(s->conf.videocrypts)
+		{
+			/* BBC Select: mono, 12.51 kHz, 12 dB down */
+			r = audioinvert_init(&s->audioinv, VCS_AUDIO_INVERT_FREQ, 0.25, 1);
+		}
+		else
+		{
+			/* Syster / D11: stereo, 12.8 kHz */
+			r = audioinvert_init(&s->audioinv, 12800, 0.3535, 0);
+		}
+		
+		if(r != VID_OK)
 		{
 			vid_free(s);
 			return(r);

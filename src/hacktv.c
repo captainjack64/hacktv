@@ -85,7 +85,7 @@ static void print_usage(void)
 		"      --enableemm <serial>       Enable Sky 07 or 09 cards. Use first 8 digital of serial number.\n"
 		"      --disableemm <serial>      Disable Sky 07 or 09 cards. Use first 8 digital of serial number.\n"
 		"      --videocrypt2 <mode>       Enable Videocrypt II scrambling. (PAL only)\n"
-		"      --videocrypts <mode>       Enable Videocrypt S scrambling. Audio is inverted at 12.8 kHz. (PAL only)\n"
+		"      --videocrypts <mode>       Enable Videocrypt S scrambling. Audio is inverted at 12.51 kHz. (PAL only)\n"
 		"      --showserial               Displays serial number of the Videocrypt card.\n"
 		"      --findkey                  Attempt to find keys of PPV Videocrypt card.\n"
 		"      --syster <mode>            Enable Nagravision Syster scrambling. (PAL only)\n"
@@ -1486,7 +1486,7 @@ int main(int argc, char *argv[])
 		
 		vid_conf.videocrypts = s.videocrypts;
 		
-		/* BBC Select inverts the audio spectrum around 12.8 kHz */
+		/* BBC Select inverts the audio spectrum around 12.51 kHz */
 		vid_conf.invert_audio = 1;
 	}
 	

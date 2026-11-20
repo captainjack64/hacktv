@@ -34,6 +34,9 @@
 #define VCS_VBI_BYTES_PER_LINE  (VCS_VBI_BITS_PER_LINE / 8)
 #define VCS_PACKET_LENGTH       32
 
+/* Audio spectrum inversion frequency, 4FSC / 1418 = 12.51 kHz */
+#define VCS_AUDIO_INVERT_FREQ   ((double) VCS_SAMPLE_RATE / 1418)
+
 /* This is not correct - just a placeholder */
 #define VCS_PRBS_CW_FA (((uint64_t) 1 << 60) - 1)
 
