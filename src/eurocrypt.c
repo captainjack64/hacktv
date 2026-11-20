@@ -325,7 +325,7 @@ uint16_t _get_ec_date(const char *dtm, int mode)
 		date |= mon << 8;            /* Month - next 4 bits */
 		date |= day << 0;            /* Day - next 8 bits */
 	}
-	else if(mode == EC_S2)
+	else if(mode == EC_S2 || mode == EC_3DES)
 	{
 		uint8_t y;
 	
@@ -1171,11 +1171,9 @@ static uint8_t _update_emmu_packet(eurocrypt_t *e, int t)
 		data[2] = (d & 0xFF00) >> 8;
 		data[3] = (d & 0x00FF) >> 0;
 
-		/* Theme/level */
-		memcpy(&data[4], e->mode->theme, 2);
-
-		/* Padding */
-		data[6] = 0x00;
+		data[4] = 0x00;                   /* flags */
+		data[5] = e->mode->theme[1];      /* level */
+		data[6] = e->mode->theme[0];      /* theme */
 		data[7] = 0x00;
 
 		/* Date is encrypted in S2/3DES mode */
