@@ -1,4 +1,4 @@
- -[ HackTV - Analogue TV transmitter for the HackRF ]-
+-[ HackTV - Analogue TV transmitter for the HackRF ]-
 
 This is a fork of https://github.com/fsphil/hacktv with some additional features
 added. Most of them are those which I personally use, though not necessarily
